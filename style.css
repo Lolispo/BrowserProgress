@@ -1,0 +1,242 @@
+/*Author Petter Andersson */
+
+.hidden{
+  display: none;
+}
+
+#canvas1{
+  float: left; 
+  border: 1px black solid; 
+  width: 100%; 
+  height: 100%
+}
+
+.bold{
+  font-weight: bold;
+}
+
+.underBorder{
+   border-bottom: 1px black solid;
+}
+
+.floatLeft{
+  float: left;
+}
+
+body{
+  margin: 0;
+  padding: 0;
+}
+
+header{
+  border: 1px black solid;
+}
+
+.noPadding{
+  margin: 0 !important;
+  padding: 0 !important;
+  padding-right: 0;
+}
+
+.durBarDiv{ /* not working*/
+  width: 70%;
+}
+
+.outerdiv{
+  width: 100%;
+  height: 20px;
+  border: 1px solid grey;
+  z-index: 1;
+  position: relative;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+}
+
+.innerdiv{
+  background-color: lightblue;
+  width: 0%;
+  height: 100%;
+  z-index: 2;
+}
+
+.innerdivNoClick{
+  background-color: #ABABAB;
+}
+
+.innerDivRed{
+  background-color: red;
+}
+
+.innerTextRed{
+  color: red !important;
+  text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+}
+
+.innertext{
+  z-index: 3;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: black;
+  font-weight: bold;
+  text-align: center;
+}
+
+.btnCss{
+  width: 100%;
+}
+
+.btnSmall{
+  padding: 0px;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 1s;
+}
+
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* shopMain, shopEquipment, shopResources, shopHouses*/
+
+
+/*p{
+	font-size: 20px;
+}
+
+body {
+	position: absolute;
+	overflow-y: auto;
+ }
+
+.center-block {
+	text-align: center;
+	margin-left: auto;
+  margin-right: auto;
+  float: none;
+  display: inline-block;
+}
+
+.boat{
+ 	margin-right: 2px;
+	margin-top: 2px;
+	margin-bottom: 2px;
+	background-color: yellow;
+	border: 1px black solid;
+	z-index: 10;
+}
+
+
+.dock{
+    margin-top: 54px;
+		margin-left: -13px !important;
+}
+
+.col-md-2 {
+	margin-right: -24.5px !important;
+}
+
+.background {
+  padding-top: 50px;
+  background: url("https://worldofwarships-na.gcdn.co/dcont/fb/image/0be7407a-4c3d-11e5-9edf-000c29ca62ad.jpg") center center fixed;
+  background-repeat: no-repeat;
+  background-size: auto;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  padding-bottom: 50px;
+}
+
+.board{
+    margin: 80px;
+}
+
+.text{
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+    color: white;
+}
+
+.transformed{
+	transform: rotate(90deg);
+}
+
+.size2 {
+    width: 40px;
+    height: 83px;
+}
+
+.size3 {
+    width: 40px;
+    height: 127px;
+}
+
+.size4 {
+    width: 40px;
+    height: 172px;
+}
+
+.size5 {
+    width: 40px;
+    height: 215px;
+}
+
+.ruta{
+	min-width: 40px;
+	max-width: 40px;
+  min-height: 40px !important;
+  border: 2px solid black;
+  margin: 2px;
+}
+
+.def{
+	background-color: blue;
+}
+
+.gi {
+	width: 1195px !important;
+}
+
+.chosenColor{
+	background-color: yellow;
+}
+
+.hitColor{
+    background-color: green;
+}
+
+.missColor{
+    background-color: red;
+}
+
+.faded{
+  opacity: 0.5;
+}
+*/
