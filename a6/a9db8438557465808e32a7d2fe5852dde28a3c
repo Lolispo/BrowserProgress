@@ -1,0 +1,19 @@
+script.js
+  s_0adeecac98ad13::t_4014080bf1a622 173-187
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a6a9db8438557465808e32a7d2fe5852dde28a3c",
+  "prompts": {},
+  "sessions": {
+    "s_0adeecac98ad13": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "41e20c20-274f-4a17-997f-49478a0116db",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
