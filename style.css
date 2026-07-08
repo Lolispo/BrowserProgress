@@ -166,9 +166,9 @@ body {
 
 .background {
   padding-top: 50px;
-  background: url("https://worldofwarships-na.gcdn.co/dcont/fb/image/0be7407a-4c3d-11e5-9edf-000c29ca62ad.jpg") center center fixed;
+  background: linear-gradient(to bottom, #8ec5e8 0%, #b9dff0 45%, #cfe9c8 70%, #7cbf5a 100%) center center fixed;
   background-repeat: no-repeat;
-  background-size: auto;
+  background-size: cover;
   position: fixed;
   width: 100%;
   height: 100%;
