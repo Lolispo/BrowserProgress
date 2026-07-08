@@ -170,8 +170,21 @@ function initValues(){
 
 	var image = imgTree;
 
-	for(var i = 0; imgXStart + ((image.width + image.width/5) * i) < c.width; i++){
-		ctx.drawImage(image, imgXStart + ((image.width + image.width/5) * i), treeYImg); 
+	// Draw the row of trees, but only once the tree image has actually loaded.
+	// Reading image.width before the image loads returns 0, which makes the loop
+	// step 0 and the condition permanently true -> infinite loop that freezes the
+	// tab ("page unresponsive"). This raced fine on a warm cache but hung on a
+	// cold GitHub Pages load where the image wasn't ready when ready() fired.
+	function drawTreeRow(){
+		var stepW = image.width || 20; // natural tree width is 20px; guard against 0
+		for(var i = 0; imgXStart + ((stepW + stepW/5) * i) < c.width; i++){
+			ctx.drawImage(image, imgXStart + ((stepW + stepW/5) * i), treeYImg);
+		}
+	}
+	if(image.complete && image.naturalWidth){
+		drawTreeRow();
+	} else {
+		image.addEventListener("load", drawTreeRow);
 	}
 	
 	/*
