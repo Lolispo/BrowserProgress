@@ -6,16 +6,21 @@
 // (The old free-text TODO list that lived here now lives in ROADMAP.md.)
 
 $(document).ready(function(){
-	initValues();
+	var loaded = (typeof loadGame === "function") && loadGame();
+	initValues(loaded);
 	initBars();
 	initScouts();
 	initShopButtons();
 	initJobsButtons();
 	initTooltips();
-	updateGoal();
+	if(loaded){ rebuildUI(); } else { updateGoal(); }
+	if(typeof startAutoSave === "function"){ startAutoSave(); }
 
 	$(document.getElementById("victoryClose")).on("click", function(){
 		$("#victoryOverlay").toggleClass("hidden", true);
+	});
+	$(document.getElementById("resetGame")).on("click", function(){
+		if(window.confirm("Reset all progress?")){ resetGame(); }
 	});
 });
 
@@ -44,9 +49,10 @@ function showVictory(){
 	$("#victoryOverlay").toggleClass("hidden", false);
 }
 
-function initValues(){
+function initValues(loaded){
 
-	if(developer){
+	// Dev sandbox top-up only on a fresh game (never on a loaded save).
+	if(developer && !loaded){
 		state.wood += 100000;
 		state.iron += 100000;
 		state.food += 100000;

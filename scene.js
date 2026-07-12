@@ -139,6 +139,23 @@ var scene = {
 		this.syncJobs();
 	},
 
+	// Rebuild all entities from state counts (used on load).
+	rebuildFromState: function(){
+		this.buildings = [];
+		this.villagers = [];
+		var counts = {
+			house: state.housesBuilt, lumberMill: state.lumberMill, mine: state.mine,
+			huntingLodge: state.huntingLodge, trainingYard: state.trainingYard,
+			quarry: state.quarry, farm: state.farm, blacksmith: state.blacksmith,
+			market: state.market, monument: state.monument,
+		};
+		for(var type in counts){
+			for(var i = 0; i < counts[type]; i++){ this.addBuilding(type); }
+		}
+		for(var v = 0; v < state.villagers; v++){ this.addVillager(); }
+		this.syncJobs();
+	},
+
 	// Reconcile each villager's workplace to the current job counts in state.
 	// Each employed villager also gets a slot index so co-workers at the same
 	// building line up side by side instead of stacking on one spot.
