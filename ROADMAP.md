@@ -81,10 +81,13 @@ assignment and walk, trees deplete + regrow, floaters render, no console errors)
 - [x] Auto-layout of buildings by lane (removed hardcoded per-type coordinates).
 - [x] 2× sprite scaling so the ~20px art reads as a real village.
 
-### Phase 2 follow-ups (polish, not blocking)
-- [ ] Spread building lanes horizontally — they currently hug the left edge.
-- [ ] Villager spacing so workers don't overlap at a shared building.
-- [ ] Multi-building layout wrap when a lane fills across the canvas width.
+### Phase 2 follow-ups (polish)
+- [x] Spread building lanes horizontally (staggered per-type start x).
+- [x] Villager spacing so workers line up beside a shared building (slot index).
+- [x] Lane wrap when a type's row runs off the right edge.
+- [x] Calmer idle wander for unemployed villagers (home anchor + rest pauses).
+- [ ] Use the full canvas width — the settlement still sits in the left portion.
+      *(Really a Phase 3 concern: expansion fills the map, so deferred.)*
 
 ---
 

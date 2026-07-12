@@ -71,20 +71,37 @@ var scene = {
 
 	// --- entity creation (called from the registry) -----------------------
 
+	// Each building type gets its own vertical lane (y) and a staggered
+	// horizontal start (x) so a one-of-each village reads as a spread-out
+	// settlement instead of a column hugging the left edge.
+	laneStartX: {
+		house: 8, lumberMill: 46, mine: 84, huntingLodge: 122, trainingYard: 160,
+	},
+
 	addBuilding: function(type){
-		var lane = this.lanes[type] || 60;
-		var count = 0;
-		for(var i = 0; i < this.buildings.length; i++){
-			if(this.buildings[i].type === type){ count++; }
-		}
-		var cell = SPRITE_PX + 10;
 		this.buildings.push({
 			type: type,
 			img: this.buildingImg(type),
-			x: 8 + count * cell,
-			y: lane,
+			x: 0, y: 0, // set by layoutBuildings
 			phase: Math.random() * 6.28,
 		});
+		this.layoutBuildings();
+	},
+
+	// Flow each type's buildings left-to-right from its start x, wrapping to a
+	// sub-row only when a lane runs off the right edge.
+	layoutBuildings: function(){
+		var cell = SPRITE_PX + 12;
+		var seen = {};
+		for(var i = 0; i < this.buildings.length; i++){
+			var b = this.buildings[i];
+			var lane = this.lanes[b.type] || 60;
+			var baseX = this.laneStartX[b.type] || 8;
+			var n = seen[b.type] | 0; seen[b.type] = n + 1;
+			var cols = Math.max(1, Math.floor((this.W - baseX - SPRITE_PX) / cell) + 1);
+			b.x = baseX + (n % cols) * cell;
+			b.y = lane + Math.floor(n / cols) * (SPRITE_PX + 8);
+		}
 	},
 
 	addVillager: function(){
@@ -105,14 +122,20 @@ var scene = {
 	},
 
 	// Reconcile each villager's workplace to the current job counts in state.
+	// Each employed villager also gets a slot index so co-workers at the same
+	// building line up side by side instead of stacking on one spot.
 	syncJobs: function(){
 		var order = [];
 		var push = function(type, n){ for(var i = 0; i < n; i++){ order.push(type); } };
 		push("lumberMill", state.woodCutter);
 		push("mine", state.ironWorker);
 		push("huntingLodge", state.hunter);
+		var slots = {};
 		for(var v = 0; v < this.villagers.length; v++){
-			this.villagers[v].jobTarget = order[v] || null;
+			var t = order[v] || null;
+			this.villagers[v].jobTarget = t;
+			if(t){ var s = slots[t] | 0; this.villagers[v].slot = s; slots[t] = s + 1; }
+			else { this.villagers[v].slot = 0; }
 		}
 	},
 
@@ -184,7 +207,12 @@ var scene = {
 	updateVillager: function(v, dt){
 		if(v.jobTarget){
 			var b = this.firstBuilding(v.jobTarget);
-			if(b){ v.tx = b.x + 6; v.ty = b.y + this.spriteH(b.img) - this.spriteH(imgVillager) + 2; }
+			if(b){
+				// Line workers up beside the building; wrap every 4 into a second row.
+				var slot = v.slot || 0;
+				v.tx = Math.min(this.W - this.spriteW(imgVillager), b.x + 4 + (slot % 4) * 12);
+				v.ty = b.y + this.spriteH(b.img) - this.spriteH(imgVillager) + 2 + Math.floor(slot / 4) * 10;
+			}
 		} else if(Math.abs(v.x - v.tx) < 2 && Math.abs(v.y - v.ty) < 2){
 			// Unemployed: gentle wander. Stand still for a few seconds, then drift
 			// to a new spot within a small radius of this villager's home.
