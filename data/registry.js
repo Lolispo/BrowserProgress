@@ -57,13 +57,24 @@ var REGIONS = {
 // State helpers
 // ---------------------------------------------------------------------------
 
+// Abbreviate large numbers for display (12345 -> "12.3k", 2000000 -> "2M").
+// Small values stay exact. State always holds the raw number; this is display only.
+function formatNum(n){
+	if(typeof n !== "number"){ return n; }
+	var a = Math.abs(n);
+	if(a >= 1e6){ return (n / 1e6).toFixed(2).replace(/\.?0+$/, "") + "M"; }
+	if(a >= 1e4){ return (n / 1e3).toFixed(1).replace(/\.?0+$/, "") + "k"; }
+	return "" + n;
+}
+
 // Set a state value and mirror it into the DOM node sharing its id (if present).
 function set(key, val){
 	state[key] = val;
 	var el = document.getElementById(key);
-	if(el){ el.innerHTML = val; }
-	if(RESOURCE_KEYS.indexOf(key) !== -1 && typeof refreshShopColors === "function"){
-		refreshShopColors();
+	if(el){ el.innerHTML = formatNum(val); }
+	if(RESOURCE_KEYS.indexOf(key) !== -1){
+		if(typeof refreshShopColors === "function"){ refreshShopColors(); }
+		if(typeof updateGoal === "function"){ updateGoal(); }
 	}
 }
 

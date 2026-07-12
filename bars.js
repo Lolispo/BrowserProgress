@@ -77,6 +77,16 @@ function initBars(){
 	}
 }
 
+// Grey out action bars whose requirements aren't currently met (e.g. Chop Wood
+// with no axe, or Hunt below the energy threshold). Called throttled from the
+// scene loop so it always reflects current state.
+function refreshBarStates(){
+	for(var id in ACTIONS){
+		var a = ACTIONS[id];
+		$("#" + a.barId + "_outerdiv").toggleClass("barUnavailable", !meetsRequirements(a.requires));
+	}
+}
+
 // Live scout bar instances, keyed by region id.
 var scoutBars = {};
 

@@ -205,6 +205,12 @@ var scene = {
 
 	update: function(dt, now){
 		var i;
+		// Refresh action-bar availability shading ~4x/sec (not every frame).
+		this._uiT = (this._uiT || 0) + dt;
+		if(this._uiT > 0.25){
+			this._uiT = 0;
+			if(typeof refreshBarStates === "function"){ refreshBarStates(); }
+		}
 		// Trees regrow toward full.
 		for(i = 0; i < this.trees.length; i++){
 			if(this.trees[i].growth < 1){

@@ -7,6 +7,26 @@
 
 function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
 
+// Building shop items -> the state count they represent (houses tracks housesBuilt).
+var BUILDING_COUNT_KEY = {
+	houses: "housesBuilt", lumberMill: "lumberMill", mine: "mine",
+	huntingLodge: "huntingLodge", trainingYard: "trainingYard",
+	quarry: "quarry", farm: "farm", blacksmith: "blacksmith",
+	market: "market", monument: "monument",
+};
+
+// Append "×N" to building buttons so you can see how many you've built.
+function updateShopLabels(){
+	for(var id in BUILDING_COUNT_KEY){
+		var item = SHOP_ITEMS[id];
+		if(!item){ continue; }
+		var count = state[BUILDING_COUNT_KEY[id]];
+		var label = item.name + " (" + costToText(item.cost) + ")";
+		if(count > 0){ label += " ×" + count; }
+		document.getElementById(item.btnId).innerHTML = label;
+	}
+}
+
 // Attempt to buy an item: gated by cost, requirements, and an optional canBuy().
 function buyItem(item){
 	if(item.canBuy && !item.canBuy()){
@@ -16,6 +36,7 @@ function buyItem(item){
 	if(!canAfford(item.cost) || !meetsRequirements(item.requires)){ return; }
 	payCost(item.cost);
 	item.onBuy();
+	updateShopLabels();
 	refreshShopColors();
 	if(typeof refreshScouts === "function"){ refreshScouts(); }
 }
@@ -91,6 +112,7 @@ function initShopButtons(){
 	document.getElementById("shopBackButton").innerHTML = "<- Back";
 	$(document.getElementById("shopBackButton")).on("click", function(){ showCategory("main"); });
 
+	updateShopLabels();
 	refreshShopColors();
 	showCategory("main");
 }

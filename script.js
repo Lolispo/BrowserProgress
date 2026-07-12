@@ -12,11 +12,30 @@ $(document).ready(function(){
 	initShopButtons();
 	initJobsButtons();
 	initTooltips();
+	updateGoal();
 
 	$(document.getElementById("victoryClose")).on("click", function(){
 		$("#victoryOverlay").toggleClass("hidden", true);
 	});
 });
+
+// Live goal tracker: Monument materials have/need, with locked resources masked
+// until their region is claimed. Called from set() on any resource change.
+function updateGoal(){
+	var el = document.getElementById("goalMaterials");
+	if(!el || typeof SHOP_ITEMS === "undefined"){ return; }
+	var cost = SHOP_ITEMS.monument.cost;
+	var unlock = { stone: "hills", gold: "mountains", crystal: "cavern" };
+	var parts = [];
+	for(var k in cost){
+		if(unlock[k] && !state.regions[unlock[k]]){
+			parts.push(k + ": 🔒");
+		} else {
+			parts.push(k + ": " + Math.min(state[k], cost[k]) + "/" + cost[k]);
+		}
+	}
+	el.innerHTML = parts.join("<br>");
+}
 
 // Show the win overlay when the Monument is built.
 function showVictory(){
