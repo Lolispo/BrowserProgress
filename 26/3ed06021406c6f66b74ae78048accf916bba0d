@@ -1,0 +1,35 @@
+style.css
+  s_c49c3d8017c580::t_f38d0a0fbcf986 151-155
+index.html
+  s_c49c3d8017c580::t_7025ba060b9ab3 180-181
+  s_c49c3d8017c580::t_d48828dbe4ccb4 179
+data/registry.js
+  s_c49c3d8017c580::t_31485e824fe859 60-69,74-77
+shops.js
+  s_c49c3d8017c580::t_1e3fb105a40e76 10-29
+  s_c49c3d8017c580::t_8f5532e963bd19 39
+  s_c49c3d8017c580::t_5431f0619b05a5 115
+bars.js
+  s_c49c3d8017c580::t_39c18c0fd198cb 80-89
+scene.js
+  s_c49c3d8017c580::t_fba878bdde282e 208-213
+script.js
+  s_c49c3d8017c580::t_c85f9ed0ede890 15
+  s_c49c3d8017c580::t_78b546711e7371 22-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "263ed06021406c6f66b74ae78048accf916bba0d",
+  "prompts": {},
+  "sessions": {
+    "s_c49c3d8017c580": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd0841db-e951-424c-9840-348c0762face",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
