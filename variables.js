@@ -62,8 +62,8 @@ var houseShopInc = 8;
 // Phase 3 building tuning
 var farmHousing = 8;         // housing each Farm adds
 var farmFoodPerTick = 2;     // food per Farm per income tick
-var masonStonePerTick = 2;   // stone per Mason per income tick
-var traderGoldPerTick = 1;   // gold per Trader per income tick
+var masonStonePerTick = 3;   // stone per Mason per income tick
+var traderGoldPerTick = 2;   // gold per Trader per income tick
 
 // Sprite image elements (populated in initValues, consumed by scene.js)
 var imgHouse;

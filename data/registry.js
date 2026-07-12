@@ -231,7 +231,7 @@ var ACTIONS = {
 		requires: [],
 		startsHidden: true, // revealed when the Crystal Cavern is claimed
 		rawTime: true,
-		maxTime: function(){ return 8000; },
+		maxTime: function(){ return 6000; },
 		onStart: function(){},
 		onDone: function(){ set("crystal", state.crystal + 1); scene.gainFx("crystal", 1); newMsg("Mined a Crystal!"); },
 	},
@@ -393,7 +393,7 @@ var SHOP_ITEMS = {
 	},
 	farm: {
 		btnId: "farmShop", name: "Build Farm", category: "houses", region: "hills",
-		cost: { wood: 300, stone: 200 },
+		cost: { wood: 300, stone: 150 },
 		tooltip: "Build a farm in the Hills. Adds housing and produces food each tick.",
 		onBuy: function(){
 			set("farm", state.farm + 1);
@@ -405,7 +405,7 @@ var SHOP_ITEMS = {
 	},
 	blacksmith: {
 		btnId: "blacksmithShop", name: "Build Blacksmith", category: "houses", region: "hills",
-		cost: { stone: 500, iron: 100 },
+		cost: { stone: 400, iron: 100 },
 		tooltip: "Build a blacksmith. Tools wear slower and you gather more. Opens the way to the Mountains.",
 		onBuy: function(){
 			set("blacksmith", state.blacksmith + 1);
@@ -415,7 +415,7 @@ var SHOP_ITEMS = {
 	},
 	market: {
 		btnId: "marketShop", name: "Build Market", category: "houses", region: "mountains",
-		cost: { stone: 1200, iron: 300 },
+		cost: { stone: 800, iron: 300 },
 		tooltip: "Build a market in the Mountains. Unlocks the Trader job (passive gold).",
 		onBuy: function(){
 			set("market", state.market + 1);
@@ -427,7 +427,7 @@ var SHOP_ITEMS = {
 	},
 	monument: {
 		btnId: "monumentShop", name: "Build the Monument", category: "houses", region: "cavern",
-		cost: { wood: 2000, iron: 1000, stone: 1500, gold: 300, crystal: 25 },
+		cost: { wood: 1500, iron: 800, stone: 800, gold: 200, crystal: 12 },
 		tooltip: "The Grand Monument. Needs materials from every region. Completing it wins the game.",
 		onBuy: function(){
 			set("monument", state.monument + 1);
@@ -466,7 +466,7 @@ var SCOUTS = {
 		barId: "scoutCavernBar", region: "cavern", gate: "market", villagers: 4, rawTime: true,
 		label: "Scout the Crystal Cavern",
 		tooltip: "Send villagers to scout the Crystal Cavern and claim Crystal.",
-		requires: [{ key: "villagers", min: 15 }, { key: "unemployed", min: 4 }, { key: "market", min: 1 }],
+		requires: [{ key: "villagers", min: 12 }, { key: "unemployed", min: 4 }, { key: "market", min: 1 }],
 		maxTime: function(){ return 40000; },
 	},
 };

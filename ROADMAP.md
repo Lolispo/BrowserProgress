@@ -118,15 +118,28 @@ buildings → grow more → build the **Monument** to win. Chain:
 - [x] **3d — Monument & win:** crystal source (hand-mined "Mine Crystal" action bar,
       revealed on Cavern claim), Monument building (mixed all-region cost), and a
       victory overlay with a Keep Playing button. Verified end-to-end.
-- [ ] **3e — Balance pass:** tune costs / scout times / income from a fresh
-      (`developer=false`) start so the chain paces well.
+- [~] **3e — Balance pass:** first-pass cuts applied to the grindy Phase-3 numbers
+      (mason 2→3/tick, trader 1→2/tick, market 1200→800 stone, blacksmith 500→400,
+      farm 200→150, Monument cost cut across the board, crystal mine 8s→6s, cavern
+      scout 15→12 villagers). Use `?nodev` to playtest and refine to feel — ongoing.
 
 ---
 
+## Improvements pass (post-Phase-3)
+
+- [x] Persistence: localStorage save/load + auto-save + Reset button.
+- [x] Number formatting (12.3k / 2M).
+- [x] Building counts (×N) on shop buttons.
+- [x] Action bars grey out when their requirements aren't met.
+- [x] Monument goal tracker (materials have/need, locked resources masked).
+- [ ] Real sprite art for stone/gold/crystal nodes + the 5 placeholder-box
+      buildings (needs image assets; canvas-drawn icons are an option).
+- [ ] Audio for actions (needs audio assets).
+
 ## Later / deluxe (not scheduled)
 
-- [ ] Save/load progress (localStorage).
-- [ ] Reset button; optional highscore / "finish" goal.
-- [ ] Balance passes (early-game safety net, speed ratios, energy costs).
-- [ ] Audio for actions (maybe).
+- [ ] Early-game safety net / further balance tuning to feel.
+- [ ] Optional highscore / speedrun timer.
 - [ ] Replace text resource labels with icons.
+- [ ] Responsive / mobile layout (canvas is a fixed 1150px today).
+- [ ] Replayability: prestige/ascension, achievements, random events.
