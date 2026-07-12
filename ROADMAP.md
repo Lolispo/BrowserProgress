@@ -61,18 +61,30 @@ the spear label said "130 spear" instead of "130 wood".
 
 ---
 
-## Phase 2 — Animated game screen (rAF render loop + sprite scene)
+## Phase 2 — Animated game screen (rAF render loop + sprite scene) ✅
 
 Goal: replace the draw-once canvas with a real frame loop so the map feels alive.
 
-- [ ] Replace the one-shot `drawTreeRow` draw with a `requestAnimationFrame` loop.
-- [ ] Entities become objects with position + state; the loop redraws each frame.
-- [ ] Villagers walk to their job buildings when assigned.
-- [ ] Floating "+10 wood" text pops on resource gains.
-- [ ] Trees deplete when chopped and regrow over time.
-- [ ] Subtle idle motion / life on the scene.
-- [ ] Auto-layout of placed images (wrap to next row, spacing between duplicates)
-      instead of hardcoded widths.
+Landed in `scene.js`: a `requestAnimationFrame` loop over a small scene graph
+(buildings / villagers / trees / floaters). Shop `onBuy` pushes entities via
+`scene.addBuilding` / `scene.addVillager` instead of drawing once; actions and job
+income spawn effects via `scene.chopWoodFx` / `scene.gainFx`. Sprites draw at 2×
+(`SPRITE_SCALE`). Verified in the browser (entities spawn, villagers retarget on job
+assignment and walk, trees deplete + regrow, floaters render, no console errors).
+
+- [x] Replaced the one-shot draw with a `requestAnimationFrame` loop.
+- [x] Entities are objects with position + state; the loop redraws each frame.
+- [x] Villagers walk to their job buildings when assigned (wander when unemployed).
+- [x] Floating "+N resource" text pops on manual actions and passive income.
+- [x] Trees deplete when chopped and regrow over time.
+- [x] Subtle idle bob on buildings and working villagers.
+- [x] Auto-layout of buildings by lane (removed hardcoded per-type coordinates).
+- [x] 2× sprite scaling so the ~20px art reads as a real village.
+
+### Phase 2 follow-ups (polish, not blocking)
+- [ ] Spread building lanes horizontally — they currently hug the left edge.
+- [ ] Villager spacing so workers don't overlap at a shared building.
+- [ ] Multi-building layout wrap when a lane fills across the canvas width.
 
 ---
 

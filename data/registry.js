@@ -93,7 +93,9 @@ var ACTIONS = {
 		maxTime: function(){ return Math.floor(woodSpeed / state.speed); },
 		onStart: function(){ axeUpdate(axeWoodDmg); },
 		onDone: function(){
-			set("wood", state.wood + Math.round(woodInc * (state.strength / 100.0)));
+			var amt = Math.round(woodInc * (state.strength / 100.0));
+			set("wood", state.wood + amt);
+			scene.chopWoodFx(amt);
 			newMsg("Gathered Wood!");
 		},
 	},
@@ -106,7 +108,9 @@ var ACTIONS = {
 		maxTime: function(){ return Math.floor(ironSpeed / state.speed); },
 		onStart: function(){ axeUpdate(axeIronDmg); },
 		onDone: function(){
-			set("iron", state.iron + Math.round(ironInc * (state.strength / 100.0)));
+			var amt = Math.round(ironInc * (state.strength / 100.0));
+			set("iron", state.iron + amt);
+			scene.gainFx("iron", amt);
 			newMsg("Gathered Iron!");
 		},
 	},
@@ -126,6 +130,7 @@ var ACTIONS = {
 			var roll = Math.floor((Math.random() * 100) + 1);
 			if(roll < successRate){
 				set("food", state.food + foodInc);
+				scene.gainFx("food", foodInc);
 				newMsg("Hunted Successfully!");
 			} else {
 				newMsg("Hunt failed! (" + roll + "/100 - needed " + Math.round(successRate) + ")");
@@ -142,7 +147,9 @@ var ACTIONS = {
 		maxTime: function(){ return Math.floor(clawTreeSpeed / state.speed); },
 		onStart: function(){ state.energy *= clawEnergyCost; energyIncUpdate(); },
 		onDone: function(){
-			set("wood", state.wood + Math.round(clawInc * (state.strength / 100.0)));
+			var amt = Math.round(clawInc * (state.strength / 100.0));
+			set("wood", state.wood + amt);
+			scene.chopWoodFx(amt);
 			newMsg("Clawed some wood!");
 		},
 	},
@@ -198,9 +205,7 @@ var SHOP_ITEMS = {
 		onBlocked: function(){ newMsg("Requires more houses"); },
 		onBuy: function(){
 			increaseVillagers();
-			ctx.drawImage(imgVillager, villagerXImg + ((imgVillager.width + imgVillager.width / 5) * state.villagers), villagerYImg);
-			set("villagers", state.villagers);
-			set("unemployed", state.unemployed);
+			scene.addVillager();
 			newMsg("Hired a villager!");
 		},
 	},
@@ -260,7 +265,7 @@ var SHOP_ITEMS = {
 		onBuy: function(){
 			set("housesBuilt", state.housesBuilt + 1);
 			set("houses", state.houses + houseShopInc);
-			ctx.drawImage(imgHouse, houseXImg + ((imgHouse.width + imgHouse.width / 5) * state.housesBuilt), houseYImg);
+			scene.addBuilding("house");
 			newMsg("Built more houses!");
 		},
 	},
@@ -274,7 +279,7 @@ var SHOP_ITEMS = {
 			set("lumberMill", state.lumberMill + 1);
 			$("#jobColumn").toggleClass("hidden", false);
 			$("#jobWoodCutter").toggleClass("hidden", false);
-			ctx.drawImage(imgLumberMill, imgXStart + ((imgLumberMill.width + imgLumberMill.width / 5) * state.lumberMill), lumberMillYImg);
+			scene.addBuilding("lumberMill");
 			newMsg("Built a LumberMill!");
 		},
 	},
@@ -288,7 +293,7 @@ var SHOP_ITEMS = {
 			set("mine", state.mine + 1);
 			$("#jobColumn").toggleClass("hidden", false);
 			$("#jobIronWorker").toggleClass("hidden", false);
-			ctx.drawImage(imgMine, imgXStart + ((imgMine.width + imgMine.width / 5) * state.mine), mineYImg);
+			scene.addBuilding("mine");
 			newMsg("Built a Mine!");
 		},
 	},
@@ -302,7 +307,7 @@ var SHOP_ITEMS = {
 			set("huntingLodge", state.huntingLodge + 1);
 			$("#jobColumn").toggleClass("hidden", false);
 			$("#jobHunter").toggleClass("hidden", false);
-			ctx.drawImage(imgHuntingLodge, imgXStart + ((imgHuntingLodge.width + imgHuntingLodge.width / 5) * state.huntingLodge), huntingLodgeYImg);
+			scene.addBuilding("huntingLodge");
 			newMsg("Built a HuntingLodge!");
 		},
 	},
@@ -317,7 +322,7 @@ var SHOP_ITEMS = {
 			$("#speedBar").toggleClass("hidden", false);
 			$("#strengthBar").toggleClass("hidden", false);
 			$("#cardioBar").toggleClass("hidden", false);
-			ctx.drawImage(imgTrainingYard, imgXStart + ((imgTrainingYard.width + imgTrainingYard.width / 5) * state.trainingYard), trainingYardYImg);
+			scene.addBuilding("trainingYard");
 			newMsg("Built a TrainingYard!");
 		},
 	},

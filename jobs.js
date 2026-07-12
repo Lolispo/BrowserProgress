@@ -16,6 +16,7 @@ function assignToJob(key){
 		set("unemployed", state.unemployed - 1);
 		set(key, state[key] + 1);
 		if(state.unemployed === 0){ $("#unemployed").toggleClass("bold", false); }
+		scene.syncJobs();
 	}
 }
 
@@ -24,6 +25,7 @@ function unassignFromJob(key){
 		set(key, state[key] - 1);
 		set("unemployed", state.unemployed + 1);
 		$("#unemployed").toggleClass("bold", true);
+		scene.syncJobs();
 	}
 }
 
@@ -55,9 +57,9 @@ function startJobInterval(){
 	if(incomeInterval == null){
 		$("#jobColumn").toggleClass("hidden", false);
 		incomeInterval = setInterval(function(){
-			if(state.woodCutter != 0){ set("wood", state.wood + state.woodCutter * 3); }
-			if(state.ironWorker != 0){ set("iron", state.iron + state.ironWorker * 1); }
-			if(state.hunter != 0){ set("food", state.food + state.hunter * 1); }
+			if(state.woodCutter != 0){ var w = state.woodCutter * 3; set("wood", state.wood + w); scene.gainFx("wood", w); }
+			if(state.ironWorker != 0){ var ir = state.ironWorker * 1; set("iron", state.iron + ir); scene.gainFx("iron", ir); }
+			if(state.hunter != 0){ var fo = state.hunter * 1; set("food", state.food + fo); scene.gainFx("food", fo); }
 		}, 2000);
 	}
 }

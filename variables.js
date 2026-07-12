@@ -56,7 +56,7 @@ var trainingCardioEnergyReq = 100;
 var foodShopInc = 10;
 var houseShopInc = 8;
 
-// Images (populated in initValues)
+// Sprite image elements (populated in initValues, consumed by scene.js)
 var imgHouse;
 var imgVillager;
 var imgHunter;
@@ -65,16 +65,3 @@ var imgMine;
 var imgHuntingLodge;
 var imgTrainingYard;
 var imgTree;
-
-// Canvas layout coordinates
-var imgXStart = 0;
-var houseXImg = 0;
-var houseYImg = 40;
-var villagerXImg = 0;
-var villagerYImg = 70;
-var lumberMillYImg = 100;
-var mineYImg = 130;
-var huntingLodgeYImg = 160;
-var hunterYImg = 160;
-var trainingYardYImg = 190;
-var treeYImg = 10;
