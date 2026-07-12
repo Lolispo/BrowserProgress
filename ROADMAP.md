@@ -140,10 +140,28 @@ buildings → grow more → build the **Monument** to win. Chain:
       buildings (needs image assets; canvas-drawn icons are an option).
 - [ ] Audio for actions (needs audio assets).
 
+## Visual / HUD polish
+
+- [x] Village-ledger HUD theme for the top chrome + buy menu: parchment panels,
+      grass-green accent headers, resource numbers colored to match the on-map
+      "+N" floaters, tactile buy list with affordable/locked/greyed states.
+      (style.css now loads after Bootstrap so custom rules win.)
+- [ ] Extend the panel theme to the right column (Action Messages + Goal) and
+      frame the canvas to match.
+- [ ] Offer alternate skins — theme is centralized in CSS variables, so a
+      modern / cozy-night / playful reskin is a quick swap. Confirm direction.
+- [ ] Push progress bars + typography further (heading face, bar detailing).
+- [ ] Move the inline `width: 25%` column styles out of index.html into CSS
+      (layout still depends on those inline widths; carried over from Phase 1).
+
 ## Later / deluxe (not scheduled)
 
-- [ ] Early-game safety net / further balance tuning to feel.
+- [ ] Balance 3e: playtest via `?nodev` and tune costs/rates to feel; add an
+      early-game safety net if the opening drags.
 - [ ] Optional highscore / speedrun timer.
 - [ ] Replace text resource labels with icons.
-- [ ] Responsive / mobile layout (canvas is a fixed 1150px today).
+- [ ] Responsive / mobile layout (top is a fixed 4-column grid; canvas is a
+      fixed 1150px — desktop-only today).
 - [ ] Replayability: prestige/ascension, achievements, random events.
+- [ ] Full canvas width: buildings still cluster in the left of each region
+      zone; spread them to use the space better.
