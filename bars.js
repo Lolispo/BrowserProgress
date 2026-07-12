@@ -85,6 +85,11 @@ function refreshBarStates(){
 		var a = ACTIONS[id];
 		$("#" + a.barId + "_outerdiv").toggleClass("barUnavailable", !meetsRequirements(a.requires));
 	}
+	// Scout bars grey out too when you don't yet have the villagers to send.
+	for(var sid in SCOUTS){
+		var s = SCOUTS[sid];
+		$("#" + s.barId + "_outerdiv").toggleClass("barUnavailable", !meetsRequirements(s.requires));
+	}
 }
 
 // Live scout bar instances, keyed by region id.

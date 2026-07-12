@@ -132,6 +132,10 @@ buildings → grow more → build the **Monument** to win. Chain:
 - [x] Building counts (×N) on shop buttons.
 - [x] Action bars grey out when their requirements aren't met.
 - [x] Monument goal tracker (materials have/need, locked resources masked).
+- [x] Scout discovery: fogged regions show which building unlocks scouting
+      ("Build a Mine to scout" → "Scout it in Expeditions"); scout bars grey out
+      until you have the villagers. Action hints moved to hover tooltips; the
+      static bottom-right Information block removed.
 - [ ] Real sprite art for stone/gold/crystal nodes + the 5 placeholder-box
       buildings (needs image assets; canvas-drawn icons are an option).
 - [ ] Audio for actions (needs audio assets).

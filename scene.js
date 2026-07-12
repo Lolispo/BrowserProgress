@@ -291,8 +291,15 @@ var scene = {
 				ctx.textAlign = "center";
 				ctx.font = "bold 15px sans-serif";
 				ctx.fillText(r.label, zx[0] + w / 2, this.H / 2 - 6);
+				// Tell the player how to unlock scouting for this region.
+				var scout = (typeof SCOUTS !== "undefined") ? SCOUTS[id] : null;
+				var hint = "Scout to unlock";
+				if(scout){
+					var gate = scout.gate.charAt(0).toUpperCase() + scout.gate.slice(1);
+					hint = state[scout.gate] > 0 ? "Scout it in Expeditions" : ("Build a " + gate + " to scout");
+				}
 				ctx.font = "12px sans-serif";
-				ctx.fillText("Scout to unlock", zx[0] + w / 2, this.H / 2 + 14);
+				ctx.fillText(hint, zx[0] + w / 2, this.H / 2 + 14);
 				ctx.textAlign = "left";
 			}
 			ctx.strokeStyle = "rgba(0,0,0,0.15)";
