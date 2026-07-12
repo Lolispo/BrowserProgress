@@ -95,15 +95,23 @@ assignment and walk, trees deplete + regrow, floaters render, no console errors)
 
 Goal: the pull. Give resources somewhere to go and a reason to want more.
 
-### Village growth & milestones
-- [ ] Milestone system: population/building thresholds unlock new tiers.
-- [ ] New tiers (from old TODO): Blacksmith, Farm, big housing, Trading Post.
-- [ ] Job-building prerequisites (e.g. N villagers required for advanced buildings).
+**Design spec:** [`docs/superpowers/specs/2026-07-12-phase3-core-loop-design.md`](docs/superpowers/specs/2026-07-12-phase3-core-loop-design.md)
 
-### Expansion / exploration
-- [ ] Spend resources to unlock new map regions with richer resource nodes.
-- [ ] The map grows on the Phase 2 canvas as regions unlock.
-- [ ] (Stretch) Gold currency + trading post/caravans as a resource sink.
+One tight loop: grow the village → meet a scout requirement → scout a new region
+(timed, costs villagers' time) → gain its new gating resource → build the next-tier
+buildings → grow more → build the **Monument** to win. Chain:
+`wood/iron/food (Home) → stone (Hills) → gold (Mountains) → crystal (Cavern) → Monument`.
+
+### Sub-phases (each independently verifiable + committable)
+- [ ] **3a — Regions & resources scaffold:** `state` for stone/gold/crystal + `regions`,
+      `REGIONS` registry, inventory labels, canvas region zones (tints + fog + labels).
+- [ ] **3b — Scouting:** scout bars gated by growth; occupy N villagers, return on done;
+      claiming a region reveals its zone.
+- [ ] **3c — New buildings & jobs:** Quarry (Mason), Farm, Blacksmith, Market (Trader),
+      plus Blacksmith/Farm efficiency boosts.
+- [ ] **3d — Monument & win:** Monument build + victory overlay.
+- [ ] **3e — Balance pass:** tune costs / scout times / income from a fresh
+      (`developer=false`) start so the chain paces well.
 
 ---
 
