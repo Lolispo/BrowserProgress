@@ -1,0 +1,23 @@
+ROADMAP.md
+  s_c49c3d8017c580::t_28cdf6141cd520 98-114
+docs/superpowers/specs/2026-07-12-phase3-core-loop-design.md
+  s_c49c3d8017c580::t_8cf7530226b166 1-52,59-76,78-79,83-156
+  s_c49c3d8017c580::t_08e2861f416467 53-58
+  s_c49c3d8017c580::t_a088cb5c579fbf 77,80-82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.12",
+  "base_commit_sha": "db28dd57be4d752bbd6ac3c96f2e387874072e80",
+  "prompts": {},
+  "sessions": {
+    "s_c49c3d8017c580": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd0841db-e951-424c-9840-348c0762face",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
