@@ -20,18 +20,38 @@
 var state = {
 	// Resources
 	wood: 0, iron: 0, food: 0,
+	// Phase 3 gating resources (revealed as regions are claimed)
+	stone: 0, gold: 0, crystal: 0,
 	// Equipment + durability (%)
 	axe: 1, spear: 1, axeDurability: 100, spearDurability: 100,
 	// Buildings + housing capacity
 	houses: 2, housesBuilt: 0, lumberMill: 0, mine: 0, huntingLodge: 0, trainingYard: 0,
+	// Phase 3 buildings
+	quarry: 0, farm: 0, blacksmith: 0, market: 0, monument: 0,
 	// Population / jobs
 	villagers: 0, unemployed: 0, woodCutter: 0, ironWorker: 0, hunter: 0,
+	mason: 0, trader: 0,
 	// Player stats
 	speed: 100, strength: 100, cardio: 100, energy: 100, energyInc: 0.5,
+	// Claimed regions (home is free; the rest are scouted). See REGIONS.
+	regions: { home: true, hills: false, mountains: false, cavern: false },
 };
 
 // Resource keys drive shop affordability colouring; changing one refreshes the shop.
-var RESOURCE_KEYS = ["wood", "iron", "food"];
+var RESOURCE_KEYS = ["wood", "iron", "food", "stone", "gold", "crystal"];
+
+// ---------------------------------------------------------------------------
+// REGIONS registry — the horizontal map zones. `zone` is a [start, end]
+// fraction of the canvas width; `resource` is the gating resource the region
+// introduces (home introduces none). Drawn left -> right in REGION_ORDER.
+// ---------------------------------------------------------------------------
+var REGION_ORDER = ["home", "hills", "mountains", "cavern"];
+var REGIONS = {
+	home:      { label: "Home",           resource: null,      zone: [0.00, 0.30], tint: "#3fbf3f" },
+	hills:     { label: "Hills",          resource: "stone",   zone: [0.30, 0.52], tint: "#c9b37e" },
+	mountains: { label: "Mountains",      resource: "gold",    zone: [0.52, 0.74], tint: "#9aa0a6" },
+	cavern:    { label: "Crystal Cavern", resource: "crystal", zone: [0.74, 1.00], tint: "#4a3b63" },
+};
 
 // ---------------------------------------------------------------------------
 // State helpers

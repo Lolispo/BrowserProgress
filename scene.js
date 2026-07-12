@@ -19,14 +19,28 @@ var scene = {
 	buildings: [], villagers: [], trees: [], floaters: [],
 	lastTime: 0, running: false,
 
-	// Vertical lane (top y) for each building type + the tree strip.
-	lanes: {
-		tree: 4,
-		house: 58,
-		lumberMill: 104,
-		mine: 150,
-		huntingLodge: 196,
-		trainingYard: 242,
+	treeLane: 4, // y of the forest strip in Home
+
+	// Per building type: which region it sits in, its vertical lane (y), and a
+	// horizontal offset within that region's zone. New Phase 3 buildings live in
+	// the regions their resource comes from.
+	buildingConfig: {
+		house:        { region: "home",      lane: 58,  ox: 6 },
+		lumberMill:   { region: "home",      lane: 104, ox: 40 },
+		mine:         { region: "home",      lane: 150, ox: 74 },
+		huntingLodge: { region: "home",      lane: 196, ox: 108 },
+		trainingYard: { region: "home",      lane: 242, ox: 142 },
+		quarry:       { region: "hills",     lane: 104, ox: 8 },
+		farm:         { region: "hills",     lane: 150, ox: 8 },
+		blacksmith:   { region: "hills",     lane: 196, ox: 8 },
+		market:       { region: "mountains", lane: 120, ox: 8 },
+		monument:     { region: "cavern",    lane: 120, ox: 8 },
+	},
+
+	// Pixel [x0, x1] of a region's zone from its width fractions.
+	zonePx: function(region){
+		var z = REGIONS[region].zone;
+		return [z[0] * this.W, z[1] * this.W];
 	},
 
 	init: function(canvas, ctx){
@@ -40,12 +54,13 @@ var scene = {
 		this.buildTreeRow();
 	},
 
-	// A forest strip across the top. Positions use a fixed cell so they don't
-	// depend on the tree image being loaded yet.
+	// A forest strip across the Home zone (wood comes from Home). Positions use a
+	// fixed cell so they don't depend on the tree image being loaded yet.
 	buildTreeRow: function(){
 		this.trees = [];
+		var home = this.zonePx("home");
 		var cell = SPRITE_PX + 6;
-		for(var x = 4; x + SPRITE_PX < this.W; x += cell){
+		for(var x = home[0] + 4; x + SPRITE_PX < home[1]; x += cell){
 			this.trees.push({ x: x, growth: 1, phase: Math.random() * 6.28 });
 		}
 	},
@@ -71,13 +86,6 @@ var scene = {
 
 	// --- entity creation (called from the registry) -----------------------
 
-	// Each building type gets its own vertical lane (y) and a staggered
-	// horizontal start (x) so a one-of-each village reads as a spread-out
-	// settlement instead of a column hugging the left edge.
-	laneStartX: {
-		house: 8, lumberMill: 46, mine: 84, huntingLodge: 122, trainingYard: 160,
-	},
-
 	addBuilding: function(type){
 		this.buildings.push({
 			type: type,
@@ -88,20 +96,30 @@ var scene = {
 		this.layoutBuildings();
 	},
 
-	// Flow each type's buildings left-to-right from its start x, wrapping to a
-	// sub-row only when a lane runs off the right edge.
+	// Place each building inside its region's zone: flow left -> right from the
+	// zone start + the type's offset, wrapping to a sub-row if the zone fills.
 	layoutBuildings: function(){
 		var cell = SPRITE_PX + 12;
 		var seen = {};
 		for(var i = 0; i < this.buildings.length; i++){
 			var b = this.buildings[i];
-			var lane = this.lanes[b.type] || 60;
-			var baseX = this.laneStartX[b.type] || 8;
+			var cfg = this.buildingConfig[b.type] || { region: "home", lane: 60, ox: 8 };
+			var zone = this.zonePx(cfg.region);
+			var baseX = zone[0] + cfg.ox;
 			var n = seen[b.type] | 0; seen[b.type] = n + 1;
-			var cols = Math.max(1, Math.floor((this.W - baseX - SPRITE_PX) / cell) + 1);
+			var cols = Math.max(1, Math.floor((zone[1] - baseX - SPRITE_PX) / cell) + 1);
 			b.x = baseX + (n % cols) * cell;
-			b.y = lane + Math.floor(n / cols) * (SPRITE_PX + 8);
+			b.y = cfg.lane + Math.floor(n / cols) * (SPRITE_PX + 8);
 		}
+	},
+
+	// Claim a region: mark it unlocked and reveal its resource label. Called by
+	// the scout on completion (Phase 3b); safe to call directly for testing.
+	revealRegion: function(id){
+		state.regions[id] = true;
+		var res = REGIONS[id].resource;
+		var labels = { stone: "resStone", gold: "resGold", crystal: "resCrystal" };
+		if(res && labels[res]){ $("#" + labels[res]).toggleClass("hidden", false); }
 	},
 
 	addVillager: function(){
@@ -130,6 +148,8 @@ var scene = {
 		push("lumberMill", state.woodCutter);
 		push("mine", state.ironWorker);
 		push("huntingLodge", state.hunter);
+		push("quarry", state.mason);
+		push("market", state.trader);
 		var slots = {};
 		for(var v = 0; v < this.villagers.length; v++){
 			var t = order[v] || null;
@@ -151,7 +171,7 @@ var scene = {
 		var t = grown.length ? grown[Math.floor(Math.random() * grown.length)] : this.trees[0];
 		if(t){
 			t.growth = 0.12;
-			this.floater("+" + amount + " wood", t.x - 4, this.lanes.tree + SPRITE_PX, "#2e7d32");
+			this.floater("+" + amount + " wood", t.x - 4, this.treeLane + SPRITE_PX, "#2e7d32");
 		} else {
 			this.gainFx("wood", amount);
 		}
@@ -232,14 +252,57 @@ var scene = {
 
 	// --- draw --------------------------------------------------------------
 
+	// Tinted region bands; locked regions get a dark fog + a "Scout to unlock" label.
+	drawZones: function(ctx){
+		for(var i = 0; i < REGION_ORDER.length; i++){
+			var id = REGION_ORDER[i];
+			var r = REGIONS[id];
+			var zx = this.zonePx(id);
+			var w = zx[1] - zx[0];
+			ctx.fillStyle = r.tint;
+			ctx.fillRect(zx[0], 0, w, this.H);
+			if(!state.regions[id]){
+				ctx.fillStyle = "rgba(18,18,28,0.72)";
+				ctx.fillRect(zx[0], 0, w, this.H);
+				ctx.fillStyle = "#e8e8e8";
+				ctx.textAlign = "center";
+				ctx.font = "bold 15px sans-serif";
+				ctx.fillText(r.label, zx[0] + w / 2, this.H / 2 - 6);
+				ctx.font = "12px sans-serif";
+				ctx.fillText("Scout to unlock", zx[0] + w / 2, this.H / 2 + 14);
+				ctx.textAlign = "left";
+			}
+			ctx.strokeStyle = "rgba(0,0,0,0.15)";
+			ctx.beginPath(); ctx.moveTo(zx[1], 0); ctx.lineTo(zx[1], this.H); ctx.stroke();
+		}
+	},
+
+	// Draw a building sprite, or a labelled colored box when it has no art yet.
+	drawBuilding: function(b, y){
+		var ctx = this.ctx;
+		if(b.img && b.img.width){
+			ctx.drawImage(b.img, b.x, y, this.spriteW(b.img), this.spriteH(b.img));
+			return;
+		}
+		var colors = { quarry: "#8d99ae", farm: "#7cb342", blacksmith: "#5d4037", market: "#c9a227", monument: "#7e57c2" };
+		ctx.fillStyle = colors[b.type] || "#888";
+		ctx.fillRect(b.x, y, SPRITE_PX, SPRITE_PX);
+		ctx.strokeStyle = "rgba(0,0,0,0.4)";
+		ctx.strokeRect(b.x, y, SPRITE_PX, SPRITE_PX);
+		ctx.fillStyle = "#fff";
+		ctx.font = "bold 16px sans-serif";
+		ctx.textAlign = "center";
+		ctx.fillText(b.type.charAt(0).toUpperCase(), b.x + SPRITE_PX / 2, y + SPRITE_PX / 2 + 6);
+		ctx.textAlign = "left";
+	},
+
 	draw: function(){
 		var ctx = this.ctx;
 		if(!ctx){ return; }
 		var now = this.lastTime / 1000;
 
-		// Background
-		ctx.fillStyle = "#3fbf3f";
-		ctx.fillRect(0, 0, this.W, this.H);
+		// Region zones (tinted bands; locked zones fogged with a label)
+		this.drawZones(ctx);
 
 		// Trees (grow from the bottom of their cell)
 		var i, fullH = this.spriteH(imgTree), fullW = this.spriteW(imgTree);
@@ -247,15 +310,14 @@ var scene = {
 			var t = this.trees[i];
 			if(!imgTree || !imgTree.width){ continue; }
 			var h = fullH * (0.3 + 0.7 * t.growth);
-			ctx.drawImage(imgTree, t.x, this.lanes.tree + (fullH - h), fullW, h);
+			ctx.drawImage(imgTree, t.x, this.treeLane + (fullH - h), fullW, h);
 		}
 
 		// Buildings (gentle idle bob)
 		for(i = 0; i < this.buildings.length; i++){
 			var b = this.buildings[i];
-			if(!b.img || !b.img.width){ continue; }
 			var bob = Math.sin(now * 2 + b.phase) * 1.2;
-			ctx.drawImage(b.img, b.x, b.y + bob, this.spriteW(b.img), this.spriteH(b.img));
+			this.drawBuilding(b, b.y + bob);
 		}
 
 		// Villagers (bob while working)

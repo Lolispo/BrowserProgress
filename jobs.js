@@ -9,6 +9,8 @@ var JOBS = [
 	{ minusId: "jobWoodCutterButton-", plusId: "jobWoodCutterButton+", key: "woodCutter" },
 	{ minusId: "jobIronWorkerButton-", plusId: "jobIronWorkerButton+", key: "ironWorker" },
 	{ minusId: "jobHunterButton-",     plusId: "jobHunterButton+",     key: "hunter" },
+	{ minusId: "jobMasonButton-",      plusId: "jobMasonButton+",      key: "mason" },
+	{ minusId: "jobTraderButton-",     plusId: "jobTraderButton+",     key: "trader" },
 ];
 
 function assignToJob(key){
@@ -43,6 +45,8 @@ function initJobsButtons(){
 	$("#jobWoodCutter").toggleClass("hidden", true);
 	$("#jobIronWorker").toggleClass("hidden", true);
 	$("#jobHunter").toggleClass("hidden", true);
+	$("#jobMason").toggleClass("hidden", true);
+	$("#jobTrader").toggleClass("hidden", true);
 	$("#jobColumn").toggleClass("hidden", true);
 }
 

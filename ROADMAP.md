@@ -103,8 +103,9 @@ buildings → grow more → build the **Monument** to win. Chain:
 `wood/iron/food (Home) → stone (Hills) → gold (Mountains) → crystal (Cavern) → Monument`.
 
 ### Sub-phases (each independently verifiable + committable)
-- [ ] **3a — Regions & resources scaffold:** `state` for stone/gold/crystal + `regions`,
-      `REGIONS` registry, inventory labels, canvas region zones (tints + fog + labels).
+- [x] **3a — Regions & resources scaffold:** `state` for stone/gold/crystal + `regions`,
+      `REGIONS` registry, inventory labels, canvas region zones (tints + fog + labels),
+      per-region building placement, `scene.revealRegion`. Verified in browser.
 - [ ] **3b — Scouting:** scout bars gated by growth; occupy N villagers, return on done;
       claiming a region reveals its zone.
 - [ ] **3c — New buildings & jobs:** Quarry (Mason), Farm, Blacksmith, Market (Trader),
