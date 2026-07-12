@@ -80,6 +80,7 @@
                     <div id="speedBar"></div>
                     <div id="strengthBar"></div>
                     <div id="cardioBar"></div>
+                    <div id="crystalBar" class="hidden"></div>
                     <h3 id="scoutHeader" class="hidden">Expeditions</h3>
                     <div id="scoutHillsBar" class="hidden"></div>
                     <div id="scoutMountainsBar" class="hidden"></div>
@@ -117,6 +118,7 @@
                             <button type="button" class="btn btnCss btn-default hidden" id="farmShop"></button>
                             <button type="button" class="btn btnCss btn-default hidden" id="blacksmithShop"></button>
                             <button type="button" class="btn btnCss btn-default hidden" id="marketShop"></button>
+                            <button type="button" class="btn btnCss btn-default hidden" id="monumentShop"></button>
                         </div>
                     </div>
                 </div>
@@ -183,6 +185,14 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div id="victoryOverlay" class="hidden">
+            <div id="victoryBox">
+                <h1>Victory!</h1>
+                <p>You built the Grand Monument and completed your village.</p>
+                <p id="victoryStats"></p>
+                <button type="button" class="btn btn-default" id="victoryClose">Keep Playing</button>
             </div>
         </div>
     </body>

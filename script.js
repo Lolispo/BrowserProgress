@@ -12,7 +12,18 @@ $(document).ready(function(){
 	initShopButtons();
 	initJobsButtons();
 	initTooltips();
+
+	$(document.getElementById("victoryClose")).on("click", function(){
+		$("#victoryOverlay").toggleClass("hidden", true);
+	});
 });
+
+// Show the win overlay when the Monument is built.
+function showVictory(){
+	document.getElementById("victoryStats").innerHTML =
+		"Villagers: " + state.villagers + " · Regions claimed: all 4";
+	$("#victoryOverlay").toggleClass("hidden", false);
+}
 
 function initValues(){
 

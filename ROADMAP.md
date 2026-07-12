@@ -115,7 +115,9 @@ buildings → grow more → build the **Monument** to win. Chain:
       visibility. Verified: chain Hills→buildings→Mountains scout→Market, passive
       production (+2 stone/+1 gold/+2 food per tick), Blacksmith 5→3 wear / 10→12 gather.
       *(Bootstrap fix vs spec: Quarry costs wood+iron, not stone.)*
-- [ ] **3d — Monument & win:** Monument build + victory overlay.
+- [x] **3d — Monument & win:** crystal source (hand-mined "Mine Crystal" action bar,
+      revealed on Cavern claim), Monument building (mixed all-region cost), and a
+      victory overlay with a Keep Playing button. Verified end-to-end.
 - [ ] **3e — Balance pass:** tune costs / scout times / income from a fresh
       (`developer=false`) start so the chain paces well.
 

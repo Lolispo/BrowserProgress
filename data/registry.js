@@ -213,6 +213,17 @@ var ACTIONS = {
 		onStart: function(){ state.energy *= trainingCardioEnergyCost; energyIncUpdate(); },
 		onDone: function(){ set("cardio", state.cardio + cardioInc); setNewEnergyInc(); newMsg("Improved your cardio!"); },
 	},
+	mineCrystal: {
+		barId: "crystalBar",
+		label: "Mine Crystal",
+		tooltip: "Personally mine rare crystal from the Cavern. Slow, but the Monument needs it.",
+		requires: [],
+		startsHidden: true, // revealed when the Crystal Cavern is claimed
+		rawTime: true,
+		maxTime: function(){ return 8000; },
+		onStart: function(){},
+		onDone: function(){ set("crystal", state.crystal + 1); scene.gainFx("crystal", 1); newMsg("Mined a Crystal!"); },
+	},
 };
 
 
@@ -401,6 +412,17 @@ var SHOP_ITEMS = {
 			$("#jobTrader").toggleClass("hidden", false);
 			scene.addBuilding("market");
 			newMsg("Built a Market!");
+		},
+	},
+	monument: {
+		btnId: "monumentShop", name: "Build the Monument", category: "houses", region: "cavern",
+		cost: { wood: 2000, iron: 1000, stone: 1500, gold: 300, crystal: 25 },
+		tooltip: "The Grand Monument. Needs materials from every region. Completing it wins the game.",
+		onBuy: function(){
+			set("monument", state.monument + 1);
+			scene.addBuilding("monument");
+			newMsg("The Monument is complete!");
+			if(typeof showVictory === "function"){ showVictory(); }
 		},
 	},
 };

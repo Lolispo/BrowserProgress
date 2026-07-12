@@ -92,6 +92,7 @@ function initScouts(){
 				set("unemployed", state.unemployed + s.villagers);
 				scene.revealRegion(s.region);
 				newMsg("Claimed the " + REGIONS[s.region].label + "!");
+				if(s.region === "cavern"){ $("#crystalBar").toggleClass("hidden", false); }
 				refreshScouts();
 				if(typeof updateShopVisibility === "function"){ updateShopVisibility(); }
 				if(typeof refreshShopColors === "function"){ refreshShopColors(); }
