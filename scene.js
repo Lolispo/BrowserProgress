@@ -88,15 +88,18 @@ var scene = {
 	},
 
 	addVillager: function(){
+		var hx = 12 + Math.random() * 90;
 		this.villagers.push({
-			x: 8 + Math.random() * 80,
+			x: hx,
 			y: this.H - 44,
-			tx: 8 + Math.random() * 80,
+			tx: hx,
 			ty: this.H - 44,
+			home: { x: hx, y: this.H - 44 }, // anchor for the idle wander
+			rest: Math.random() * 3,         // seconds to stand still before drifting
 			jobTarget: null,
 			working: false,
 			phase: Math.random() * 6.28,
-			speed: 22 + Math.random() * 16,
+			speed: 18 + Math.random() * 10,
 		});
 		this.syncJobs();
 	},
@@ -182,10 +185,15 @@ var scene = {
 		if(v.jobTarget){
 			var b = this.firstBuilding(v.jobTarget);
 			if(b){ v.tx = b.x + 6; v.ty = b.y + this.spriteH(b.img) - this.spriteH(imgVillager) + 2; }
-		} else if(Math.abs(v.x - v.tx) < 3 && Math.abs(v.y - v.ty) < 3){
-			// reached wander point -> pick a new one near the houses
-			v.tx = 8 + Math.random() * 140;
-			v.ty = this.H - 60 + Math.random() * 40;
+		} else if(Math.abs(v.x - v.tx) < 2 && Math.abs(v.y - v.ty) < 2){
+			// Unemployed: gentle wander. Stand still for a few seconds, then drift
+			// to a new spot within a small radius of this villager's home.
+			v.rest -= dt;
+			if(v.rest <= 0){
+				v.tx = Math.max(4, Math.min(this.W - 40, v.home.x + (Math.random() * 2 - 1) * 22));
+				v.ty = v.home.y + (Math.random() * 2 - 1) * 12;
+				v.rest = 2.5 + Math.random() * 3.5; // pause before the next stroll
+			}
 		}
 		var dx = v.tx - v.x, dy = v.ty - v.y;
 		var dist = Math.sqrt(dx * dx + dy * dy);
