@@ -110,8 +110,11 @@ buildings → grow more → build the **Monument** to win. Chain:
       `rawTime` flag for real-ms duration); appear once the gate building exists;
       occupy N villagers, return on done; completion claims the region + unfogs its
       zone. Verified end-to-end (real click: Hills scouted → claimed).
-- [ ] **3c — New buildings & jobs:** Quarry (Mason), Farm, Blacksmith, Market (Trader),
-      plus Blacksmith/Farm efficiency boosts.
+- [x] **3c — New buildings & jobs:** Quarry (Mason→stone), Farm (+housing/+food),
+      Blacksmith (−tool wear, +gather), Market (Trader→gold). Region-gated shop
+      visibility. Verified: chain Hills→buildings→Mountains scout→Market, passive
+      production (+2 stone/+1 gold/+2 food per tick), Blacksmith 5→3 wear / 10→12 gather.
+      *(Bootstrap fix vs spec: Quarry costs wood+iron, not stone.)*
 - [ ] **3d — Monument & win:** Monument build + victory overlay.
 - [ ] **3e — Balance pass:** tune costs / scout times / income from a fresh
       (`developer=false`) start so the chain paces well.

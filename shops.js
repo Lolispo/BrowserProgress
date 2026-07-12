@@ -37,15 +37,33 @@ function refreshShopColors(){
 	}
 }
 
+var currentShopCategory = "main";
+
+// A region-gated item only appears once its region is claimed.
+function itemAvailable(item){
+	return !item.region || state.regions[item.region];
+}
+
+// Show the buttons whose category is active and whose region gate is satisfied;
+// nav + back visibility follow the current category.
+function updateShopVisibility(){
+	for(var id in SHOP_ITEMS){
+		var item = SHOP_ITEMS[id];
+		var show = item.category === currentShopCategory && itemAvailable(item);
+		$("#" + item.btnId).toggleClass("hidden", !show);
+	}
+	for(var i = 0; i < SHOP_NAV.length; i++){
+		$("#" + SHOP_NAV[i].btnId).toggleClass("hidden", currentShopCategory !== "main");
+	}
+	$("#shopBackButton").toggleClass("hidden", currentShopCategory === "main");
+}
+
 // Show one shop category (main | equipment | resources | houses).
 function showCategory(category){
-	$(".shopMain").toggleClass("hidden", category !== "main");
-	$(".shopEquipment").toggleClass("hidden", category !== "equipment");
-	$(".shopResources").toggleClass("hidden", category !== "resources");
-	$(".shopHouses").toggleClass("hidden", category !== "houses");
-	$("#shopBackButton").toggleClass("hidden", category === "main");
+	currentShopCategory = category;
 	document.getElementById("shopName").innerHTML =
 		category === "main" ? "Shop - Main" : "Shop - " + cap(category);
+	updateShopVisibility();
 }
 
 function initShopButtons(){
@@ -55,7 +73,6 @@ function initShopButtons(){
 		var el = document.getElementById(item.btnId);
 		el.innerHTML = item.name + " (" + costToText(item.cost) + ")";
 		el.setAttribute("data-tip", tipText(item));
-		$(el).toggleClass("shop" + cap(item.category), true);
 		(function(boundItem){
 			$(el).on("click", function(){ buyItem(boundItem); });
 		})(item);
@@ -66,7 +83,6 @@ function initShopButtons(){
 		(function(nav){
 			var navEl = document.getElementById(nav.btnId);
 			navEl.innerHTML = nav.label;
-			$(navEl).toggleClass("shopMain", true);
 			$(navEl).on("click", function(){ showCategory(nav.show); });
 		})(SHOP_NAV[i]);
 	}

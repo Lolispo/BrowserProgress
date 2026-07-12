@@ -179,8 +179,8 @@ var scene = {
 
 	// Generic resource gain: float over the relevant building, or top-left.
 	gainFx: function(resource, amount){
-		var colors = { wood: "#2e7d32", iron: "#607d8b", food: "#c76b28" };
-		var homes = { iron: "mine", food: "huntingLodge", wood: "lumberMill" };
+		var colors = { wood: "#2e7d32", iron: "#607d8b", food: "#c76b28", stone: "#6d6d6d", gold: "#c9a227", crystal: "#9b6dc9" };
+		var homes = { iron: "mine", food: "huntingLodge", wood: "lumberMill", stone: "quarry", gold: "market", crystal: "monument" };
 		var b = this.firstBuilding(homes[resource]);
 		var x = b ? b.x : this.W * 0.12;
 		var y = b ? b.y : 30;

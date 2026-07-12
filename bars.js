@@ -93,6 +93,8 @@ function initScouts(){
 				scene.revealRegion(s.region);
 				newMsg("Claimed the " + REGIONS[s.region].label + "!");
 				refreshScouts();
+				if(typeof updateShopVisibility === "function"){ updateShopVisibility(); }
+				if(typeof refreshShopColors === "function"){ refreshShopColors(); }
 			};
 			scoutBars[id] = new TimeBar(s);
 		})(SCOUTS[id]);

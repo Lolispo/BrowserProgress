@@ -93,6 +93,16 @@ function costToText(cost){
 	return parts.join(" + ");
 }
 
+// Resource gathered per action: strength-scaled, with a +15% Blacksmith bonus each.
+function gatherAmount(base){
+	return Math.round(base * (state.strength / 100.0) * (1 + 0.15 * state.blacksmith));
+}
+
+// Equipment durability damage per use: a Blacksmith softens it to 60%.
+function equipDamage(base){
+	return Math.round(base * (state.blacksmith > 0 ? 0.6 : 1));
+}
+
 
 // ---------------------------------------------------------------------------
 // ACTIONS registry — the clickable progress bars in the middle "Work" column.
@@ -111,9 +121,9 @@ var ACTIONS = {
 		requires: [{ key: "axe", min: 1 }],
 		startsHidden: false,
 		maxTime: function(){ return Math.floor(woodSpeed / state.speed); },
-		onStart: function(){ axeUpdate(axeWoodDmg); },
+		onStart: function(){ axeUpdate(equipDamage(axeWoodDmg)); },
 		onDone: function(){
-			var amt = Math.round(woodInc * (state.strength / 100.0));
+			var amt = gatherAmount(woodInc);
 			set("wood", state.wood + amt);
 			scene.chopWoodFx(amt);
 			newMsg("Gathered Wood!");
@@ -126,9 +136,9 @@ var ACTIONS = {
 		requires: [{ key: "axe", min: 1 }],
 		startsHidden: false,
 		maxTime: function(){ return Math.floor(ironSpeed / state.speed); },
-		onStart: function(){ axeUpdate(axeIronDmg); },
+		onStart: function(){ axeUpdate(equipDamage(axeIronDmg)); },
 		onDone: function(){
-			var amt = Math.round(ironInc * (state.strength / 100.0));
+			var amt = gatherAmount(ironInc);
 			set("iron", state.iron + amt);
 			scene.gainFx("iron", amt);
 			newMsg("Gathered Iron!");
@@ -155,7 +165,7 @@ var ACTIONS = {
 			} else {
 				newMsg("Hunt failed! (" + roll + "/100 - needed " + Math.round(successRate) + ")");
 			}
-			spearUpdate(spearHuntDmg);
+			spearUpdate(equipDamage(spearHuntDmg));
 		},
 	},
 	clawTree: {
@@ -167,7 +177,7 @@ var ACTIONS = {
 		maxTime: function(){ return Math.floor(clawTreeSpeed / state.speed); },
 		onStart: function(){ state.energy *= clawEnergyCost; energyIncUpdate(); },
 		onDone: function(){
-			var amt = Math.round(clawInc * (state.strength / 100.0));
+			var amt = gatherAmount(clawInc);
 			set("wood", state.wood + amt);
 			scene.chopWoodFx(amt);
 			newMsg("Clawed some wood!");
@@ -344,6 +354,53 @@ var SHOP_ITEMS = {
 			$("#cardioBar").toggleClass("hidden", false);
 			scene.addBuilding("trainingYard");
 			newMsg("Built a TrainingYard!");
+		},
+	},
+	// --- Phase 3 buildings (appear once their region is claimed) ---
+	quarry: {
+		btnId: "quarryShop", name: "Build Quarry", category: "houses", region: "hills",
+		cost: { wood: 400, iron: 150 },
+		tooltip: "Build a quarry in the Hills. Unlocks the Mason job (passive stone).",
+		onBuy: function(){
+			set("quarry", state.quarry + 1);
+			$("#jobColumn").toggleClass("hidden", false);
+			$("#jobMason").toggleClass("hidden", false);
+			scene.addBuilding("quarry");
+			newMsg("Built a Quarry!");
+		},
+	},
+	farm: {
+		btnId: "farmShop", name: "Build Farm", category: "houses", region: "hills",
+		cost: { wood: 300, stone: 200 },
+		tooltip: "Build a farm in the Hills. Adds housing and produces food each tick.",
+		onBuy: function(){
+			set("farm", state.farm + 1);
+			set("houses", state.houses + farmHousing);
+			scene.addBuilding("farm");
+			startJobInterval();
+			newMsg("Built a Farm!");
+		},
+	},
+	blacksmith: {
+		btnId: "blacksmithShop", name: "Build Blacksmith", category: "houses", region: "hills",
+		cost: { stone: 500, iron: 100 },
+		tooltip: "Build a blacksmith. Tools wear slower and you gather more. Opens the way to the Mountains.",
+		onBuy: function(){
+			set("blacksmith", state.blacksmith + 1);
+			scene.addBuilding("blacksmith");
+			newMsg("Built a Blacksmith!");
+		},
+	},
+	market: {
+		btnId: "marketShop", name: "Build Market", category: "houses", region: "mountains",
+		cost: { stone: 1200, iron: 300 },
+		tooltip: "Build a market in the Mountains. Unlocks the Trader job (passive gold).",
+		onBuy: function(){
+			set("market", state.market + 1);
+			$("#jobColumn").toggleClass("hidden", false);
+			$("#jobTrader").toggleClass("hidden", false);
+			scene.addBuilding("market");
+			newMsg("Built a Market!");
 		},
 	},
 };
