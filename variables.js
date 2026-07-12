@@ -14,9 +14,12 @@ var ctx = null; // the canvas 2d graphics
 // Dev sandbox flag: true only when running locally (localhost / 127.0.0.1 / opened
 // as a file://). On the deployed GitHub Pages host this is false, so the live game
 // starts honest at zero resources. See initValues() for the resource top-up.
+// Add ?nodev to the local URL to force the real zero-resource economy (for balance
+// playtesting without deploying).
 var developer = (location.hostname === "localhost" ||
 	location.hostname === "127.0.0.1" ||
-	location.protocol === "file:");
+	location.protocol === "file:") &&
+	location.search.indexOf("nodev") === -1;
 
 // Action base speeds (ms), scaled by player speed and speedRatio in ACTIONS.maxTime()
 var woodSpeed = 2000000;
