@@ -22,39 +22,42 @@ Goal: the deployed game starts at zero, while local dev keeps its resource sandb
 
 ---
 
-## Phase 1 — Data-driven registry + tooltips (the "steering" pass)
+## Phase 1 — Data-driven registry + tooltips (the "steering" pass) ✅ (mostly)
 
 Goal: one source of truth for every action, building, and shop item. Fixes the
 structure (globals + `eval()` + 10× copy-pasted handlers) and makes tooltips fall out
 for free. This is the foundation everything else reads from.
 
+Landed in `data/registry.js` (state + `ACTIONS` + `SHOP_ITEMS` + `SHOP_NAV`) and
+`tooltips.js`; `bars.js`/`shops.js`/`jobs.js`/`energy.js`/`script.js` rewritten as thin
+renderers. Verified end-to-end in the browser (actions, buys, builds, jobs, tooltips,
+affordability). Fixed two latent bugs along the way: `#axe` rendered "Axe: Axe: 1", and
+the spear label said "130 spear" instead of "130 wood".
+
 ### Core structure
-- [ ] Introduce a central `state` object (resources, equipment, buildings, stats,
-      jobs) to replace scattered globals in `variables.js`.
-- [ ] Kill the `eval()`-on-variable-names in `bars.js` clickability check — read
-      requirements from data instead.
-- [ ] Registries, each entry carrying `{ id, label, tooltip, requires, cost, yields }`:
-  - [ ] `ACTIONS` — chop wood, mine iron, hunt, claw tree, train speed/strength/cardio.
-  - [ ] `BUILDINGS` — house, lumbermill, mine, hunting lodge, training yard.
-  - [ ] `SHOP_ITEMS` — axe (wood+iron), axe (food trade), spear, food, villager.
-- [ ] Rewrite `bars.js` / `shops.js` / `jobs.js` to render from the registries.
+- [x] Central `state` object replacing scattered globals in `variables.js`.
+- [x] Killed the `eval()`-on-variable-names clickability check — requirements are data.
+- [x] Registries: `ACTIONS` (7 bars), `SHOP_ITEMS` (10, incl. buildings), `SHOP_NAV`.
+- [x] Rewrote `bars.js` / `shops.js` / `jobs.js` to render from the registries.
 
 ### Tooltips (render from registry)
-- [ ] Show each action/building/shop item's `tooltip` on hover (reuse existing
-      `.tooltip`/`.tooltiptext` CSS in `style.css`, currently unused).
-- [ ] Jobs hover: show available jobs; if none, explain what to build to unlock them.
+- [x] Hover tooltips on every action + shop item, generated from registry data
+      (authored sentence + auto "Requires:" footer). New floating `#tooltipBox`.
+- [x] Jobs hover: explains you need to build a LumberMill/Mine/HuntingLodge.
 
 ### Cost/affordability feedback (also falls out of data)
-- [ ] Grey out / recolor shop items when unaffordable.
+- [x] Grey out shop items when unaffordable (`.unaffordable`).
+- [x] Main-shop category buttons highlight when they contain something affordable.
 - [ ] Recolor action bars by whether requirements are met (equipment + energy).
-- [ ] Main-shop category buttons highlight when they contain something affordable.
+      *(Energy-based bar recolour still lives in `energy.js`; unify with requires later.)*
 
-### Absorbed from the old TODO wall (fold in here, then delete the comment block)
+### Absorbed from the old TODO wall (comment block now deleted from script.js)
+- [x] Round resource gains (strength-scaled) to whole numbers.
+- [x] Old TODO wall removed from `script.js` (folded into this roadmap).
 - [ ] Hide things until relevant (e.g. no jobs column until first villager/building).
 - [ ] Show counts of special buildings (e.g. "LumberMill: 1") in the interface.
 - [ ] Shop items stay hidden until you have ~half the price, then always visible.
-- [ ] Round resource gains (strength-scaled) to whole numbers.
-- [ ] Move remaining inline styles out of `index.html` into `style.css`.
+- [ ] Move remaining inline `width`/style attrs out of `index.html` into `style.css`.
 
 ---
 

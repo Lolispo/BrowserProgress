@@ -127,6 +127,32 @@ header{
 
 /* shopMain, shopEquipment, shopResources, shopHouses*/
 
+/* Floating tooltip box (see tooltips.js) */
+#tooltipBox{
+  display: none;
+  position: fixed;
+  max-width: 240px;
+  padding: 6px 9px;
+  background-color: #2b2b2b;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.35;
+  border-radius: 5px;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+/* Shop affordability feedback (see shops.js refreshShopColors) */
+.unaffordable{
+  opacity: 0.45;
+}
+
+.hasAffordable{
+  border-color: #4caf50 !important;
+  box-shadow: 0 0 0 1px #4caf50 inset;
+}
+
 
 /*p{
 	font-size: 20px;

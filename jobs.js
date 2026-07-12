@@ -1,69 +1,42 @@
 // Author Petter Andersson
 "use strict"
 
+// Job assignment: move villagers between Unemployed and the three job types.
+// Each job produces passive income on the shared income interval.
 
-// Knaske sparar prestande om den endast togglar bold när unemployed == 1
-function initJobsButtons(){ 
-	$(document.getElementById("jobWoodCutterButton-")).on("click", function(){
-		if(woodCutter > 0){
-			woodCutter--;
-			unemployed++;
-			upd("woodCutter", woodCutter);
-			upd("unemployed", unemployed);
-			$("#unemployed").toggleClass("bold", true);
-		}
-	});
-	$(document.getElementById("jobWoodCutterButton+")).on("click", function(){
-		if(unemployed > 0){
-			unemployed--;
-			woodCutter++;
-			upd("woodCutter", woodCutter);
-			upd("unemployed", unemployed);
-			if(unemployed == 0){
-				$("#unemployed").toggleClass("bold", false);
-			}
-		}
-	});
-	$(document.getElementById("jobIronWorkerButton-")).on("click", function(){
-		if(ironWorker > 0){
-			ironWorker--;
-			unemployed++;
-			upd("ironWorker", ironWorker);
-			upd("unemployed", unemployed);
-			$("#unemployed").toggleClass("bold", true);
-		}
-	});
-	$(document.getElementById("jobIronWorkerButton+")).on("click", function(){
-		if(unemployed > 0){
-			unemployed--;
-			ironWorker++;
-			upd("ironWorker", ironWorker);
-			upd("unemployed", unemployed);
-			if(unemployed == 0){
-				$("#unemployed").toggleClass("bold", false);
-			}
-		}
-	});
-	$(document.getElementById("jobHunterButton-")).on("click", function(){
-		if(hunter > 0){
-			hunter--;
-			unemployed++;
-			upd("hunter", hunter);
-			upd("unemployed", unemployed);
-			$("#unemployed").toggleClass("bold", true);
-		}
-	});
-	$(document.getElementById("jobHunterButton+")).on("click", function(){
-		if(unemployed > 0){
-			unemployed--;
-			hunter++;
-			upd("hunter", hunter);
-			upd("unemployed", unemployed);
-			if(unemployed == 0){
-				$("#unemployed").toggleClass("bold", false);
-			}
-		}
-	});
+// { minusId, plusId, key } for the three assignable jobs.
+var JOBS = [
+	{ minusId: "jobWoodCutterButton-", plusId: "jobWoodCutterButton+", key: "woodCutter" },
+	{ minusId: "jobIronWorkerButton-", plusId: "jobIronWorkerButton+", key: "ironWorker" },
+	{ minusId: "jobHunterButton-",     plusId: "jobHunterButton+",     key: "hunter" },
+];
+
+function assignToJob(key){
+	if(state.unemployed > 0){
+		set("unemployed", state.unemployed - 1);
+		set(key, state[key] + 1);
+		if(state.unemployed === 0){ $("#unemployed").toggleClass("bold", false); }
+	}
+}
+
+function unassignFromJob(key){
+	if(state[key] > 0){
+		set(key, state[key] - 1);
+		set("unemployed", state.unemployed + 1);
+		$("#unemployed").toggleClass("bold", true);
+	}
+}
+
+function initJobsButtons(){
+	for(var i = 0; i < JOBS.length; i++){
+		(function(job){
+			$(document.getElementById(job.plusId)).on("click", function(){ assignToJob(job.key); });
+			$(document.getElementById(job.minusId)).on("click", function(){ unassignFromJob(job.key); });
+		})(JOBS[i]);
+	}
+
+	document.getElementById("jobColumn").setAttribute("data-tip",
+		"Assign villagers to jobs for passive income. Build a LumberMill, Mine or HuntingLodge to unlock jobs.");
 
 	$("#jobWoodCutter").toggleClass("hidden", true);
 	$("#jobIronWorker").toggleClass("hidden", true);
@@ -72,33 +45,19 @@ function initJobsButtons(){
 }
 
 function increaseVillagers(){
-	villagers++;
-	unemployed++; // Borde se till att de är synkade
+	set("villagers", state.villagers + 1);
+	set("unemployed", state.unemployed + 1);
 	$("#unemployed").toggleClass("bold", true);
-
 	startJobInterval();
 }
 
 function startJobInterval(){
-	// Starta income
 	if(incomeInterval == null){
-		$("#jobColumn").toggleClass("hidden", false); // relies on lower line being correct
-		console.log("@increaseVillagers, Should only happen once (Control me TODO)");
-		clearInterval(incomeInterval);
+		$("#jobColumn").toggleClass("hidden", false);
 		incomeInterval = setInterval(function(){
-			// Add some graphic update with every message, like +(value) vid lumberMill på kartan TODOLater
-			if(woodCutter != 0){
-				wood += woodCutter * 3;
-				document.getElementById("wood").innerHTML = wood;
-			}
-			if(ironWorker != 0){
-				iron += ironWorker * 1;
-				document.getElementById("iron").innerHTML = iron;
-			}
-			if(hunter != 0){
-				food += hunter * 1;
-				document.getElementById("food").innerHTML = food;
-			}
+			if(state.woodCutter != 0){ set("wood", state.wood + state.woodCutter * 3); }
+			if(state.ironWorker != 0){ set("iron", state.iron + state.ironWorker * 1); }
+			if(state.hunter != 0){ set("food", state.food + state.hunter * 1); }
 		}, 2000);
 	}
 }

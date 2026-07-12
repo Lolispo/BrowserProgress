@@ -8,12 +8,16 @@
     <script src="lib/jquery-1.12.4.min.js"></script>
     <script src="lib/jquery-ui-1.12.1.min.js"></script>
     <script src="lib/bootstrap-3.3.7.min.js"></script>
-    <script src="script.js"></script>
+    <!-- variables.js (tuning constants) must load before registry.js, which reads
+         some of them; script.js (entry point) loads last. -->
+    <script src="variables.js"></script>
+    <script src="data/registry.js"></script>
+    <script src="tooltips.js"></script>
     <script src="energy.js"></script>
     <script src="bars.js"></script>
-    <script src="variables.js"></script>
     <script src="shops.js"></script>
     <script src="jobs.js"></script>
+    <script src="script.js"></script>
     <img id="imgHouse" class="hidden" src="images/house.png">
     <img id="imgVillager" class="hidden" src="images/villager.png"> 
     <img id="imgHunter" class="hidden" src="images/hunter.png">

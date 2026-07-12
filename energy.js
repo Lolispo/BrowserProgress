@@ -2,17 +2,16 @@
 "use strict"
 
 function setNewEnergyInc(){
-	energyInc = cardio / 200.0;
+	state.energyInc = state.cardio / 200.0;
 }
 
 function energyIncUpdate(){
 	energyUpdate();
-	if(energyInterval == null || typeof energyInterval == null){ // Test which works TODO
-		clearInterval(energyInterval);
+	if(energyInterval == null){
 		energyInterval = setInterval(function(){
-			energy += energyInc;
-			if(energy >= 100){
-				energy = 100;
+			state.energy += state.energyInc;
+			if(state.energy >= 100){
+				state.energy = 100;
 				clearInterval(energyInterval);
 				energyInterval = null;
 			}
@@ -22,14 +21,12 @@ function energyIncUpdate(){
 }
 
 function energyUpdate(){
-	energyUpd(energy); // Update energy	
-	if(energy <= 100){
-		if(energy < huntEnergyReq){ // Hunting bar color
+	energyUpd(state.energy);
+	if(state.energy <= 100){
+		if(state.energy < huntEnergyReq){ // Hunting bar colour
 			$("#huntBar_innertext").toggleClass("innerTextRed", true);
-		}else{
-			if(spear > 0){
-				$("#huntBar_innertext").toggleClass("innerTextRed", false);
-			}
+		} else if(state.spear > 0){
+			$("#huntBar_innertext").toggleClass("innerTextRed", false);
 		}
 		energyBarCheck(clawEnergyReq, "clawTree");
 		energyBarCheck(trainingSpeedEnergyReq, "speed");
@@ -39,18 +36,11 @@ function energyUpdate(){
 }
 
 function energyBarCheck(energyCheck, barName){
-	if(energy < energyCheck){
-		$("#"+ barName + "Bar_innertext").toggleClass("innerTextRed", true);
-	}else{
-		$("#"+ barName + "Bar_innertext").toggleClass("innerTextRed", false);
-	}
+	$("#" + barName + "Bar_innertext").toggleClass("innerTextRed", state.energy < energyCheck);
 }
 
 function energyUpd(perc){
 	perc = perc.toFixed(1);
-	var text = "Energy: " + perc + "%";
 	$('#energyBar_innerdiv').css("width", perc + "%");
-	$('#energyBar_innertext').text(text);
+	$('#energyBar_innertext').text("Energy: " + perc + "%");
 }
-
-
