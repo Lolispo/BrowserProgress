@@ -8,6 +8,7 @@
 $(document).ready(function(){
 	initValues();
 	initBars();
+	initScouts();
 	initShopButtons();
 	initJobsButtons();
 	initTooltips();

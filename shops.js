@@ -17,6 +17,7 @@ function buyItem(item){
 	payCost(item.cost);
 	item.onBuy();
 	refreshShopColors();
+	if(typeof refreshScouts === "function"){ refreshScouts(); }
 }
 
 // Grey out items that are currently unaffordable / gated, and highlight the

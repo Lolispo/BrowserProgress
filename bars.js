@@ -22,8 +22,10 @@ function TimeBar(action){
 	$('#' + barName + '_innerdiv').css("width", "100%");
 
 	// Recompute duration from the current player speed (called before each run).
+	// rawTime actions (scouts) use their ms value directly, unscaled.
 	this.setMaxTime = function(){
-		self.maxTime = (action.maxTime() * speedRatio).toFixed(1);
+		var base = action.maxTime();
+		self.maxTime = (action.rawTime ? base : base * speedRatio).toFixed(1);
 		self.timeoutVal = Math.floor(self.maxTime / 100);
 	};
 	this.setMaxTime();
@@ -73,4 +75,39 @@ function initBars(){
 			$("#" + ACTIONS[id].barId).toggleClass("hidden", true);
 		}
 	}
+}
+
+// Live scout bar instances, keyed by region id.
+var scoutBars = {};
+
+function initScouts(){
+	for(var id in SCOUTS){
+		(function(s){
+			// Occupy villagers for the run; return them and claim the region on done.
+			s.onStart = function(){
+				set("unemployed", state.unemployed - s.villagers);
+				newMsg("Scouting the " + REGIONS[s.region].label + "...");
+			};
+			s.onDone = function(){
+				set("unemployed", state.unemployed + s.villagers);
+				scene.revealRegion(s.region);
+				newMsg("Claimed the " + REGIONS[s.region].label + "!");
+				refreshScouts();
+			};
+			scoutBars[id] = new TimeBar(s);
+		})(SCOUTS[id]);
+	}
+	refreshScouts();
+}
+
+// A scout bar shows once its gate building exists and its region is unclaimed.
+function refreshScouts(){
+	var anyVisible = false;
+	for(var id in SCOUTS){
+		var s = SCOUTS[id];
+		var show = state[s.gate] > 0 && !state.regions[s.region];
+		$("#" + s.barId).toggleClass("hidden", !show);
+		if(show){ anyVisible = true; }
+	}
+	$("#scoutHeader").toggleClass("hidden", !anyVisible);
 }

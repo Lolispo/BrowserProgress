@@ -348,6 +348,39 @@ var SHOP_ITEMS = {
 	},
 };
 
+// ---------------------------------------------------------------------------
+// SCOUTS registry — timed expedition bars that claim a new region.
+//
+// A scout appears once its `gate` building exists and the region is unclaimed.
+// `requires` gates clickability (population + free villagers + the gate). It
+// occupies `villagers` unemployed for the run (they return on completion).
+// `maxTime` is in real ms (rawTime: bars.js skips the speedRatio scaling).
+// onStart/onDone are attached in initScouts().
+// ---------------------------------------------------------------------------
+var SCOUTS = {
+	hills: {
+		barId: "scoutHillsBar", region: "hills", gate: "mine", villagers: 2, rawTime: true,
+		label: "Scout the Hills",
+		tooltip: "Send villagers to scout the Hills and claim Stone.",
+		requires: [{ key: "villagers", min: 4 }, { key: "unemployed", min: 2 }, { key: "mine", min: 1 }],
+		maxTime: function(){ return 20000; },
+	},
+	mountains: {
+		barId: "scoutMountainsBar", region: "mountains", gate: "blacksmith", villagers: 3, rawTime: true,
+		label: "Scout the Mountains",
+		tooltip: "Send villagers to scout the Mountains and claim Gold.",
+		requires: [{ key: "villagers", min: 8 }, { key: "unemployed", min: 3 }, { key: "blacksmith", min: 1 }],
+		maxTime: function(){ return 30000; },
+	},
+	cavern: {
+		barId: "scoutCavernBar", region: "cavern", gate: "market", villagers: 4, rawTime: true,
+		label: "Scout the Crystal Cavern",
+		tooltip: "Send villagers to scout the Crystal Cavern and claim Crystal.",
+		requires: [{ key: "villagers", min: 15 }, { key: "unemployed", min: 4 }, { key: "market", min: 1 }],
+		maxTime: function(){ return 40000; },
+	},
+};
+
 // Shop navigation buttons (category switching), kept separate from purchasables.
 var SHOP_NAV = [
 	{ btnId: "shopOpenEquipment", label: "Open Equipment", show: "equipment", title: "Shop - Equipment" },
