@@ -7,7 +7,12 @@ var speedRatio = 0.1; // Speedratio of bars
 var incomeInterval = null; // Used for job income
 var energyInterval = null; // Used for energy increase for energy meter
 var ctx = null; // the canvas 2d graphics
-var developer = true; // Used to give more resources if true | Should be off when not developing
+// Dev sandbox flag: true only when running locally (localhost / 127.0.0.1 / opened
+// as a file://). On the deployed GitHub Pages host this is false, so the live game
+// starts honest at zero resources. See initValues() for the resource top-up.
+var developer = (location.hostname === "localhost" ||
+	location.hostname === "127.0.0.1" ||
+	location.protocol === "file:");
 
 // Inventory
 var wood = 0;
