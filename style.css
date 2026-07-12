@@ -184,6 +184,119 @@ header{
   margin-top: 0;
 }
 
+/* ===========================================================================
+   Village-ledger HUD theme (top-of-screen chrome + buy menu).
+   Loaded after Bootstrap, so these win at equal specificity.
+   =========================================================================== */
+:root{
+  --panel: #f7efdb;      /* parchment */
+  --panel-2: #fffdf6;    /* lighter inset */
+  --edge: #d9c49a;       /* aged edge */
+  --ink: #3a2f22;        /* dark brown text */
+  --muted: #8a7c63;
+  --accent: #4c9a2a;     /* grass green, ties to the canvas */
+  --accent-dark: #3c7a20;
+}
+
+body{
+  background: #e8e1d0;
+  color: var(--ink);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+/* Top-row panels as parchment cards */
+.hudPanel{
+  box-sizing: border-box;
+  width: calc(25% - 12px) !important;
+  margin: 8px 6px !important;
+  padding: 12px 14px !important;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.hudPanel h3{
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 5px;
+}
+
+.hudPanel p{ margin: 3px 0; font-size: 13px; }
+
+/* Signature: resource numbers use the same colors as the "+N" floaters on the map */
+#wood, #iron, #food, #stone, #gold, #crystal,
+#villagers, #houses, #axe, #spear{
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+#wood{ color: #2e7d32; }
+#iron{ color: #56707c; }
+#food{ color: #c76b28; }
+#stone{ color: #6d6d6d; }
+#gold{ color: #b8901f; }
+#crystal{ color: #8a52c0; }
+
+/* Buy menu: tactile list buttons with clear states */
+.btnCss{
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  background: var(--panel-2);
+  color: var(--ink);
+  font-size: 13px;
+  white-space: normal;
+  transition: transform .06s ease, box-shadow .1s ease, background .1s ease;
+}
+.btnCss:hover{
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.16);
+  transform: translateY(-1px);
+}
+.btnCss:active{ transform: translateY(0); box-shadow: none; }
+
+/* Category nav + back read as tabs, not list items */
+#shopOpenEquipment, #shopOpenResources, #shopOpenHouses, #shopBackButton{
+  text-align: center;
+  font-weight: 600;
+  background: #efe4c9;
+}
+#shopBackButton{ background: #e3d7ba; }
+
+/* Affordability: green when buyable, dimmed + locked feel when not */
+.hasAffordable{
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+.btnCss.unaffordable{
+  opacity: 1;               /* override the old flat fade */
+  color: var(--muted);
+  background: #efe9dd;
+  border-style: dashed;
+  cursor: not-allowed;
+}
+.btnCss.unaffordable:hover{ transform: none; box-shadow: none; background: #efe9dd; }
+
+/* Job rows: tidy up the +/- steppers */
+#jobColumn p{ margin: 6px 6px 6px 0; font-size: 13px; line-height: 26px; }
+#jobColumn .btn{ padding: 1px 9px; margin: 0 2px; border-radius: 5px; }
+
+/* Progress bars: rounder, cleaner */
+.outerdiv{ border-radius: 6px; border-color: var(--edge); background: #ece3cf; }
+.innerdiv{ background: linear-gradient(#6bbf47, #4c9a2a); border-radius: 5px; }
+.innerdivNoClick{ background: linear-gradient(#c8b78e, #ab9a72); }
+
+/* Goal panel + action-message headers echo the accent underline */
+#goalMaterials{ line-height: 1.5; }
+
 
 /*p{
 	font-size: 20px;

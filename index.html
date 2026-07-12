@@ -3,8 +3,8 @@
 <html>
 <head><title>BrowserProgress</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" href="lib/bootstrap-3.3.7.min.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
     <script src="lib/jquery-1.12.4.min.js"></script>
     <script src="lib/jquery-ui-1.12.1.min.js"></script>
     <script src="lib/bootstrap-3.3.7.min.js"></script>
@@ -34,7 +34,7 @@
     <div>
         <div class="row" style="padding-left: 20px">
             <div>
-                <div class="col-md-4 row floatLeft" id="inventory" style="width: 25%;">
+                <div class="col-md-4 row floatLeft hudPanel" id="inventory" style="width: 25%;">
                     <h3>Equipment</h3>
                     <div>
                         <p>Axe: <text id="axe">1</text></p>
@@ -59,7 +59,7 @@
                     <p id="resGold" class="hidden">Gold: <text id="gold">0</text></p>
                     <p id="resCrystal" class="hidden">Crystal: <text id="crystal">0</text></p>
                 </div>
-                <div class="col-md-4 floatLeft" style="width: 25%;">
+                <div class="col-md-4 floatLeft hudPanel" style="width: 25%;">
                     <h3 class="bold">Village Simulator</h3>
                     <p>
                         Housing: <text id="villagers">0</text>/<text id="houses">10</text>                     
@@ -87,7 +87,7 @@
                     <div id="scoutMountainsBar" class="hidden"></div>
                     <div id="scoutCavernBar" class="hidden"></div>
                 </div>
-                <div class="col-md-4 floatLeft" style="width: 25%;">
+                <div class="col-md-4 floatLeft hudPanel" style="width: 25%;">
                     <h3 id="shopName">Shop</h3>
                     <div>
                         <div>
@@ -123,7 +123,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4" style="width: 25%;">
+                <div class="col-md-4 hudPanel" style="width: 25%;">
                 <div id="jobColumn">
                         <h3>Jobs</h3>
                         <div id="jobUnemployed"> 
