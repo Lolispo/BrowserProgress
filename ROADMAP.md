@@ -140,6 +140,19 @@ buildings → grow more → build the **Monument** to win. Chain:
       buildings (needs image assets; canvas-drawn icons are an option).
 - [ ] Audio for actions (needs audio assets).
 
+## Planned: HUD redesign (minimize chrome, maximize map)
+
+**Design spec:** [`docs/superpowers/specs/2026-07-17-hud-redesign-design.md`](docs/superpowers/specs/2026-07-17-hud-redesign-design.md)
+
+Thin top bar (resource icons + tool counts + menu icons: 🛒 Shop / 👷 Jobs / 🎯 Goal
+/ 💬 Messages / ⚙ Settings), work actions as a bottom toolbar, Shop/Jobs/Goal/Messages
+open as closable overlays over the map, Equipment panel dropped, Reset moved into
+Settings. UI-1 = this layout (CSS/HTML + small toggle JS, logic untouched). UI-2
+(later) = sector views: a wider world you switch/pan between (view Hills only, etc.).
+
+- [ ] UI-1 — top bar + bottom work toolbar + overlays; drop Equipment; map fills.
+- [ ] UI-2 — sector views / wider map with per-sector camera.
+
 ## Planned: Villager actor model (manual work done by villagers)
 
 **Design spec:** [`docs/superpowers/specs/2026-07-17-villager-actor-model-design.md`](docs/superpowers/specs/2026-07-17-villager-actor-model-design.md)
