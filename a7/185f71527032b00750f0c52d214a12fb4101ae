@@ -1,0 +1,22 @@
+docs/superpowers/specs/2026-07-17-villager-actor-model-design.md
+  s_c49c3d8017c580::t_33d49d959caa12 1-129,131-168
+  s_c49c3d8017c580::t_6a25d6dadd708a 130
+ROADMAP.md
+  s_c49c3d8017c580::t_e054e851ba2a7f 143-153
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "a7185f71527032b00750f0c52d214a12fb4101ae",
+  "prompts": {},
+  "sessions": {
+    "s_c49c3d8017c580": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd0841db-e951-424c-9840-348c0762face",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
