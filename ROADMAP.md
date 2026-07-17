@@ -169,6 +169,15 @@ the free pool. Stats stay global.
       (2 villagers/1 axe → one chops; buy 2nd → both; save/load restores arrays).
 - [ ] A4 — Map UI polish + game-area/sprite sizing; unify scouts onto the villager
       model (they still reduce the unemployed *count* rather than occupying an entity).
+      Map plan: [`docs/superpowers/specs/2026-07-17-map-areas-design.md`](docs/superpowers/specs/2026-07-17-map-areas-design.md)
+      — taller canvas (1150×460, 30×12 tiles), zoned Home (forest / rock mining area /
+      hunting grounds / houses), with Mine & Hunt walking to real nodes.
+
+## Balance / pacing (own pass, flagged)
+
+- [ ] Early game is slow: chop yields 10 wood and now includes ~6s of walking, so
+      reaching an axe / first buildings drags. Raise early yields and/or shorten early
+      walks; tune costs across the actor model. Playtest via `?nodev`.
 
 ## Planned: Tile-based world + living road
 
