@@ -54,12 +54,8 @@ function showVictory(){
 
 function initValues(loaded){
 
-	// Dev sandbox top-up only on a fresh game (never on a loaded save).
-	if(developer && !loaded){
-		state.wood += 100000;
-		state.iron += 100000;
-		state.food += 100000;
-	}
+	// A fresh game (and Reset) starts honest at zero. Use the dev speed toggle
+	// (backtick) to grind fast when testing rather than a free resource grant.
 
 	// Push initial state to the screen
 	set("wood", state.wood);

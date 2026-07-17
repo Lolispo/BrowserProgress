@@ -35,7 +35,7 @@ function initHotkeys(){
 	$(document).on("keydown", function(e){
 		if(e.ctrlKey || e.metaKey || e.altKey){ return; }
 		var k = e.key.toLowerCase();
-		if(k === "?"){ e.preventDefault(); toggleHotkeyHelp(); return; }
+		if(k === "h" || k === "?"){ e.preventDefault(); toggleHotkeyHelp(); return; } // H works on all layouts
 		if(developer && e.key === DEV_SPEED_KEY){ e.preventDefault(); toggleDevSpeed(); return; }
 		var barId = map[k];
 		if(barId && !$("#" + barId).hasClass("hidden")){
@@ -54,7 +54,7 @@ function buildHotkeyHelp(){
 	for(id in SCOUTS){
 		if(SCOUTS[id].key){ rows += "<div><b>" + SCOUTS[id].key.toUpperCase() + "</b> " + SCOUTS[id].label + "</div>"; }
 	}
-	rows += "<div><b>?</b> Toggle this help</div>";
+	rows += "<div><b>H</b> Toggle this help</div>";
 	if(developer){ rows += "<div><b>`</b> Dev: toggle fast-forward</div>"; }
 
 	var box = document.getElementById("hotkeyHelp");
@@ -65,7 +65,7 @@ function buildHotkeyHelp(){
 		document.body.appendChild(box);
 	}
 	box.innerHTML = "<div id='hotkeyHelpBox'><h3>Hotkeys</h3>" + rows +
-		"<p style='margin-top:10px;font-size:11px;color:#bbb;'>Press ? to close</p></div>";
+		"<p style='margin-top:10px;font-size:11px;color:#bbb;'>Press H to close</p></div>";
 	$(box).on("click", function(){ toggleHotkeyHelp(); });
 }
 

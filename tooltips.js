@@ -13,6 +13,7 @@ function tipText(entry){
 		var reqs = entry.requires.map(prettyReq);
 		text += " (Requires: " + reqs.join(", ") + ")";
 	}
+	if(entry.key){ text += "  [Key: " + entry.key.toUpperCase() + "]"; }
 	return text.replace(/"/g, "&quot;");
 }
 
