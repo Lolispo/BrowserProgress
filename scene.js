@@ -21,6 +21,16 @@ var scene = {
 
 	treeLane: 4, // y of the forest strip in Home
 
+	// Tile grid (T1): columns/rows over the fixed canvas; tile size derived in init.
+	COLS: 30,
+	ROWS: 8,
+	terrainPalette: {
+		home:      { base: "#3fbf3f" },
+		hills:     { base: "#c9b37e", fleck: "#a58a5b" },
+		mountains: { base: "#9aa0a6", fleck: "#7d838a" },
+		cavern:    { base: "#4a3b63", fleck: "#5e4b7e" },
+	},
+
 	// Per building type: which region it sits in, its vertical lane (y), and a
 	// horizontal offset within that region's zone. New Phase 3 buildings live in
 	// the regions their resource comes from.
@@ -48,6 +58,14 @@ var scene = {
 		this.ctx = ctx;
 		this.W = canvas.width;
 		this.H = canvas.height;
+		// Tile grid: fill the canvas exactly (tiles may be slightly non-square).
+		this.tileW = this.W / this.COLS;
+		this.tileH = this.H / this.ROWS;
+		this.regionCols = {};
+		for(var i = 0; i < REGION_ORDER.length; i++){
+			var z = REGIONS[REGION_ORDER[i]].zone;
+			this.regionCols[REGION_ORDER[i]] = [Math.round(z[0] * this.COLS), Math.round(z[1] * this.COLS)];
+		}
 		this.buildings = [];
 		this.villagers = [];
 		this.floaters = [];
@@ -275,23 +293,58 @@ var scene = {
 
 	// --- draw --------------------------------------------------------------
 
-	// Tinted region bands; locked regions get a dark fog + a "Scout to unlock" label.
-	drawZones: function(ctx){
+	// Deterministic per-tile hash (stable across frames, no shimmer).
+	tileHash: function(col, row){ var h = (col * 73856093) ^ (row * 19349663); return h >>> 0; },
+
+	// Lighten/darken a #rrggbb color by a flat delta on each channel.
+	shade: function(hex, d){
+		var n = parseInt(hex.slice(1), 16);
+		var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+		r += d; g += d; b += d;
+		r = r < 0 ? 0 : r > 255 ? 255 : r;
+		g = g < 0 ? 0 : g > 255 ? 255 : g;
+		b = b < 0 ? 0 : b > 255 ? 255 : b;
+		return "rgb(" + r + "," + g + "," + b + ")";
+	},
+
+	regionAtCol: function(col){
+		for(var i = 0; i < REGION_ORDER.length; i++){
+			var rc = this.regionCols[REGION_ORDER[i]];
+			if(col >= rc[0] && col < rc[1]){ return REGION_ORDER[i]; }
+		}
+		return REGION_ORDER[REGION_ORDER.length - 1];
+	},
+
+	// Procedural tile terrain, distinct per region, with subtle deterministic jitter.
+	drawTerrain: function(ctx){
+		var tw = this.tileW, th = this.tileH;
+		for(var col = 0; col < this.COLS; col++){
+			var pal = this.terrainPalette[this.regionAtCol(col)];
+			for(var row = 0; row < this.ROWS; row++){
+				var hash = this.tileHash(col, row);
+				ctx.fillStyle = this.shade(pal.base, (hash % 21) - 10);
+				ctx.fillRect(col * tw, row * th, tw + 0.6, th + 0.6);
+				if(pal.fleck && hash % 6 === 0){
+					ctx.fillStyle = pal.fleck;
+					ctx.fillRect(col * tw + tw * 0.32, row * th + th * 0.32, tw * 0.34, th * 0.34);
+				}
+			}
+		}
+	},
+
+	// Dark fog + label + scout hint over each locked region's columns; region dividers.
+	drawFog: function(ctx){
 		for(var i = 0; i < REGION_ORDER.length; i++){
 			var id = REGION_ORDER[i];
-			var r = REGIONS[id];
-			var zx = this.zonePx(id);
-			var w = zx[1] - zx[0];
-			ctx.fillStyle = r.tint;
-			ctx.fillRect(zx[0], 0, w, this.H);
+			var rc = this.regionCols[id];
+			var x0 = rc[0] * this.tileW, x1 = rc[1] * this.tileW, w = x1 - x0;
 			if(!state.regions[id]){
 				ctx.fillStyle = "rgba(18,18,28,0.72)";
-				ctx.fillRect(zx[0], 0, w, this.H);
+				ctx.fillRect(x0, 0, w, this.H);
 				ctx.fillStyle = "#e8e8e8";
 				ctx.textAlign = "center";
 				ctx.font = "bold 15px sans-serif";
-				ctx.fillText(r.label, zx[0] + w / 2, this.H / 2 - 6);
-				// Tell the player how to unlock scouting for this region.
+				ctx.fillText(REGIONS[id].label, x0 + w / 2, this.H / 2 - 6);
 				var scout = (typeof SCOUTS !== "undefined") ? SCOUTS[id] : null;
 				var hint = "Scout to unlock";
 				if(scout){
@@ -299,11 +352,11 @@ var scene = {
 					hint = state[scout.gate] > 0 ? "Scout it in Expeditions" : ("Build a " + gate + " to scout");
 				}
 				ctx.font = "12px sans-serif";
-				ctx.fillText(hint, zx[0] + w / 2, this.H / 2 + 14);
+				ctx.fillText(hint, x0 + w / 2, this.H / 2 + 14);
 				ctx.textAlign = "left";
 			}
-			ctx.strokeStyle = "rgba(0,0,0,0.15)";
-			ctx.beginPath(); ctx.moveTo(zx[1], 0); ctx.lineTo(zx[1], this.H); ctx.stroke();
+			ctx.strokeStyle = "rgba(0,0,0,0.18)";
+			ctx.beginPath(); ctx.moveTo(x1, 0); ctx.lineTo(x1, this.H); ctx.stroke();
 		}
 	},
 
@@ -331,8 +384,9 @@ var scene = {
 		if(!ctx){ return; }
 		var now = this.lastTime / 1000;
 
-		// Region zones (tinted bands; locked zones fogged with a label)
-		this.drawZones(ctx);
+		// Tile terrain per region, then fog over locked regions
+		this.drawTerrain(ctx);
+		this.drawFog(ctx);
 
 		// Trees (grow from the bottom of their cell)
 		var i, fullH = this.spriteH(imgTree), fullW = this.spriteW(imgTree);

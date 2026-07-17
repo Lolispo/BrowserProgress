@@ -149,7 +149,9 @@ a road that physically extends as each region is scouted (gateways at borders).
 Rendering redesign of `scene.js`; game logic untouched. Sub-phases T1 terrain →
 T2 road + gateways → T3 snap entities → T4 polish.
 
-- [ ] T1 — Tile grid + procedural terrain replacing the flat bands.
+- [x] T1 — Tile grid (30×8) + procedural per-region terrain with deterministic
+      per-tile jitter + rock flecks, replacing the flat bands. Fog/hints drawn
+      over region column spans. Verified in browser.
 - [ ] T2 — Living road + gateways; road extends on claim; hint at the gateway.
 - [ ] T3 — Snap buildings / trees / villagers onto the grid.
 - [ ] T4 — Polish (villagers walk the road, paving animation, prop tiles).
