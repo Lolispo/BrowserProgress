@@ -268,11 +268,12 @@ var scene = {
 		v.progress = 1;
 	},
 
-	// Move a villager toward its (tx,ty); returns true on arrival.
+	// Move a villager toward its (tx,ty); returns true on arrival. Dev speed
+	// (timeScale < 1) speeds up walking too, so fast-forward affects the whole loop.
 	moveToward: function(v, dt){
 		var dx = v.tx - v.x, dy = v.ty - v.y;
 		var dist = Math.sqrt(dx * dx + dy * dy);
-		var step = v.speed * dt;
+		var step = v.speed * dt / timeScale;
 		if(dist > step){ v.x += (dx / dist) * step; v.y += (dy / dist) * step; return false; }
 		v.x = v.tx; v.y = v.ty; return true;
 	},
