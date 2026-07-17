@@ -140,6 +140,17 @@ buildings → grow more → build the **Monument** to win. Chain:
       buildings (needs image assets; canvas-drawn icons are an option).
 - [ ] Audio for actions (needs audio assets).
 
+## Planned: Villager actor model (manual work done by villagers)
+
+**Design spec:** [`docs/superpowers/specs/2026-07-17-villager-actor-model-design.md`](docs/superpowers/specs/2026-07-17-villager-actor-model-design.md)
+
+No player character: start with 1 villager. Manual actions dispatch a free villager
+who walks to the task, works, and returns; parallel work is limited by free villagers
++ tools (one tool per worker). Per-villager energy (tired = slower, never blocked;
+idle recovery; Sleep rests the most-tired free villager). Job-assigned villagers leave
+the free pool. Stats stay global. Sub-phases: A1 actor loop → A2 per-villager energy →
+A3 one-tool-per-worker → A4 map UI (per-villager progress + energy indicators).
+
 ## Planned: Tile-based world + living road
 
 **Design spec:** [`docs/superpowers/specs/2026-07-17-tile-world-design.md`](docs/superpowers/specs/2026-07-17-tile-world-design.md)
