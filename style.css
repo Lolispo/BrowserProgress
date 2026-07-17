@@ -246,8 +246,8 @@ body{
 .btnCss{
   width: 100%;
   text-align: left;
-  padding: 8px 12px;
-  margin-bottom: 6px;
+  padding: 7px 12px;
+  margin-bottom: 5px;
   border: 1px solid var(--edge);
   border-radius: 6px;
   background: var(--panel-2);
@@ -285,9 +285,19 @@ body{
 }
 .btnCss.unaffordable:hover{ transform: none; box-shadow: none; background: #efe9dd; }
 
-/* Job rows: tidy up the +/- steppers */
-#jobColumn p{ margin: 6px 6px 6px 0; font-size: 13px; line-height: 26px; }
-#jobColumn .btn{ padding: 1px 9px; margin: 0 2px; border-radius: 5px; }
+/* Job rows: one clean flex line each (label | - | count | +), no floats */
+#jobColumn > div{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 5px 0;
+  clear: both;
+  min-height: 28px;
+}
+#jobColumn > div p{ float: none !important; margin: 0; font-size: 13px; }
+#jobColumn > div p:first-child{ min-width: 92px; }          /* label column */
+#jobColumn > div p:not(:first-child){ min-width: 20px; text-align: center; font-weight: 700; }
+#jobColumn .btn{ padding: 1px 10px; margin: 0; border-radius: 5px; line-height: 1.5; }
 
 /* Progress bars: rounder, cleaner */
 .outerdiv{ border-radius: 6px; border-color: var(--edge); background: #ece3cf; }
@@ -296,6 +306,14 @@ body{
 
 /* Goal panel + action-message headers echo the accent underline */
 #goalMaterials{ line-height: 1.5; }
+
+/* Keep the shop from growing taller than the other panels: scroll its list */
+#shopName + div{
+  max-height: 360px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
 
 
 /*p{
