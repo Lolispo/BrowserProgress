@@ -1,0 +1,21 @@
+ROADMAP.md
+  s_c49c3d8017c580::t_ea87a0e3094c1d 143-156
+docs/superpowers/specs/2026-07-17-tile-world-design.md
+  s_c49c3d8017c580::t_032e5e6a43522c 1-136
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "6e414ddab9946d89aa008483d9056879c2f628b5",
+  "prompts": {},
+  "sessions": {
+    "s_c49c3d8017c580": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd0841db-e951-424c-9840-348c0762face",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
