@@ -122,19 +122,22 @@ var scene = {
 		this.layoutBuildings();
 	},
 
-	// Snap each building onto a tile cell: flow across free columns in its region
-	// from the type's start column, wrapping to the next plot row if the row fills.
+	// Snap each building onto a tile cell, using an occupancy set so two buildings
+	// never share a cell: start at the type's preferred (row, col) within its region
+	// and scan right-then-down for the first free cell.
 	layoutBuildings: function(){
-		var seen = {};
+		var taken = {};
 		for(var i = 0; i < this.buildings.length; i++){
 			var b = this.buildings[i];
-			var cfg = this.buildingConfig[b.type] || { region: "home", row: 2, col: 0 };
+			var cfg = this.buildingConfig[b.type] || { region: "home", row: 8, col: 0 };
 			var rc = this.regionCols[cfg.region];
-			var span = Math.max(1, rc[1] - rc[0]);
-			var n = seen[b.type] | 0; seen[b.type] = n + 1;
-			var slot = cfg.col + n;
-			var col = rc[0] + (slot % span);
-			var row = cfg.row + Math.floor(slot / span);
+			var col = rc[0] + cfg.col, row = cfg.row, placed = false;
+			for(var row2 = cfg.row; row2 < this.ROWS && !placed; row2++){
+				for(var col2 = (row2 === cfg.row ? rc[0] + cfg.col : rc[0]); col2 < rc[1] && !placed; col2++){
+					if(!taken[col2 + "," + row2]){ col = col2; row = row2; placed = true; }
+				}
+			}
+			taken[col + "," + row] = true;
 			b.x = col * this.tileW + (this.tileW - this.spriteW(b.img)) / 2;
 			b.y = row * this.tileH + (this.tileH - this.spriteH(b.img));
 		}

@@ -223,6 +223,9 @@ body{
   border: 1px solid var(--edge);
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  /* Cap the top section so the map stays visible; overflow scrolls in-panel. */
+  max-height: 46vh;
+  overflow-y: auto;
 }
 
 .hudPanel h3{
@@ -265,12 +268,9 @@ body{
   white-space: normal;
   transition: transform .06s ease, box-shadow .1s ease, background .1s ease;
 }
-.btnCss:hover{
-  background: #fff;
-  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.16);
-  transform: translateY(-1px);
-}
-.btnCss:active{ transform: translateY(0); box-shadow: none; }
+/* Brightness-only hover so it never fights the .hasAffordable green ring */
+.btnCss:hover{ filter: brightness(1.06); }
+.btnCss:active{ filter: brightness(0.96); }
 
 /* Category nav + back read as tabs, not list items */
 #shopOpenEquipment, #shopOpenResources, #shopOpenHouses, #shopBackButton{
@@ -316,10 +316,8 @@ body{
 /* Goal panel + action-message headers echo the accent underline */
 #goalMaterials{ line-height: 1.5; }
 
-/* Keep the shop from growing taller than the other panels: scroll its list */
+/* Shop list scrolls within the capped panel (see .hudPanel max-height) */
 #shopName + div{
-  max-height: 360px;
-  overflow-y: auto;
   overflow-x: hidden;
   padding-right: 4px;
 }
