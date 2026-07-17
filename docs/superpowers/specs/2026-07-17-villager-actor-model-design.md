@@ -34,6 +34,29 @@ No player character for now; start with one villager.
   spear. Tools are reserved for the duration of an action, then freed.
 - **Stats stay global** (speed/strength/cardio are village-wide bonuses for now).
 
+## Review refinements (approved)
+
+- **Both** the global dispatch buttons and per-villager progress: the panel keeps
+  "someone chop wood" style action buttons that grab any available worker, **and**
+  each working villager shows its own progress bar on the map. (Confirmed.)
+- **Walk time is part of the cost:** an action takes longer because the villager must
+  travel to its spot first. Each action has a designated target location:
+
+  | Action | Walks to |
+  |--------|----------|
+  | Chop Wood / Claw Tree | a tree in the Home forest |
+  | Mine Iron | the Mine (if built) else a rock spot in Home |
+  | Go Hunting | the Hunting Lodge (if built) else a hunting spot in Home |
+  | Train Speed/Strength/Cardio | the Training Yard |
+  | Mine Crystal | a crystal node in the Cavern |
+  | Go to Sleep | the villager's home tile |
+
+- **Tools as arrays** confirmed.
+- **Game area & sprite sizing:** the map is becoming the focus, so the canvas /
+  sprite scale likely need to grow to give villagers room to walk to distinct spots.
+  Treated as an incremental concern ("get the map into this over time") — tuned as the
+  actor loop lands, not a hard prerequisite for A1.
+
 ## Free villager pool
 
 - A villager is **free** when it is unemployed (no job) **and** not currently busy
