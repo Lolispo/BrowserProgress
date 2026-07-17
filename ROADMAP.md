@@ -172,15 +172,22 @@ the free pool. Stats stay global.
       **Mine** area + **Hunt** grounds (bushes + animal) with faint labels, houses
       below the road. Mine/Hunt now walk to those nodes. Verified in browser.
       Plan: [`docs/superpowers/specs/2026-07-17-map-areas-design.md`](docs/superpowers/specs/2026-07-17-map-areas-design.md)
+- [x] Resource drop-off: villagers carry a gathered resource to a drop-off and the
+      "+N" pops there — home by default, the resource's building once built
+      (wood→lumber mill, iron→mine, food→hunting lodge). Verified.
+- [x] Building placement can't overlap (occupancy grid); shop hover keeps its ring;
+      HUD panels capped at 46vh (scroll in-panel) so the map stays visible.
 - [ ] A4 (rest) — Unify scouts onto the villager model (they still reduce the
       unemployed *count* rather than occupying an entity); further per-villager UI
       polish; new-resource region nodes (stone/gold/crystal areas).
 
 ## Balance / pacing (own pass, flagged)
 
-- [ ] Early game is slow: chop yields 10 wood and now includes ~6s of walking, so
-      reaching an axe / first buildings drags. Raise early yields and/or shorten early
-      walks; tune costs across the actor model. Playtest via `?nodev`.
+- [ ] Early game is slow: chop yields 10 wood and now includes a long walk (the
+      taller map made home→forest ~5s each way, ~10s+ round trip), so reaching an axe
+      / first buildings drags badly. Options: raise early yields, move the home band
+      nearer the forest / shorten distances, speed villagers, and/or lower early
+      costs. Its own pass — playtest via `?nodev`.
 
 ## Planned: Tile-based world + living road
 
