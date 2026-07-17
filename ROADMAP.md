@@ -162,6 +162,16 @@ T2 road + gateways → T3 snap entities → T4 polish.
       Home tile band. Verified (incl. save/load rebuild) in browser.
 - [ ] T4 — Polish (villagers walk the road, paving animation, prop tiles).
 
+## Controls & dev tools
+
+- [x] Hotkeys: 1–8 fire the work/action bars, Q/W/E fire region scouts (key
+      badges on the bars), `?` toggles a help overlay listing all bindings.
+- [x] Dev-only speed toggle (backtick / Dev-panel button): 1x↔5x `timeScale`
+      that shortens bar/scout/income timers for testing. Never ships live.
+- [x] Buildings no longer bob (villagers still do).
+- [ ] Extend hotkeys to shop buys / job steppers for full keyboard play (chose
+      actions+scouts only for now).
+
 ## Visual / HUD polish
 
 - [x] Village-ledger HUD theme for the top chrome + buy menu: parchment panels,
