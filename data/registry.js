@@ -235,6 +235,17 @@ var ACTIONS = {
 		onStart: function(){},
 		onDone: function(){ set("crystal", state.crystal + 1); scene.gainFx("crystal", 1); newMsg("Mined a Crystal!"); },
 	},
+	sleep: {
+		barId: "sleepBar",
+		label: "Go to Sleep",
+		tooltip: "Sleep to rapidly restore energy to full. You can't do anything else while asleep.",
+		requires: [],
+		startsHidden: false,
+		rawTime: true,
+		maxTime: function(){ return 3000; },
+		onStart: function(){ sleeping = true; },
+		onDone: function(){ sleeping = false; state.energy = 100; energyUpdate(); newMsg("Fully rested!"); },
+	},
 };
 
 
@@ -264,7 +275,8 @@ var SHOP_ITEMS = {
 	axe: {
 		btnId: "axeShop",
 		name: "Axe",
-		category: "equipment",
+		category: "goods",
+		key: "a",
 		cost: { wood: 50, iron: 10 },
 		tooltip: "Buy an axe. Required to chop wood and mine iron.",
 		onBuy: function(){
@@ -277,7 +289,7 @@ var SHOP_ITEMS = {
 	tradeAxe: {
 		btnId: "tradeAxeShop",
 		name: "Axe",
-		category: "equipment",
+		category: "goods",
 		cost: { food: 10 },
 		tooltip: "Trade food for an axe. An alternate path when you have food but no wood/iron.",
 		onBuy: function(){
@@ -290,7 +302,7 @@ var SHOP_ITEMS = {
 	spear: {
 		btnId: "spearShop",
 		name: "Spear",
-		category: "equipment",
+		category: "goods",
 		cost: { wood: 130 },
 		tooltip: "Buy a spear. Required for hunting.",
 		onBuy: function(){
@@ -303,7 +315,7 @@ var SHOP_ITEMS = {
 	food: {
 		btnId: "tradeFoodShop",
 		name: "Buy Food",
-		category: "resources",
+		category: "goods",
 		cost: { wood: 100 },
 		tooltip: "Trade wood for " + foodShopInc + " food. Food hires villagers.",
 		onBuy: function(){ set("food", state.food + foodShopInc); newMsg("Bought " + foodShopInc + " Food"); },
@@ -473,7 +485,6 @@ var SCOUTS = {
 
 // Shop navigation buttons (category switching), kept separate from purchasables.
 var SHOP_NAV = [
-	{ btnId: "shopOpenEquipment", label: "Open Equipment", show: "equipment", title: "Shop - Equipment" },
-	{ btnId: "shopOpenResources", label: "Open Resources", show: "resources", title: "Shop - Resources" },
-	{ btnId: "shopOpenHouses",    label: "Open Houses",    show: "houses",    title: "Shop - Houses" },
+	{ btnId: "shopOpenEquipment", label: "Open Goods",   show: "goods",  title: "Shop - Goods" },
+	{ btnId: "shopOpenHouses",    label: "Open Houses",  show: "houses", title: "Shop - Houses" },
 ];

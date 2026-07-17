@@ -11,6 +11,7 @@
 var ACTION_KEYS = {
 	chopWood: "1", mineIron: "2", hunt: "3", clawTree: "4",
 	trainSpeed: "5", trainStrength: "6", trainCardio: "7", mineCrystal: "8",
+	sleep: "9",
 };
 var SCOUT_KEYS = { hills: "q", mountains: "w", cavern: "e" };
 var DEV_SPEED_KEY = "`"; // backtick toggles the dev fast-forward
@@ -26,9 +27,11 @@ function assignHotkeys(){
 // Bind the keydown handler + build the help overlay. Run after bars/scouts exist.
 function initHotkeys(){
 	var map = {}; // key -> bar container id
+	var shopMap = {}; // key -> shop item (buy on press)
 	var id;
 	for(id in ACTIONS){ if(ACTIONS[id].key){ map[ACTIONS[id].key] = ACTIONS[id].barId; } }
 	for(id in SCOUTS){ if(SCOUTS[id].key){ map[SCOUTS[id].key] = SCOUTS[id].barId; } }
+	for(id in SHOP_ITEMS){ if(SHOP_ITEMS[id].key){ shopMap[SHOP_ITEMS[id].key] = SHOP_ITEMS[id]; } }
 
 	buildHotkeyHelp();
 
@@ -41,7 +44,9 @@ function initHotkeys(){
 		if(barId && !$("#" + barId).hasClass("hidden")){
 			e.preventDefault();
 			$("#" + barId + "_outerdiv").trigger("click"); // reuse the click gating
+			return;
 		}
+		if(shopMap[k]){ e.preventDefault(); buyItem(shopMap[k]); } // buy from anywhere
 	});
 }
 
@@ -53,6 +58,9 @@ function buildHotkeyHelp(){
 	}
 	for(id in SCOUTS){
 		if(SCOUTS[id].key){ rows += "<div><b>" + SCOUTS[id].key.toUpperCase() + "</b> " + SCOUTS[id].label + "</div>"; }
+	}
+	for(id in SHOP_ITEMS){
+		if(SHOP_ITEMS[id].key){ rows += "<div><b>" + SHOP_ITEMS[id].key.toUpperCase() + "</b> Buy " + SHOP_ITEMS[id].name + "</div>"; }
 	}
 	rows += "<div><b>H</b> Toggle this help</div>";
 	if(developer){ rows += "<div><b>`</b> Dev: toggle fast-forward</div>"; }

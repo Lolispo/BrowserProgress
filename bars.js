@@ -58,6 +58,7 @@ function TimeBar(action){
 	};
 
 	$(document.getElementById(barName + "_outerdiv")).on("click", function(){
+		if(sleeping && action.barId !== "sleepBar"){ return; } // asleep: only the sleep bar works
 		if(self.clickable && meetsRequirements(action.requires)){
 			self.setMaxTime(); // in case speed changed since last run
 			self.start = new Date();
@@ -85,12 +86,14 @@ function initBars(){
 function refreshBarStates(){
 	for(var id in ACTIONS){
 		var a = ACTIONS[id];
-		$("#" + a.barId + "_outerdiv").toggleClass("barUnavailable", !meetsRequirements(a.requires));
+		// While asleep every bar but the sleep bar is locked.
+		var ok = meetsRequirements(a.requires) && (!sleeping || a.barId === "sleepBar");
+		$("#" + a.barId + "_outerdiv").toggleClass("barUnavailable", !ok);
 	}
-	// Scout bars grey out too when you don't yet have the villagers to send.
+	// Scout bars grey out when you lack villagers, or while asleep.
 	for(var sid in SCOUTS){
 		var s = SCOUTS[sid];
-		$("#" + s.barId + "_outerdiv").toggleClass("barUnavailable", !meetsRequirements(s.requires));
+		$("#" + s.barId + "_outerdiv").toggleClass("barUnavailable", !meetsRequirements(s.requires) || sleeping);
 	}
 }
 

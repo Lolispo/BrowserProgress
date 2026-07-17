@@ -15,15 +15,27 @@ var BUILDING_COUNT_KEY = {
 	market: "market", monument: "monument",
 };
 
-// Append "×N" to building buttons so you can see how many you've built.
+// Emoji icon per shop item so a button shows what you're buying at a glance.
+var SHOP_ICONS = {
+	hireVillager: "🧑", axe: "🪓", tradeAxe: "🪓", spear: "🗡️", food: "🍖",
+	houses: "🏠", lumberMill: "🪵", mine: "⛏️", huntingLodge: "🏹",
+	trainingYard: "🏋️", quarry: "🪨", farm: "🌾", blacksmith: "⚒️",
+	market: "🏪", monument: "🏛️",
+};
+
+// Button label: icon + name + cost, plus "×N" for buildings you've built.
+function itemLabel(id){
+	var item = SHOP_ITEMS[id];
+	var label = (SHOP_ICONS[id] ? SHOP_ICONS[id] + " " : "") + item.name + " (" + costToText(item.cost) + ")";
+	var ck = BUILDING_COUNT_KEY[id];
+	if(ck && state[ck] > 0){ label += " ×" + state[ck]; }
+	return label;
+}
+
+// Refresh building button labels (their counts change as you build).
 function updateShopLabels(){
 	for(var id in BUILDING_COUNT_KEY){
-		var item = SHOP_ITEMS[id];
-		if(!item){ continue; }
-		var count = state[BUILDING_COUNT_KEY[id]];
-		var label = item.name + " (" + costToText(item.cost) + ")";
-		if(count > 0){ label += " ×" + count; }
-		document.getElementById(item.btnId).innerHTML = label;
+		if(SHOP_ITEMS[id]){ document.getElementById(SHOP_ITEMS[id].btnId).innerHTML = itemLabel(id); }
 	}
 }
 
@@ -92,7 +104,7 @@ function initShopButtons(){
 	for(var id in SHOP_ITEMS){
 		var item = SHOP_ITEMS[id];
 		var el = document.getElementById(item.btnId);
-		el.innerHTML = item.name + " (" + costToText(item.cost) + ")";
+		el.innerHTML = itemLabel(id);
 		el.setAttribute("data-tip", tipText(item));
 		(function(boundItem){
 			$(el).on("click", function(){ buyItem(boundItem); });
