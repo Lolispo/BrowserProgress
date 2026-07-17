@@ -1,0 +1,44 @@
+data/registry.js
+  s_c49c3d8017c580::t_5bdc4720db0a21 34-35
+  s_c49c3d8017c580::t_d3a8c75410654f 185-186,188,190
+  s_c49c3d8017c580::t_e640001aa8139d 238
+  s_c49c3d8017c580::t_0303264779e827 201-202,204,206
+  s_c49c3d8017c580::t_dcae31bceb7bba 163-164,166,168
+  s_c49c3d8017c580::t_a42502cc280a09 150
+  s_c49c3d8017c580::t_fe0c218d497e63 212-213,215,217
+  s_c49c3d8017c580::t_5b48c671559bd8 223-224,226,228-229
+  s_c49c3d8017c580::t_54cdeca391abd4 134
+  s_c49c3d8017c580::t_f6cbebc83f3819 246,250,253
+bars.js
+  s_c49c3d8017c580::t_375aba24642f3c 87-88
+ROADMAP.md
+  s_c49c3d8017c580::t_6fe016f320d098 158-163
+scene.js
+  s_c49c3d8017c580::t_cdaf434ebd7e97 160
+  s_c49c3d8017c580::t_c8dfd05bc04034 218-221,225-226,230-231
+  s_c49c3d8017c580::t_dae92169a87a23 560,563,565,567-576
+  s_c49c3d8017c580::t_ffbec8f5b82469 172,174,177,179-189
+  s_c49c3d8017c580::t_d0327d7ebac77e 376-379
+persistence.js
+  s_c49c3d8017c580::t_9efac2275bbe51 47
+energy.js
+  s_c49c3d8017c580::t_81593115d78f63 4-7
+script.js
+  s_c49c3d8017c580::t_2a06950fe987a8 73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "f168c7b373815ed34f43a4f1009e345b5d987ba7",
+  "prompts": {},
+  "sessions": {
+    "s_c49c3d8017c580": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd0841db-e951-424c-9840-348c0762face",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
