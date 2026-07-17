@@ -19,6 +19,7 @@
     <script src="jobs.js"></script>
     <script src="scene.js"></script>
     <script src="persistence.js"></script>
+    <script src="controls.js"></script>
     <script src="script.js"></script>
     <img id="imgHouse" class="hidden" src="images/house.png">
     <img id="imgVillager" class="hidden" src="images/villager.png"> 
@@ -182,7 +183,11 @@
                             <p id="goalMaterials" style="font-size: 12px;"></p>
                             <button type="button" class="btn btn-default btnSmall" id="resetGame">Reset Game</button>
                             <br>
-                            <p style="font-size: 11px; color: grey;">Hover any action or shop item for details.</p>
+                            <p style="font-size: 11px; color: grey;">Hover for details &middot; press ? for hotkeys</p>
+                            <div id="devPanel" class="hidden">
+                                <p class="bold underBorder">Dev</p>
+                                <button type="button" class="btn btn-default btnSmall" id="devSpeedBtn">Speed: 1x</button>
+                            </div>
                         </div>
                     </div>
                 </div>

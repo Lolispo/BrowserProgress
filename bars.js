@@ -17,7 +17,9 @@ function TimeBar(action){
 	$('#' + barName).append(
 		"<div class='outerdiv' id='" + barName + "_outerdiv' data-tip=\"" + tipText(action) + "\">" +
 		"<div class='innerdiv' id='" + barName + "_innerdiv'></div>" +
-		"<div class='innertext' id='" + barName + "_innertext'></div></div>");
+		"<div class='innertext' id='" + barName + "_innertext'></div>" +
+		(action.key ? "<div class='barKey'>" + action.key.toUpperCase() + "</div>" : "") +
+		"</div>");
 	$('#' + barName + '_innertext').text(action.label);
 	$('#' + barName + '_innerdiv').css("width", "100%");
 
@@ -25,7 +27,7 @@ function TimeBar(action){
 	// rawTime actions (scouts) use their ms value directly, unscaled.
 	this.setMaxTime = function(){
 		var base = action.maxTime();
-		self.maxTime = (action.rawTime ? base : base * speedRatio).toFixed(1);
+		self.maxTime = ((action.rawTime ? base : base * speedRatio) * timeScale).toFixed(1);
 		self.timeoutVal = Math.floor(self.maxTime / 100);
 	};
 	this.setMaxTime();

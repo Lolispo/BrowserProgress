@@ -439,11 +439,9 @@ var scene = {
 			ctx.drawImage(imgTree, tx, bottom - h, fullW, h);
 		}
 
-		// Buildings (gentle idle bob)
+		// Buildings sit still (structures don't sway; villagers keep their bob)
 		for(i = 0; i < this.buildings.length; i++){
-			var b = this.buildings[i];
-			var bob = Math.sin(now * 2 + b.phase) * 1.2;
-			this.drawBuilding(b, b.y + bob);
+			this.drawBuilding(this.buildings[i], this.buildings[i].y);
 		}
 
 		// Villagers (bob while working)

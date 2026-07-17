@@ -8,11 +8,14 @@
 $(document).ready(function(){
 	var loaded = (typeof loadGame === "function") && loadGame();
 	initValues(loaded);
+	assignHotkeys();       // set .key on ACTIONS/SCOUTS before the bars render badges
 	initBars();
 	initScouts();
 	initShopButtons();
 	initJobsButtons();
 	initTooltips();
+	initHotkeys();
+	initDevMode();
 	if(loaded){ rebuildUI(); } else { updateGoal(); }
 	if(typeof startAutoSave === "function"){ startAutoSave(); }
 
