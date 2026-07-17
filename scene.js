@@ -21,10 +21,14 @@ var scene = {
 
 	treeLane: 4, // y of the forest strip in Home
 
-	// Tile grid (T1): columns/rows over the fixed canvas; tile size derived in init.
+	// Tile grid: columns/rows over the fixed canvas; tile size derived in init.
 	COLS: 30,
-	ROWS: 8,
-	ROAD_ROW: 4, // the road runs along this tile row (T2)
+	ROWS: 12,
+	ROAD_ROW: 6, // the road runs along this tile row
+
+	// Home resource-area anchors (villagers walk here for Mine / Hunt).
+	homeMine: { col: 1, row: 4 }, // rock/ore mining area (left)
+	homeHunt: { col: 7, row: 4 }, // hunting grounds (right)
 	terrainPalette: {
 		home:      { base: "#3fbf3f" },
 		hills:     { base: "#c9b37e", fleck: "#a58a5b" },
@@ -37,17 +41,18 @@ var scene = {
 	// the regions their resource comes from.
 	// Building placement in tile coords: region + a plot row (above/below the
 	// road row 4; row 0 is the forest) + a starting column within the region.
+	// Rows: forest 0-1, mine/hunt areas 3-5, road 6, home buildings 7-10.
 	buildingConfig: {
-		house:        { region: "home",      row: 1, col: 1 },
-		lumberMill:   { region: "home",      row: 2, col: 3 },
-		mine:         { region: "home",      row: 3, col: 5 },
-		huntingLodge: { region: "home",      row: 5, col: 1 },
-		trainingYard: { region: "home",      row: 6, col: 4 },
-		quarry:       { region: "hills",     row: 2, col: 1 },
-		farm:         { region: "hills",     row: 3, col: 3 },
-		blacksmith:   { region: "hills",     row: 5, col: 1 },
-		market:       { region: "mountains", row: 3, col: 1 },
-		monument:     { region: "cavern",    row: 3, col: 3 },
+		house:        { region: "home",      row: 7, col: 1 },
+		lumberMill:   { region: "home",      row: 7, col: 4 },
+		mine:         { region: "home",      row: 8, col: 2 },
+		huntingLodge: { region: "home",      row: 8, col: 6 },
+		trainingYard: { region: "home",      row: 9, col: 4 },
+		quarry:       { region: "hills",     row: 3, col: 1 },
+		farm:         { region: "hills",     row: 4, col: 3 },
+		blacksmith:   { region: "hills",     row: 8, col: 1 },
+		market:       { region: "mountains", row: 4, col: 1 },
+		monument:     { region: "cavern",    row: 5, col: 3 },
 	},
 
 	// Pixel [x0, x1] of a region's zone from its width fractions.
@@ -79,8 +84,10 @@ var scene = {
 	buildTreeRow: function(){
 		this.trees = [];
 		var rc = this.regionCols.home;
-		for(var col = rc[0]; col < rc[1]; col++){
-			this.trees.push({ col: col, row: 0, growth: 1, phase: (this.tileHash(col, 0) % 628) / 100 });
+		for(var row = 0; row <= 1; row++){
+			for(var col = rc[0]; col < rc[1]; col++){
+				this.trees.push({ col: col, row: row, growth: 1, phase: (this.tileHash(col, row) % 628) / 100 });
+			}
 		}
 	},
 
@@ -200,8 +207,8 @@ var scene = {
 			var t = grown.length ? grown[Math.floor(Math.random() * grown.length)] : this.trees[0];
 			if(t){ return { x: t.col * this.tileW, y: Math.max(2, (t.row + 1) * this.tileH - this.spriteH(imgVillager)) }; }
 		}
-		if(id === "mineIron"){ b = this.firstBuilding("mine"); return b ? { x: b.x, y: b.y } : this.homeSpot(6, 3); }
-		if(id === "hunt"){ b = this.firstBuilding("huntingLodge"); return b ? { x: b.x, y: b.y } : this.homeSpot(8, 1); }
+		if(id === "mineIron"){ return this.homeSpot(this.homeMine.col, this.homeMine.row); }
+		if(id === "hunt"){ return this.homeSpot(this.homeHunt.col, this.homeHunt.row); }
 		if(id === "trainSpeed" || id === "trainStrength" || id === "trainCardio"){
 			b = this.firstBuilding("trainingYard"); if(b){ return { x: b.x, y: b.y }; }
 		}
@@ -523,6 +530,50 @@ var scene = {
 		}
 	},
 
+	// Home resource areas: a rock/ore mining cluster and hunting grounds, drawn
+	// procedurally with faint labels. These are the walk-to targets for Mine/Hunt.
+	drawFeatures: function(ctx){
+		var tw = this.tileW, th = this.tileH;
+		var mx = this.homeMine.col * tw, my = this.homeMine.row * th;
+		var hx = this.homeHunt.col * tw, hy = this.homeHunt.row * th;
+		this.drawRocks(ctx, mx, my, tw, th);
+		this.drawHunt(ctx, hx, hy, tw, th);
+		ctx.fillStyle = "rgba(255,255,255,0.8)";
+		ctx.font = "bold 12px sans-serif";
+		ctx.textAlign = "center";
+		ctx.fillText("Mine", mx + tw / 2, my - 6);
+		ctx.fillText("Hunt", hx + tw / 2, hy - 6);
+		ctx.textAlign = "left";
+	},
+
+	drawRocks: function(ctx, x, y, tw, th){
+		var rocks = [[0, 0.2], [0.55, 0.5], [-0.4, 0.6], [0.15, 0.95]];
+		var r = tw * 0.28;
+		for(var i = 0; i < rocks.length; i++){
+			var rx = x + tw * 0.5 + rocks[i][0] * tw, ry = y + th * rocks[i][1];
+			ctx.fillStyle = "#7a7d82";
+			ctx.beginPath(); ctx.ellipse(rx, ry, r, r * 0.8, 0, 0, 6.2832); ctx.fill();
+			ctx.fillStyle = "#5f6266";
+			ctx.beginPath(); ctx.ellipse(rx, ry + r * 0.25, r * 0.7, r * 0.45, 0, 0, 6.2832); ctx.fill();
+		}
+	},
+
+	drawHunt: function(ctx, x, y, tw, th){
+		var bushes = [[0, 0.3], [0.6, 0.6], [-0.35, 0.75]];
+		var r = tw * 0.26;
+		for(var i = 0; i < bushes.length; i++){
+			var bx = x + tw * 0.5 + bushes[i][0] * tw, by = y + th * bushes[i][1];
+			ctx.fillStyle = "#2f7d32";
+			ctx.beginPath(); ctx.ellipse(bx, by, r, r * 0.8, 0, 0, 6.2832); ctx.fill();
+			ctx.fillStyle = "#256128";
+			ctx.beginPath(); ctx.ellipse(bx - r * 0.3, by, r * 0.5, r * 0.5, 0, 0, 6.2832); ctx.fill();
+		}
+		var ax = x + tw * 0.55, ay = y + th * 0.45; // a small animal
+		ctx.fillStyle = "#8a5a2b";
+		ctx.fillRect(ax, ay, tw * 0.4, th * 0.2);
+		ctx.fillRect(ax + tw * 0.34, ay - th * 0.1, tw * 0.12, th * 0.14);
+	},
+
 	// Draw a building sprite, or a labelled colored box when it has no art yet.
 	drawBuilding: function(b, y){
 		var ctx = this.ctx;
@@ -553,6 +604,7 @@ var scene = {
 		this.drawRoad(ctx);
 		this.drawFog(ctx);
 		this.drawGateways(ctx);
+		this.drawFeatures(ctx); // Home mining/hunting areas
 
 		// Trees (grow from the bottom of their cell)
 		var i, fullH = this.spriteH(imgTree), fullW = this.spriteW(imgTree);

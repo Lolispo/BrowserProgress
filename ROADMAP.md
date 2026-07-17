@@ -167,11 +167,14 @@ the free pool. Stats stay global.
       greying gate on a free tool, so parallel gathering is capped by tools AND
       villagers. Equipment panel shows count + most-worn durability. Verified
       (2 villagers/1 axe → one chops; buy 2nd → both; save/load restores arrays).
-- [ ] A4 — Map UI polish + game-area/sprite sizing; unify scouts onto the villager
-      model (they still reduce the unemployed *count* rather than occupying an entity).
-      Map plan: [`docs/superpowers/specs/2026-07-17-map-areas-design.md`](docs/superpowers/specs/2026-07-17-map-areas-design.md)
-      — taller canvas (1150×460, 30×12 tiles), zoned Home (forest / rock mining area /
-      hunting grounds / houses), with Mine & Hunt walking to real nodes.
+- [x] A4 (map) — Taller canvas (1150×460, 30×12 tiles, road row 6, CSS height auto)
+      so the map is the focus; zoned Home: forest (rows 0-1), a procedural rock
+      **Mine** area + **Hunt** grounds (bushes + animal) with faint labels, houses
+      below the road. Mine/Hunt now walk to those nodes. Verified in browser.
+      Plan: [`docs/superpowers/specs/2026-07-17-map-areas-design.md`](docs/superpowers/specs/2026-07-17-map-areas-design.md)
+- [ ] A4 (rest) — Unify scouts onto the villager model (they still reduce the
+      unemployed *count* rather than occupying an entity); further per-villager UI
+      polish; new-resource region nodes (stone/gold/crystal areas).
 
 ## Balance / pacing (own pass, flagged)
 
