@@ -152,7 +152,10 @@ T2 road + gateways → T3 snap entities → T4 polish.
 - [x] T1 — Tile grid (30×8) + procedural per-region terrain with deterministic
       per-tile jitter + rock flecks, replacing the flat bands. Fog/hints drawn
       over region column spans. Verified in browser.
-- [ ] T2 — Living road + gateways; road extends on claim; hint at the gateway.
+- [x] T2 — Living road (packed-earth tiles on ROAD_ROW) drawn across claimed
+      regions only, so it extends when a region is scouted; gateways straddle each
+      border, open when the region past them is claimed, closed at the frontier.
+      Verified: road paved into Hills on claim, frontier gate advanced.
 - [ ] T3 — Snap buildings / trees / villagers onto the grid.
 - [ ] T4 — Polish (villagers walk the road, paving animation, prop tiles).
 

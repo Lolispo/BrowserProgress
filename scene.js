@@ -24,6 +24,7 @@ var scene = {
 	// Tile grid (T1): columns/rows over the fixed canvas; tile size derived in init.
 	COLS: 30,
 	ROWS: 8,
+	ROAD_ROW: 4, // the road runs along this tile row (T2)
 	terrainPalette: {
 		home:      { base: "#3fbf3f" },
 		hills:     { base: "#c9b37e", fleck: "#a58a5b" },
@@ -360,6 +361,39 @@ var scene = {
 		}
 	},
 
+	// The living road: packed-earth tiles along ROAD_ROW, drawn only across
+	// claimed regions, so it visibly extends as each region is scouted.
+	drawRoad: function(ctx){
+		var tw = this.tileW, th = this.tileH, y = this.ROAD_ROW * th;
+		for(var col = 0; col < this.COLS; col++){
+			if(!state.regions[this.regionAtCol(col)]){ continue; }
+			ctx.fillStyle = this.shade("#9c7f52", (this.tileHash(col, this.ROAD_ROW) % 9) - 4);
+			ctx.fillRect(col * tw, y, tw + 0.6, th + 0.6);
+			ctx.strokeStyle = "rgba(60, 45, 25, 0.25)"; // wheel ruts
+			ctx.strokeRect(col * tw, y + th * 0.22, tw, th * 0.56);
+		}
+	},
+
+	// Gateways straddle each region border on the road row; open when the region
+	// past them is claimed, otherwise a closed barrier at the frontier.
+	drawGateways: function(ctx){
+		var tw = this.tileW, th = this.tileH, y = this.ROAD_ROW * th;
+		for(var i = 1; i < REGION_ORDER.length; i++){
+			var rid = REGION_ORDER[i];
+			var bx = this.regionCols[rid][0] * tw;
+			var open = !!state.regions[rid];
+			var postW = Math.max(4, tw * 0.14), topY = y - th * 0.18, h = th * 1.18;
+			ctx.fillStyle = open ? "#6b5836" : "#4a3d26";
+			ctx.fillRect(bx - postW - 1, topY, postW, h);       // left post
+			ctx.fillRect(bx + 1, topY, postW, h);               // right post
+			ctx.fillRect(bx - postW - 1, topY, postW * 2 + 2, th * 0.22); // lintel
+			if(!open){
+				ctx.fillStyle = "rgba(58, 48, 30, 0.9)";        // closed barrier
+				ctx.fillRect(bx - postW, topY + th * 0.22, postW * 2, h - th * 0.22);
+			}
+		}
+	},
+
 	// Draw a building sprite, or a labelled colored box when it has no art yet.
 	drawBuilding: function(b, y){
 		var ctx = this.ctx;
@@ -384,9 +418,12 @@ var scene = {
 		if(!ctx){ return; }
 		var now = this.lastTime / 1000;
 
-		// Tile terrain per region, then fog over locked regions
+		// Tile terrain, the road across claimed regions, fog over locked regions,
+		// then gateways on top (so a closed gate reads at the fogged frontier).
 		this.drawTerrain(ctx);
+		this.drawRoad(ctx);
 		this.drawFog(ctx);
+		this.drawGateways(ctx);
 
 		// Trees (grow from the bottom of their cell)
 		var i, fullH = this.spriteH(imgTree), fullW = this.spriteW(imgTree);
