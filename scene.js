@@ -35,17 +35,19 @@ var scene = {
 	// Per building type: which region it sits in, its vertical lane (y), and a
 	// horizontal offset within that region's zone. New Phase 3 buildings live in
 	// the regions their resource comes from.
+	// Building placement in tile coords: region + a plot row (above/below the
+	// road row 4; row 0 is the forest) + a starting column within the region.
 	buildingConfig: {
-		house:        { region: "home",      lane: 58,  ox: 6 },
-		lumberMill:   { region: "home",      lane: 104, ox: 40 },
-		mine:         { region: "home",      lane: 150, ox: 74 },
-		huntingLodge: { region: "home",      lane: 196, ox: 108 },
-		trainingYard: { region: "home",      lane: 242, ox: 142 },
-		quarry:       { region: "hills",     lane: 104, ox: 8 },
-		farm:         { region: "hills",     lane: 150, ox: 8 },
-		blacksmith:   { region: "hills",     lane: 196, ox: 8 },
-		market:       { region: "mountains", lane: 120, ox: 8 },
-		monument:     { region: "cavern",    lane: 120, ox: 8 },
+		house:        { region: "home",      row: 1, col: 1 },
+		lumberMill:   { region: "home",      row: 2, col: 3 },
+		mine:         { region: "home",      row: 3, col: 5 },
+		huntingLodge: { region: "home",      row: 5, col: 1 },
+		trainingYard: { region: "home",      row: 6, col: 4 },
+		quarry:       { region: "hills",     row: 2, col: 1 },
+		farm:         { region: "hills",     row: 3, col: 3 },
+		blacksmith:   { region: "hills",     row: 5, col: 1 },
+		market:       { region: "mountains", row: 3, col: 1 },
+		monument:     { region: "cavern",    row: 3, col: 3 },
 	},
 
 	// Pixel [x0, x1] of a region's zone from its width fractions.
@@ -73,14 +75,12 @@ var scene = {
 		this.buildTreeRow();
 	},
 
-	// A forest strip across the Home zone (wood comes from Home). Positions use a
-	// fixed cell so they don't depend on the tree image being loaded yet.
+	// A forest across Home's top tile row (wood comes from Home), one tree per cell.
 	buildTreeRow: function(){
 		this.trees = [];
-		var home = this.zonePx("home");
-		var cell = SPRITE_PX + 6;
-		for(var x = home[0] + 4; x + SPRITE_PX < home[1]; x += cell){
-			this.trees.push({ x: x, growth: 1, phase: Math.random() * 6.28 });
+		var rc = this.regionCols.home;
+		for(var col = rc[0]; col < rc[1]; col++){
+			this.trees.push({ col: col, row: 0, growth: 1, phase: (this.tileHash(col, 0) % 628) / 100 });
 		}
 	},
 
@@ -115,20 +115,21 @@ var scene = {
 		this.layoutBuildings();
 	},
 
-	// Place each building inside its region's zone: flow left -> right from the
-	// zone start + the type's offset, wrapping to a sub-row if the zone fills.
+	// Snap each building onto a tile cell: flow across free columns in its region
+	// from the type's start column, wrapping to the next plot row if the row fills.
 	layoutBuildings: function(){
-		var cell = SPRITE_PX + 12;
 		var seen = {};
 		for(var i = 0; i < this.buildings.length; i++){
 			var b = this.buildings[i];
-			var cfg = this.buildingConfig[b.type] || { region: "home", lane: 60, ox: 8 };
-			var zone = this.zonePx(cfg.region);
-			var baseX = zone[0] + cfg.ox;
+			var cfg = this.buildingConfig[b.type] || { region: "home", row: 2, col: 0 };
+			var rc = this.regionCols[cfg.region];
+			var span = Math.max(1, rc[1] - rc[0]);
 			var n = seen[b.type] | 0; seen[b.type] = n + 1;
-			var cols = Math.max(1, Math.floor((zone[1] - baseX - SPRITE_PX) / cell) + 1);
-			b.x = baseX + (n % cols) * cell;
-			b.y = cfg.lane + Math.floor(n / cols) * (SPRITE_PX + 8);
+			var slot = cfg.col + n;
+			var col = rc[0] + (slot % span);
+			var row = cfg.row + Math.floor(slot / span);
+			b.x = col * this.tileW + (this.tileW - this.spriteW(b.img)) / 2;
+			b.y = row * this.tileH + (this.tileH - this.spriteH(b.img));
 		}
 	},
 
@@ -142,14 +143,16 @@ var scene = {
 	},
 
 	addVillager: function(){
-		var hx = 12 + Math.random() * 90;
+		var rc = this.regionCols.home;
+		var hx = (rc[0] + Math.random() * (rc[1] - rc[0])) * this.tileW;
+		var hy = (this.ROWS - 1.3) * this.tileH; // home band below the road
 		this.villagers.push({
 			x: hx,
-			y: this.H - 44,
+			y: hy,
 			tx: hx,
-			ty: this.H - 44,
-			home: { x: hx, y: this.H - 44 }, // anchor for the idle wander
-			rest: Math.random() * 3,         // seconds to stand still before drifting
+			ty: hy,
+			home: { x: hx, y: hy }, // anchor for the idle wander
+			rest: Math.random() * 3,        // seconds to stand still before drifting
 			jobTarget: null,
 			working: false,
 			phase: Math.random() * 6.28,
@@ -207,7 +210,7 @@ var scene = {
 		var t = grown.length ? grown[Math.floor(Math.random() * grown.length)] : this.trees[0];
 		if(t){
 			t.growth = 0.12;
-			this.floater("+" + amount + " wood", t.x - 4, this.treeLane + SPRITE_PX, "#2e7d32");
+			this.floater("+" + amount + " wood", t.col * this.tileW, (t.row + 1) * this.tileH, "#2e7d32");
 		} else {
 			this.gainFx("wood", amount);
 		}
@@ -431,7 +434,9 @@ var scene = {
 			var t = this.trees[i];
 			if(!imgTree || !imgTree.width){ continue; }
 			var h = fullH * (0.3 + 0.7 * t.growth);
-			ctx.drawImage(imgTree, t.x, this.treeLane + (fullH - h), fullW, h);
+			var tx = t.col * this.tileW + (this.tileW - fullW) / 2;
+			var bottom = (t.row + 1) * this.tileH;
+			ctx.drawImage(imgTree, tx, bottom - h, fullW, h);
 		}
 
 		// Buildings (gentle idle bob)

@@ -156,7 +156,10 @@ T2 road + gateways → T3 snap entities → T4 polish.
       regions only, so it extends when a region is scouted; gateways straddle each
       border, open when the region past them is claimed, closed at the frontier.
       Verified: road paved into Hills on claim, frontier gate advanced.
-- [ ] T3 — Snap buildings / trees / villagers onto the grid.
+- [x] T3 — Snap buildings / trees / villagers onto the tile grid: buildings on
+      plots (tile row + column, staggered) above/below the road, flowing across
+      columns for multiples; forest on Home's top row; villagers home in the
+      Home tile band. Verified (incl. save/load rebuild) in browser.
 - [ ] T4 — Polish (villagers walk the road, paving animation, prop tiles).
 
 ## Visual / HUD polish
