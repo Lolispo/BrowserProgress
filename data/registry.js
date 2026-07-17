@@ -28,8 +28,8 @@ var state = {
 	houses: 2, housesBuilt: 0, lumberMill: 0, mine: 0, huntingLodge: 0, trainingYard: 0,
 	// Phase 3 buildings
 	quarry: 0, farm: 0, blacksmith: 0, market: 0, monument: 0,
-	// Population / jobs
-	villagers: 0, unemployed: 0, woodCutter: 0, ironWorker: 0, hunter: 0,
+	// Population / jobs (start with one villager — the actor for manual work)
+	villagers: 1, unemployed: 1, woodCutter: 0, ironWorker: 0, hunter: 0,
 	mason: 0, trader: 0,
 	// Player stats
 	speed: 100, strength: 100, cardio: 100, energy: 100, energyInc: 0.5,
@@ -243,8 +243,8 @@ var ACTIONS = {
 		startsHidden: false,
 		rawTime: true,
 		maxTime: function(){ return 3000; },
-		onStart: function(){ sleeping = true; },
-		onDone: function(){ sleeping = false; state.energy = 100; energyUpdate(); newMsg("Fully rested!"); },
+		onStart: function(){},
+		onDone: function(){ state.energy = 100; energyUpdate(); newMsg("Fully rested!"); },
 	},
 };
 

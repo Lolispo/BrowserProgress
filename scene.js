@@ -156,9 +156,93 @@ var scene = {
 			jobTarget: null,
 			working: false,
 			phase: Math.random() * 6.28,
-			speed: 18 + Math.random() * 10,
+			speed: 62 + Math.random() * 26, // px/s — fast enough to cross the map to tasks
+			// Manual-task state (A1): a free villager dispatched to an action.
+			busy: false,       // running a manual action
+			task: null,        // action id
+			taskPhase: null,   // "walk" | "work" | "return"
+			taskTarget: null,  // {x,y} to walk to
+			progress: 0,       // 0..1 while working
+			workDur: 1000,     // ms of the work phase
 		});
 		this.syncJobs();
+	},
+
+	// A free villager = unemployed and not busy with a manual action.
+	freeVillager: function(){
+		for(var i = 0; i < this.villagers.length; i++){
+			var v = this.villagers[i];
+			if(!v.jobTarget && !v.busy){ return v; }
+		}
+		return null;
+	},
+
+	homeSpot: function(col, row){ return { x: col * this.tileW, y: row * this.tileH }; },
+
+	// Where a villager walks to perform an action.
+	actionTarget: function(id){
+		var b;
+		if(id === "chopWood" || id === "clawTree"){
+			var grown = this.trees.filter(function(t){ return t.growth > 0.4; });
+			var t = grown.length ? grown[Math.floor(Math.random() * grown.length)] : this.trees[0];
+			if(t){ return { x: t.col * this.tileW, y: Math.max(2, (t.row + 1) * this.tileH - this.spriteH(imgVillager)) }; }
+		}
+		if(id === "mineIron"){ b = this.firstBuilding("mine"); return b ? { x: b.x, y: b.y } : this.homeSpot(6, 3); }
+		if(id === "hunt"){ b = this.firstBuilding("huntingLodge"); return b ? { x: b.x, y: b.y } : this.homeSpot(8, 1); }
+		if(id === "trainSpeed" || id === "trainStrength" || id === "trainCardio"){
+			b = this.firstBuilding("trainingYard"); if(b){ return { x: b.x, y: b.y }; }
+		}
+		if(id === "mineCrystal"){ var rc = this.regionCols.cavern; return this.homeSpot(rc[0] + 2, 3); }
+		return this.homeSpot(4, 5);
+	},
+
+	// Assign a free villager to an action.
+	startTask: function(v, id){
+		var a = ACTIONS[id];
+		v.busy = true;
+		v.task = id;
+		v.taskPhase = "walk";
+		v.progress = 0;
+		v.workDur = (a.rawTime ? a.maxTime() : a.maxTime() * speedRatio) * timeScale;
+		v.taskTarget = (id === "sleep") ? { x: v.home.x, y: v.home.y } : this.actionTarget(id);
+	},
+
+	// Apply an action's effect on work completion, then head home.
+	completeTask: function(v){
+		var a = ACTIONS[v.task];
+		if(a.onDone){ a.onDone(); }
+		v.taskPhase = "return";
+		v.progress = 1;
+	},
+
+	// Move a villager toward its (tx,ty); returns true on arrival.
+	moveToward: function(v, dt){
+		var dx = v.tx - v.x, dy = v.ty - v.y;
+		var dist = Math.sqrt(dx * dx + dy * dy);
+		var step = v.speed * dt;
+		if(dist > step){ v.x += (dx / dist) * step; v.y += (dy / dist) * step; return false; }
+		v.x = v.tx; v.y = v.ty; return true;
+	},
+
+	// Drive a busy villager through walk -> work -> return.
+	updateTask: function(v, dt){
+		if(v.taskPhase === "walk"){
+			v.tx = v.taskTarget.x; v.ty = v.taskTarget.y;
+			v.working = false;
+			if(this.moveToward(v, dt)){
+				v.taskPhase = "work";
+				v.progress = 0;
+				if(ACTIONS[v.task].onStart){ ACTIONS[v.task].onStart(); } // pay cost on arrival
+			}
+		} else if(v.taskPhase === "work"){
+			v.working = true;
+			v.progress += (dt * 1000) / Math.max(1, v.workDur);
+			if(v.progress >= 1){ this.completeTask(v); }
+		} else if(v.taskPhase === "return"){
+			v.tx = v.home.x; v.ty = v.home.y;
+			v.working = false;
+			if(this.moveToward(v, dt)){ v.busy = false; v.task = null; v.taskPhase = null; }
+		}
 	},
 
 	// Rebuild all entities from state counts (used on load).
@@ -270,6 +354,7 @@ var scene = {
 	},
 
 	updateVillager: function(v, dt){
+		if(v.busy){ this.updateTask(v, dt); return; } // running a manual action
 		if(v.jobTarget){
 			var b = this.firstBuilding(v.jobTarget);
 			if(b){
@@ -278,21 +363,21 @@ var scene = {
 				v.tx = Math.min(this.W - this.spriteW(imgVillager), b.x + 4 + (slot % 4) * 12);
 				v.ty = b.y + this.spriteH(b.img) - this.spriteH(imgVillager) + 2 + Math.floor(slot / 4) * 10;
 			}
-		} else if(Math.abs(v.x - v.tx) < 2 && Math.abs(v.y - v.ty) < 2){
-			// Unemployed: gentle wander. Stand still for a few seconds, then drift
-			// to a new spot within a small radius of this villager's home.
+			v.working = this.moveToward(v, dt);
+			return;
+		}
+		// Unemployed: gentle wander. Stand still a few seconds, then drift within a
+		// small radius of home.
+		if(Math.abs(v.x - v.tx) < 2 && Math.abs(v.y - v.ty) < 2){
 			v.rest -= dt;
 			if(v.rest <= 0){
 				v.tx = Math.max(4, Math.min(this.W - 40, v.home.x + (Math.random() * 2 - 1) * 22));
 				v.ty = v.home.y + (Math.random() * 2 - 1) * 12;
-				v.rest = 2.5 + Math.random() * 3.5; // pause before the next stroll
+				v.rest = 2.5 + Math.random() * 3.5;
 			}
 		}
-		var dx = v.tx - v.x, dy = v.ty - v.y;
-		var dist = Math.sqrt(dx * dx + dy * dy);
-		var step = v.speed * dt;
-		if(dist > step){ v.x += (dx / dist) * step; v.y += (dy / dist) * step; v.working = false; }
-		else { v.x = v.tx; v.y = v.ty; v.working = !!v.jobTarget; }
+		this.moveToward(v, dt);
+		v.working = false;
 	},
 
 	// --- draw --------------------------------------------------------------
@@ -450,6 +535,14 @@ var scene = {
 			if(!imgVillager || !imgVillager.width){ continue; }
 			var vbob = v.working ? Math.sin(now * 6 + v.phase) * 1.5 : 0;
 			ctx.drawImage(imgVillager, v.x, v.y + vbob, this.spriteW(imgVillager), this.spriteH(imgVillager));
+			// Per-villager work progress bar (A1)
+			if(v.busy && v.taskPhase === "work"){
+				var pw = this.spriteW(imgVillager), py = v.y - 7;
+				ctx.fillStyle = "rgba(0,0,0,0.55)";
+				ctx.fillRect(v.x, py, pw, 4);
+				ctx.fillStyle = "#6bbf47";
+				ctx.fillRect(v.x, py, pw * Math.min(1, v.progress), 4);
+			}
 		}
 
 		// Floaters

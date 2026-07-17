@@ -8,7 +8,6 @@
 // Important global vars
 var speedRatio = 0.1; // Speedratio of bars
 var timeScale = 1;    // dev speed toggle: multiplies bar/income durations (1 = normal, <1 = faster)
-var sleeping = false; // true while the "Go to Sleep" bar is running (blocks other actions)
 var incomeInterval = null; // Used for job income
 var energyInterval = null; // Used for energy increase for energy meter
 var ctx = null; // the canvas 2d graphics

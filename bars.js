@@ -58,7 +58,6 @@ function TimeBar(action){
 	};
 
 	$(document.getElementById(barName + "_outerdiv")).on("click", function(){
-		if(sleeping && action.barId !== "sleepBar"){ return; } // asleep: only the sleep bar works
 		if(self.clickable && meetsRequirements(action.requires)){
 			self.setMaxTime(); // in case speed changed since last run
 			self.start = new Date();
@@ -68,32 +67,49 @@ function TimeBar(action){
 	});
 }
 
-// Registry of live bar instances, keyed by action id.
-var barObjects = {};
+// An action row is a dispatch button: clicking sends a free villager to do the
+// action (see scene.startTask). Progress shows on the villager, not here.
+function ActionButton(id, action){
+	var barName = action.barId;
+	$('#' + barName).append(
+		"<div class='outerdiv actionBtn' id='" + barName + "_outerdiv' data-tip=\"" + tipText(action) + "\">" +
+		"<div class='innertext' id='" + barName + "_innertext'>" + action.label + "</div>" +
+		(action.key ? "<div class='barKey'>" + action.key.toUpperCase() + "</div>" : "") +
+		"</div>");
+	$(document.getElementById(barName + "_outerdiv")).on("click", function(){ dispatchAction(id); });
+}
+
+// Send the most-rested free villager to perform an action (if any is free and
+// the requirements — e.g. having a tool — are met).
+function dispatchAction(id){
+	var action = ACTIONS[id];
+	if(!meetsRequirements(action.requires)){ return; }
+	var v = scene.freeVillager();
+	if(!v){ return; }
+	scene.startTask(v, id);
+}
 
 function initBars(){
 	for(var id in ACTIONS){
-		barObjects[id] = new TimeBar(ACTIONS[id]);
+		new ActionButton(id, ACTIONS[id]);
 		if(ACTIONS[id].startsHidden){
 			$("#" + ACTIONS[id].barId).toggleClass("hidden", true);
 		}
 	}
 }
 
-// Grey out action bars whose requirements aren't currently met (e.g. Chop Wood
-// with no axe, or Hunt below the energy threshold). Called throttled from the
-// scene loop so it always reflects current state.
+// Grey out action buttons that can't be dispatched right now: requirements unmet
+// (e.g. no axe) or no free villager available. Throttled from the scene loop.
 function refreshBarStates(){
+	var noFree = !scene.freeVillager();
 	for(var id in ACTIONS){
 		var a = ACTIONS[id];
-		// While asleep every bar but the sleep bar is locked.
-		var ok = meetsRequirements(a.requires) && (!sleeping || a.barId === "sleepBar");
-		$("#" + a.barId + "_outerdiv").toggleClass("barUnavailable", !ok);
+		$("#" + a.barId + "_outerdiv").toggleClass("barUnavailable", !meetsRequirements(a.requires) || noFree);
 	}
-	// Scout bars grey out when you lack villagers, or while asleep.
+	// Scout bars grey out when you lack the villagers to send.
 	for(var sid in SCOUTS){
 		var s = SCOUTS[sid];
-		$("#" + s.barId + "_outerdiv").toggleClass("barUnavailable", !meetsRequirements(s.requires) || sleeping);
+		$("#" + s.barId + "_outerdiv").toggleClass("barUnavailable", !meetsRequirements(s.requires));
 	}
 }
 

@@ -86,7 +86,7 @@ function toggleHotkeyHelp(){
 function toggleDevSpeed(){
 	timeScale = (timeScale === 1) ? 0.2 : 1;
 	var id;
-	for(id in barObjects){ barObjects[id].setMaxTime(); }
+	// Actions read timeScale fresh when a task starts; only scouts + income need a poke.
 	for(id in scoutBars){ scoutBars[id].setMaxTime(); }
 	if(typeof restartIncome === "function"){ restartIncome(); }
 	var btn = document.getElementById("devSpeedBtn");

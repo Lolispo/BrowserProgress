@@ -148,8 +148,19 @@ No player character: start with 1 villager. Manual actions dispatch a free villa
 who walks to the task, works, and returns; parallel work is limited by free villagers
 + tools (one tool per worker). Per-villager energy (tired = slower, never blocked;
 idle recovery; Sleep rests the most-tired free villager). Job-assigned villagers leave
-the free pool. Stats stay global. Sub-phases: A1 actor loop → A2 per-villager energy →
-A3 one-tool-per-worker → A4 map UI (per-villager progress + energy indicators).
+the free pool. Stats stay global.
+
+- [x] A1 — Actor loop: start with 1 villager; action rows are dispatch buttons
+      (click/hotkey sends the first free villager); villager walks to the action's
+      spot, works with a per-villager progress bar, grants, and returns; parallel
+      with multiple villagers; buttons grey when none free. Removed the global
+      "sleeping" lock. Verified in browser.
+- [ ] A2 — Per-villager energy (tired = slower; idle recovery; Sleep rests the
+      most-tired free villager). *A1 still uses the old global energy + reuses each
+      action's onStart/onDone.*
+- [ ] A3 — One tool per worker (tool arrays; reserve/free; gate dispatch on a free tool).
+- [ ] A4 — Map UI polish + game-area/sprite sizing; unify scouts onto the villager
+      model (they still reduce the unemployed *count* rather than occupying an entity).
 
 ## Planned: Tile-based world + living road
 

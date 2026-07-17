@@ -153,6 +153,15 @@ header{
   opacity: 0.5;
 }
 
+/* Action dispatch buttons (send a free villager to do the action) */
+.actionBtn{
+  cursor: pointer;
+  background: linear-gradient(#6bbf47, #4c9a2a);
+  transition: filter 0.1s ease;
+}
+.actionBtn:hover{ filter: brightness(1.08); }
+.actionBtn .innertext{ color: #123; }
+
 .hasAffordable{
   border-color: #4caf50 !important;
   box-shadow: 0 0 0 1px #4caf50 inset;

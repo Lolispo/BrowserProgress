@@ -96,6 +96,13 @@ function initValues(loaded){
 	// on a later frame (no cold-load race to guard against anymore).
 	scene.init(c, ctx);
 	scene.start();
+
+	// Fresh game: spawn the starting villager entities to match the count.
+	// (A loaded game rebuilds them from state in rebuildUI/scene.rebuildFromState.)
+	if(!loaded){
+		for(var v = 0; v < state.villagers; v++){ scene.addVillager(); }
+		$("#unemployed").toggleClass("bold", state.unemployed > 0);
+	}
 }
 
 function newMsg(msg){
