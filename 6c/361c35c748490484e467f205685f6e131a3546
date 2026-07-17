@@ -1,0 +1,20 @@
+ROADMAP.md
+  s_c49c3d8017c580::t_097243c9331587 175-179
+  s_c49c3d8017c580::t_db713b2630a41e 186-190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "6c361c35c748490484e467f205685f6e131a3546",
+  "prompts": {},
+  "sessions": {
+    "s_c49c3d8017c580": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd0841db-e951-424c-9840-348c0762face",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
