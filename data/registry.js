@@ -31,8 +31,8 @@ var state = {
 	// Population / jobs (start with one villager — the actor for manual work)
 	villagers: 1, unemployed: 1, woodCutter: 0, ironWorker: 0, hunter: 0,
 	mason: 0, trader: 0,
-	// Player stats
-	speed: 100, strength: 100, cardio: 100, energy: 100, energyInc: 0.5,
+	// Player stats (global). Energy is now per-villager (see scene.js), not here.
+	speed: 100, strength: 100, cardio: 100,
 	// Claimed regions (home is free; the rest are scouted). See REGIONS.
 	regions: { home: true, hills: false, mountains: false, cavern: false },
 };
@@ -131,6 +131,7 @@ var ACTIONS = {
 		tooltip: "Chop wood from the forest. Needs an axe; each chop wears it down.",
 		requires: [{ key: "axe", min: 1 }],
 		startsHidden: false,
+		energyCost: 8,
 		maxTime: function(){ return Math.floor(woodSpeed / state.speed); },
 		onStart: function(){ axeUpdate(equipDamage(axeWoodDmg)); },
 		onDone: function(){
@@ -146,6 +147,7 @@ var ACTIONS = {
 		tooltip: "Mine iron ore. Needs an axe; each swing wears it down.",
 		requires: [{ key: "axe", min: 1 }],
 		startsHidden: false,
+		energyCost: 10,
 		maxTime: function(){ return Math.floor(ironSpeed / state.speed); },
 		onStart: function(){ axeUpdate(equipDamage(axeIronDmg)); },
 		onDone: function(){
@@ -158,14 +160,12 @@ var ACTIONS = {
 	hunt: {
 		barId: "huntBar",
 		label: "Go Hunting",
-		tooltip: "Hunt for food. Needs a spear and high energy. Success scales with strength.",
-		requires: [{ key: "spear", min: 1 }, { key: "energy", min: huntEnergyReq }],
+		tooltip: "Hunt for food. Needs a spear. Success scales with strength; tiring.",
+		requires: [{ key: "spear", min: 1 }],
 		startsHidden: false,
+		energyCost: 25,
 		maxTime: function(){ return Math.floor(huntSpeed / state.speed); },
-		onStart: function(){
-			state.energy *= huntEnergyCost * ((Math.floor((Math.random() * 40) + 81)) / 100);
-			energyIncUpdate();
-		},
+		onStart: function(){},
 		onDone: function(){
 			var successRate = successHuntRate * (state.strength / 100.0);
 			var roll = Math.floor((Math.random() * 100) + 1);
@@ -182,11 +182,12 @@ var ACTIONS = {
 	clawTree: {
 		barId: "clawTreeBar",
 		label: "Claw Tree",
-		tooltip: "Claw wood by hand. No axe needed, but it drains energy and is slow.",
-		requires: [{ key: "energy", min: clawEnergyReq }],
+		tooltip: "Claw wood by hand. No axe needed, but slow and very tiring.",
+		requires: [],
 		startsHidden: false,
+		energyCost: 15,
 		maxTime: function(){ return Math.floor(clawTreeSpeed / state.speed); },
-		onStart: function(){ state.energy *= clawEnergyCost; energyIncUpdate(); },
+		onStart: function(){},
 		onDone: function(){
 			var amt = gatherAmount(clawInc);
 			set("wood", state.wood + amt);
@@ -197,32 +198,35 @@ var ACTIONS = {
 	trainSpeed: {
 		barId: "speedBar",
 		label: "Train Speed",
-		tooltip: "Train speed. Faster speed shortens every gathering action. Costs energy.",
-		requires: [{ key: "energy", min: trainingSpeedEnergyReq }],
+		tooltip: "Train speed. Faster speed shortens every gathering action. Tiring.",
+		requires: [],
 		startsHidden: true,
+		energyCost: 20,
 		maxTime: function(){ return speedSpeed; },
-		onStart: function(){ state.energy *= trainingSpeedEnergyCost; energyIncUpdate(); },
+		onStart: function(){},
 		onDone: function(){ set("speed", state.speed + speedInc); newMsg("Improved your speed!"); },
 	},
 	trainStrength: {
 		barId: "strengthBar",
 		label: "Train Strength",
-		tooltip: "Train strength. Higher strength increases resources gathered per action. Costs energy.",
-		requires: [{ key: "energy", min: trainingStrengthEnergyReq }],
+		tooltip: "Train strength. Higher strength increases resources gathered per action. Tiring.",
+		requires: [],
 		startsHidden: true,
+		energyCost: 20,
 		maxTime: function(){ return strengthSpeed; },
-		onStart: function(){ state.energy *= trainingStrengthEnergyCost; energyIncUpdate(); },
+		onStart: function(){},
 		onDone: function(){ set("strength", state.strength + strengthInc); newMsg("Improved your strength!"); },
 	},
 	trainCardio: {
 		barId: "cardioBar",
 		label: "Train Cardio",
-		tooltip: "Train cardio. Higher cardio makes energy regenerate faster. Uses all your energy.",
-		requires: [{ key: "energy", min: trainingCardioEnergyReq }],
+		tooltip: "Train cardio. Higher cardio makes villagers recover energy faster. Tiring.",
+		requires: [],
 		startsHidden: true,
+		energyCost: 20,
 		maxTime: function(){ return cardioSpeed; },
-		onStart: function(){ state.energy *= trainingCardioEnergyCost; energyIncUpdate(); },
-		onDone: function(){ set("cardio", state.cardio + cardioInc); setNewEnergyInc(); newMsg("Improved your cardio!"); },
+		onStart: function(){},
+		onDone: function(){ set("cardio", state.cardio + cardioInc); newMsg("Improved your cardio!"); },
 	},
 	mineCrystal: {
 		barId: "crystalBar",
@@ -231,6 +235,7 @@ var ACTIONS = {
 		requires: [],
 		startsHidden: true, // revealed when the Crystal Cavern is claimed
 		rawTime: true,
+		energyCost: 12,
 		maxTime: function(){ return 6000; },
 		onStart: function(){},
 		onDone: function(){ set("crystal", state.crystal + 1); scene.gainFx("crystal", 1); newMsg("Mined a Crystal!"); },
@@ -238,13 +243,14 @@ var ACTIONS = {
 	sleep: {
 		barId: "sleepBar",
 		label: "Go to Sleep",
-		tooltip: "Sleep to rapidly restore energy to full. You can't do anything else while asleep.",
+		tooltip: "Send the most-tired free villager to rest, restoring their energy to full.",
 		requires: [],
 		startsHidden: false,
 		rawTime: true,
+		energyCost: -100, // negative cost = restores energy (see scene.completeTask)
 		maxTime: function(){ return 3000; },
 		onStart: function(){},
-		onDone: function(){ state.energy = 100; energyUpdate(); newMsg("Fully rested!"); },
+		onDone: function(){ newMsg("Fully rested!"); },
 	},
 };
 

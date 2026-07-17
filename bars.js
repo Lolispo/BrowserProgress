@@ -84,7 +84,8 @@ function ActionButton(id, action){
 function dispatchAction(id){
 	var action = ACTIONS[id];
 	if(!meetsRequirements(action.requires)){ return; }
-	var v = scene.freeVillager();
+	// Sleep sends the most-tired free villager; everything else the most-rested.
+	var v = (id === "sleep") ? scene.tiredestFreeVillager() : scene.freeVillager();
 	if(!v){ return; }
 	scene.startTask(v, id);
 }

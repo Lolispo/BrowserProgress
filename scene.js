@@ -157,6 +157,7 @@ var scene = {
 			working: false,
 			phase: Math.random() * 6.28,
 			speed: 62 + Math.random() * 26, // px/s — fast enough to cross the map to tasks
+			energy: 100,       // per-villager (A2): drains with work, recovers idle
 			// Manual-task state (A1): a free villager dispatched to an action.
 			busy: false,       // running a manual action
 			task: null,        // action id
@@ -168,13 +169,24 @@ var scene = {
 		this.syncJobs();
 	},
 
-	// A free villager = unemployed and not busy with a manual action.
+	// The most-rested free villager (unemployed + not busy). Used for work dispatch.
 	freeVillager: function(){
+		var best = null;
 		for(var i = 0; i < this.villagers.length; i++){
 			var v = this.villagers[i];
-			if(!v.jobTarget && !v.busy){ return v; }
+			if(!v.jobTarget && !v.busy && (!best || v.energy > best.energy)){ best = v; }
 		}
-		return null;
+		return best;
+	},
+
+	// The most-tired free villager. Used by Sleep.
+	tiredestFreeVillager: function(){
+		var worst = null;
+		for(var i = 0; i < this.villagers.length; i++){
+			var v = this.villagers[i];
+			if(!v.jobTarget && !v.busy && (!worst || v.energy < worst.energy)){ worst = v; }
+		}
+		return worst;
 	},
 
 	homeSpot: function(col, row){ return { x: col * this.tileW, y: row * this.tileH }; },
@@ -203,14 +215,20 @@ var scene = {
 		v.task = id;
 		v.taskPhase = "walk";
 		v.progress = 0;
-		v.workDur = (a.rawTime ? a.maxTime() : a.maxTime() * speedRatio) * timeScale;
+		var base = (a.rawTime ? a.maxTime() : a.maxTime() * speedRatio) * timeScale;
+		// Tired = slower: 100 energy -> x1, 0 energy -> x2. Sleep isn't slowed by tiredness.
+		var tiredFactor = (id === "sleep") ? 1 : (2 - v.energy / 100);
+		v.workDur = base * tiredFactor;
 		v.taskTarget = (id === "sleep") ? { x: v.home.x, y: v.home.y } : this.actionTarget(id);
 	},
 
-	// Apply an action's effect on work completion, then head home.
+	// Apply an action's effect on work completion, drain (or restore) the acting
+	// villager's energy, then head home.
 	completeTask: function(v){
 		var a = ACTIONS[v.task];
 		if(a.onDone){ a.onDone(); }
+		var cost = a.energyCost || 0;
+		v.energy = Math.max(0, Math.min(100, v.energy - cost)); // negative cost restores
 		v.taskPhase = "return";
 		v.progress = 1;
 	},
@@ -355,6 +373,10 @@ var scene = {
 
 	updateVillager: function(v, dt){
 		if(v.busy){ this.updateTask(v, dt); return; } // running a manual action
+		// Idle/unemployed villagers recover energy; rate scales with global cardio.
+		if(!v.jobTarget && v.energy < 100){
+			v.energy = Math.min(100, v.energy + (3 + state.cardio / 50) * dt);
+		}
 		if(v.jobTarget){
 			var b = this.firstBuilding(v.jobTarget);
 			if(b){
@@ -535,13 +557,23 @@ var scene = {
 			if(!imgVillager || !imgVillager.width){ continue; }
 			var vbob = v.working ? Math.sin(now * 6 + v.phase) * 1.5 : 0;
 			ctx.drawImage(imgVillager, v.x, v.y + vbob, this.spriteW(imgVillager), this.spriteH(imgVillager));
+			var vw = this.spriteW(imgVillager);
 			// Per-villager work progress bar (A1)
 			if(v.busy && v.taskPhase === "work"){
-				var pw = this.spriteW(imgVillager), py = v.y - 7;
+				var py = v.y - 7;
 				ctx.fillStyle = "rgba(0,0,0,0.55)";
-				ctx.fillRect(v.x, py, pw, 4);
+				ctx.fillRect(v.x, py, vw, 4);
 				ctx.fillStyle = "#6bbf47";
-				ctx.fillRect(v.x, py, pw * Math.min(1, v.progress), 4);
+				ctx.fillRect(v.x, py, vw * Math.min(1, v.progress), 4);
+			}
+			// Per-villager energy bar (A2), shown when tired
+			if(v.energy < 99.5){
+				var ey = v.y + this.spriteH(imgVillager) + 2;
+				var e = v.energy / 100;
+				ctx.fillStyle = "rgba(0,0,0,0.5)";
+				ctx.fillRect(v.x, ey, vw, 3);
+				ctx.fillStyle = e > 0.5 ? "#e0c040" : (e > 0.25 ? "#e08a2a" : "#d0402a");
+				ctx.fillRect(v.x, ey, vw * e, 3);
 			}
 		}
 

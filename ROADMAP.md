@@ -155,9 +155,12 @@ the free pool. Stats stay global.
       spot, works with a per-villager progress bar, grants, and returns; parallel
       with multiple villagers; buttons grey when none free. Removed the global
       "sleeping" lock. Verified in browser.
-- [ ] A2 — Per-villager energy (tired = slower; idle recovery; Sleep rests the
-      most-tired free villager). *A1 still uses the old global energy + reuses each
-      action's onStart/onDone.*
+- [x] A2 — Per-villager energy: each villager has energy; actions carry an
+      `energyCost` drained on completion; tired = slower (workDur × (2−energy/100),
+      never blocked); idle villagers recover (rate scales with cardio); Sleep sends
+      the most-tired free villager to rest (energyCost −100). Work dispatch picks the
+      most-rested villager. Global energy system removed (bar, energy.js, energy
+      requires). Small energy bar drawn under tired villagers. Verified in browser.
 - [ ] A3 — One tool per worker (tool arrays; reserve/free; gate dispatch on a free tool).
 - [ ] A4 — Map UI polish + game-area/sprite sizing; unify scouts onto the villager
       model (they still reduce the unemployed *count* rather than occupying an entity).

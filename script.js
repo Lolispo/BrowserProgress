@@ -70,11 +70,9 @@ function initValues(loaded){
 	set("ironWorker", state.ironWorker);
 	set("hunter", state.hunter);
 
-	// Init the special bars (durability, energy)
+	// Init the durability bars (energy is now per-villager, see scene.js)
 	axeUpdate(0);
 	spearUpdate(0);
-	energyUpdate();
-	setNewEnergyInc(); // energyInc = cardio / 200
 
 	document.getElementById("shopName").innerHTML = "Shop - Main";
 

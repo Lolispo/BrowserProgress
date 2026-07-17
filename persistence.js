@@ -44,7 +44,7 @@ function rebuildUI(){
 	["wood", "iron", "food", "stone", "gold", "crystal", "axe", "spear",
 	 "villagers", "houses", "unemployed", "woodCutter", "ironWorker", "hunter",
 	 "mason", "trader"].forEach(function(k){ set(k, state[k]); });
-	axeUpdate(0); spearUpdate(0); setNewEnergyInc(); energyUpdate();
+	axeUpdate(0); spearUpdate(0);
 	$("#unemployed").toggleClass("bold", state.unemployed > 0);
 
 	// Reveal claimed regions (unfog + resource labels), then rebuild entities
@@ -81,5 +81,4 @@ function rebuildUI(){
 
 	// Resume timers
 	if(state.villagers > 0 || state.farm > 0){ startJobInterval(); }
-	if(state.energy < 100){ energyIncUpdate(); }
 }
