@@ -20,118 +20,97 @@
     <script src="scene.js"></script>
     <script src="persistence.js"></script>
     <script src="controls.js"></script>
+    <script src="ui.js"></script>
     <script src="script.js"></script>
     <img id="imgHouse" class="hidden" src="images/house.png">
-    <img id="imgVillager" class="hidden" src="images/villager.png"> 
+    <img id="imgVillager" class="hidden" src="images/villager.png">
     <img id="imgHunter" class="hidden" src="images/hunter.png">
-    <img id="imgLumberMill" class="hidden" src="images/lumberMill.png"> 
-    <img id="imgMine" class="hidden" src="images/mine.png"> 
+    <img id="imgLumberMill" class="hidden" src="images/lumberMill.png">
+    <img id="imgMine" class="hidden" src="images/mine.png">
     <img id="imgHuntingLodge" class="hidden" src="images/huntingLodge.png">
-    <img id="imgTrainingYard" class="hidden" src="images/trainingYard.png"> 
-    <img id="imgTree" class="hidden" src="images/tree.png"> 
-    <title Village Simulator></title>  
+    <img id="imgTrainingYard" class="hidden" src="images/trainingYard.png">
+    <img id="imgTree" class="hidden" src="images/tree.png">
 </head>
 <body class="noPadding">
-    <div>
-        <div class="row" style="padding-left: 20px">
-            <div>
-                <div class="col-md-4 row floatLeft hudPanel" id="inventory" style="width: 25%;">
-                    <h3>Equipment</h3>
-                    <div>
-                        <p>Axe: <text id="axe">1</text></p>
-                        <div class='outerdiv durBarDiv' style="width: 70%;" id="axeDurabilityBar_outerdiv">
-                            <div class='innerdiv innerdivNoClick' id='axeDurabilityBar_innerdiv'></div>
-                            <div class='innertext' id='axeDurabilityBar_innertext'></div>
-                        </div><!--Durability Bar -->
-                    </div>
+    <div id="gameRoot">
 
+        <!-- Thin top bar: resource icons + tool counts + menu icons -->
+        <div id="topBar">
+            <div id="resBar">
+                <span class="resChip" title="Wood">🪵 <text id="wood">0</text></span>
+                <span class="resChip" title="Iron">⛏️ <text id="iron">0</text></span>
+                <span class="resChip" title="Food">🍖 <text id="food">0</text></span>
+                <span class="resChip hidden" id="resStone" title="Stone">🪨 <text id="stone">0</text></span>
+                <span class="resChip hidden" id="resGold" title="Gold">💰 <text id="gold">0</text></span>
+                <span class="resChip hidden" id="resCrystal" title="Crystal">💎 <text id="crystal">0</text></span>
+                <span class="resChip resSep" title="Axes">🪓 <text id="axe">1</text></span>
+                <span class="resChip" title="Spears">🗡️ <text id="spear">1</text></span>
+                <span class="resChip" title="Housing">🏠 <text id="villagers">0</text>/<text id="houses">2</text></span>
+            </div>
+            <div id="menuBar">
+                <button type="button" class="menuBtn" id="btnShop">🛒 Shop</button>
+                <button type="button" class="menuBtn" id="btnJobs">👷 Jobs</button>
+                <button type="button" class="menuBtn" id="btnGoal">🎯 Goal</button>
+                <button type="button" class="menuBtn" id="btnMessages">💬</button>
+                <button type="button" class="menuBtn" id="btnSettings">⚙</button>
+            </div>
+        </div>
+
+        <!-- Map fills the space; menus open as overlays over it -->
+        <div id="mapWrap">
+            <canvas id="canvas1" width="1150" height="460"></canvas>
+
+            <div id="shopOverlay" class="overlay hidden">
+                <div class="overlayHead"><h3 id="shopName">Shop</h3><button type="button" class="overlayClose">✕</button></div>
+                <div class="overlayBody">
                     <div>
-                        <p>Spear: <text id="spear">0</text></p>
-                        <div class='outerdiv durBarDiv' style="width: 70%;" id="spearDurabilityBar_outerdiv">
-                            <div class='innerdiv innerdivNoClick' id='spearDurabilityBar_innerdiv'></div>
-                            <div class='innertext' id='spearDurabilityBar_innertext'></div>
-                        </div><!--Durability Bar -->
+                        <button type="button" class="btn btnCss btn-default" id="shopBackButton"></button>
+                        <button type="button" class="btn btnCss btn-default" id="shopOpenEquipment"></button>
+                        <button type="button" class="btn btnCss btn-default" id="shopOpenHouses"></button>
                     </div>
-                    <h3>Resources</h3>
-                    <p>Wood: <text id="wood">0</text></p>
-                    <p>Iron: <text id="iron">0</text></p>
-                    <p>Food: <text id="food">0</text></p>
-                    <p id="resStone" class="hidden">Stone: <text id="stone">0</text></p>
-                    <p id="resGold" class="hidden">Gold: <text id="gold">0</text></p>
-                    <p id="resCrystal" class="hidden">Crystal: <text id="crystal">0</text></p>
-                </div>
-                <div class="col-md-4 floatLeft hudPanel" style="width: 25%;">
-                    <h3 class="bold">Village Simulator</h3>
-                    <p>
-                        Housing: <text id="villagers">0</text>/<text id="houses">10</text>                     
-                    </p>
-                    <h3>Work</h3>
-                    <!--<div class="tooltip" id="woodBar">
-                        <span class="tooltiptext">Harvest Wood - Requires an Axe, damages the axe on usage</span>
-                    </div>-->
-                    <div id="woodBar"></div>
-                    <div id="ironBar"></div>
-                    <div id="huntBar"></div>
-                    <div id="clawTreeBar"></div>
-                    <div id="speedBar"></div>
-                    <div id="strengthBar"></div>
-                    <div id="cardioBar"></div>
-                    <div id="crystalBar" class="hidden"></div>
-                    <div id="sleepBar"></div>
-                    <h3 id="scoutHeader" class="hidden">Expeditions</h3>
-                    <div id="scoutHillsBar" class="hidden"></div>
-                    <div id="scoutMountainsBar" class="hidden"></div>
-                    <div id="scoutCavernBar" class="hidden"></div>
-                </div>
-                <div class="col-md-4 floatLeft hudPanel" style="width: 25%;">
-                    <h3 id="shopName">Shop</h3>
+                    <div>
+                        <button type="button" class="btn btnCss btn-default" id="hireVillagerShop"></button>
+                    </div>
                     <div>
                         <div>
-                            <button type="button" class="btn btnCss btn-default" id="shopBackButton"></button>
-                            <button type="button" class="btn btnCss btn-default" id="shopOpenEquipment"></button>
-                            <button type="button" class="btn btnCss btn-default" id="shopOpenHouses"></button>
+                            <button type="button" class="btn btnCss btn-default" id="axeShop"></button>
+                            <button type="button" class="btn btnCss btn-default" id="tradeAxeShop"></button>
                         </div>
-                        <div>
-                            <button type="button" class="btn btnCss btn-default" id="hireVillagerShop"></button>
-                        </div>
-                        <div>
-                            <div>
-                                <button type="button" class="btn btnCss btn-default" id="axeShop"></button>
-                                <button type="button" class="btn btnCss btn-default" id="tradeAxeShop"></button>
-                            </div>
-                            <button type="button" class="btn btnCss btn-default" id="spearShop"></button>
-                        </div>
-                        <div>
-                            <button type="button" class="btn btnCss btn-default" id="tradeFoodShop"></button>
-                        </div>
-                        <div>
-                            <button type="button" class="btn btnCss btn-default" id="buildHousesShop"></button>
-                            <button type="button" class="btn btnCss btn-default" id="buildLumberMillShop"></button>
-                            <button type="button" class="btn btnCss btn-default" id="buildMineShop"></button>
-                            <button type="button" class="btn btnCss btn-default" id="buildHuntingLodgeShop"></button>
-                            <button type="button" class="btn btnCss btn-default" id="buildTrainingYardShop"></button>
-                            <button type="button" class="btn btnCss btn-default hidden" id="quarryShop"></button>
-                            <button type="button" class="btn btnCss btn-default hidden" id="farmShop"></button>
-                            <button type="button" class="btn btnCss btn-default hidden" id="blacksmithShop"></button>
-                            <button type="button" class="btn btnCss btn-default hidden" id="marketShop"></button>
-                            <button type="button" class="btn btnCss btn-default hidden" id="monumentShop"></button>
-                        </div>
+                        <button type="button" class="btn btnCss btn-default" id="spearShop"></button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btnCss btn-default" id="tradeFoodShop"></button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btnCss btn-default" id="buildHousesShop"></button>
+                        <button type="button" class="btn btnCss btn-default" id="buildLumberMillShop"></button>
+                        <button type="button" class="btn btnCss btn-default" id="buildMineShop"></button>
+                        <button type="button" class="btn btnCss btn-default" id="buildHuntingLodgeShop"></button>
+                        <button type="button" class="btn btnCss btn-default" id="buildTrainingYardShop"></button>
+                        <button type="button" class="btn btnCss btn-default hidden" id="quarryShop"></button>
+                        <button type="button" class="btn btnCss btn-default hidden" id="farmShop"></button>
+                        <button type="button" class="btn btnCss btn-default hidden" id="blacksmithShop"></button>
+                        <button type="button" class="btn btnCss btn-default hidden" id="marketShop"></button>
+                        <button type="button" class="btn btnCss btn-default hidden" id="monumentShop"></button>
                     </div>
                 </div>
-                <div class="col-md-4 hudPanel" style="width: 25%;">
-                <div id="jobColumn">
-                        <h3>Jobs</h3>
-                        <div id="jobUnemployed"> 
+            </div>
+
+            <div id="jobsOverlay" class="overlay hidden">
+                <div class="overlayHead"><h3>Jobs</h3><button type="button" class="overlayClose">✕</button></div>
+                <div class="overlayBody">
+                    <div id="jobColumn">
+                        <div id="jobUnemployed">
                             <p class="floatLeft">Unemployed: </p>
                             <p id="unemployed">0</p>
                         </div>
-                        <div id="jobWoodCutter"> 
-                            <p class="floatLeft" ">WoodCutter: </p>
+                        <div id="jobWoodCutter">
+                            <p class="floatLeft">WoodCutter: </p>
                             <button type="button" class="floatLeft btn btnSmall btn-default" id="jobWoodCutterButton-">-</button>
                             <p class="floatLeft" id="woodCutter">0</p>
                             <button type="button" class="btn btn-default" id="jobWoodCutterButton+">+</button>
                         </div>
-                        <div id="jobIronWorker"> 
+                        <div id="jobIronWorker">
                             <p class="floatLeft">IronWorker: </p>
                             <button type="button" class="floatLeft btn btn-default" id="jobIronWorkerButton-">-</button>
                             <p class="floatLeft" id="ironWorker">0</p>
@@ -142,7 +121,6 @@
                             <button type="button" class="floatLeft btn btn-default" id="jobHunterButton-">-</button>
                             <p class="floatLeft" id="hunter">0</p>
                             <button type="button" class="btn btn-default" id="jobHunterButton+">+</button>
-
                         </div>
                         <div id="jobMason">
                             <p class="floatLeft">Mason: </p>
@@ -159,81 +137,59 @@
                     </div>
                 </div>
             </div>
-            <!--<div style="border: 1px black solid;"">hej</div>-->
-            <div class="row">
-                <div class="col-md-10">
-                    <canvas id="canvas1" width="1150" height="460">
-                    </div>
-                    <div class="col-md-2 noPadding">
-                        <div style="height: 110px;">
-                            <p class="bold underBorder">Action Messages</p>  
-                            <p id="printText" class="bold"> Welcome</p>
-                            <p id="prevMsg"> to</p>
-                            <p id="3rdMsg" style="color: grey"> the Village</p>
-                        </div>
-                        <div class="floatLeft">
-                            <br>
-                            <p class="bold underBorder">Goal: The Monument</p>
-                            <p id="goalMaterials" style="font-size: 12px;"></p>
-                            <button type="button" class="btn btn-default btnSmall" id="resetGame">Reset Game</button>
-                            <br>
-                            <p style="font-size: 11px; color: grey;">Hover for keys &amp; details &middot; press H for hotkeys</p>
-                            <div id="devPanel" class="hidden">
-                                <p class="bold underBorder">Dev</p>
-                                <button type="button" class="btn btn-default btnSmall" id="devSpeedBtn">Speed: 1x</button>
-                            </div>
-                        </div>
+
+            <div id="goalOverlay" class="overlay hidden">
+                <div class="overlayHead"><h3>Goal: The Monument</h3><button type="button" class="overlayClose">✕</button></div>
+                <div class="overlayBody"><p id="goalMaterials"></p></div>
+            </div>
+
+            <div id="messagesOverlay" class="overlay hidden">
+                <div class="overlayHead"><h3>Messages</h3><button type="button" class="overlayClose">✕</button></div>
+                <div class="overlayBody">
+                    <p id="printText" class="bold"> Welcome</p>
+                    <p id="prevMsg"> to</p>
+                    <p id="3rdMsg" style="color: grey"> the Village</p>
+                </div>
+            </div>
+
+            <div id="settingsOverlay" class="overlay hidden">
+                <div class="overlayHead"><h3>Settings</h3><button type="button" class="overlayClose">✕</button></div>
+                <div class="overlayBody">
+                    <button type="button" class="btn btn-default" id="resetGame">Reset Game</button>
+                    <p style="font-size: 11px; color: grey;">Hover for keys &amp; details &middot; press H for hotkeys</p>
+                    <div id="devPanel" class="hidden">
+                        <p class="bold underBorder">Dev</p>
+                        <button type="button" class="btn btn-default btnSmall" id="devSpeedBtn">Speed: 1x</button>
                     </div>
                 </div>
             </div>
         </div>
-        <div id="victoryOverlay" class="hidden">
-            <div id="victoryBox">
-                <h1>Victory!</h1>
-                <p>You built the Grand Monument and completed your village.</p>
-                <p id="victoryStats"></p>
-                <button type="button" class="btn btn-default" id="victoryClose">Keep Playing</button>
-            </div>
+
+        <!-- Bottom work toolbar: action dispatch buttons + expeditions -->
+        <div id="workToolbar">
+            <div id="woodBar" class="workBtn"></div>
+            <div id="ironBar" class="workBtn"></div>
+            <div id="huntBar" class="workBtn"></div>
+            <div id="clawTreeBar" class="workBtn"></div>
+            <div id="speedBar" class="workBtn"></div>
+            <div id="strengthBar" class="workBtn"></div>
+            <div id="cardioBar" class="workBtn"></div>
+            <div id="crystalBar" class="workBtn"></div>
+            <div id="sleepBar" class="workBtn"></div>
+            <span id="scoutHeader" class="hidden">Expeditions</span>
+            <div id="scoutHillsBar" class="workBtn hidden"></div>
+            <div id="scoutMountainsBar" class="workBtn hidden"></div>
+            <div id="scoutCavernBar" class="workBtn hidden"></div>
         </div>
-    </body>
-    </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--
-    <div class="texttitle">
-        <h1 class="text" align="center" id=title>Battleships</h1>
-        <p class="text" align="center" id="message">Player 1:s turn to place ships</p>
-        <p class="text" align="center" id="msg">Ships left to place: 20</p>
     </div>
 
-    <div class="board" id="GameBoard">
-	    <div class="row gi center-block" style="border: 2px solid black;">
-	    	<div class="col-md-4" id="board1"></div>
-	    	<div class="col-md-4 center-block" id="buttons">
-	    	    <div class="row">
-    		        <button type="button" class="btn btn-default disabled" id="done">Done Placing</button>
-    			    <button type="button" class="btn btn-default disabled" id="start">Start</button>
-    			    <button type="button" class="btn btn-default disabled" id="restart">Restart</button>
-                    <button type="button" class="btn btn-default" id="random">Random</button>
-	    	    </div>
-	    		<div class="row" id="boatdock">
-	    		    <div class="dock">
-                  <div id="boats"></div>
-	    		    </div>
-          </div>
-    		</div>
-    		<div class="container col-md-4 pull-right" id="board2"></div>
-    	</div>
+    <div id="victoryOverlay" class="hidden">
+        <div id="victoryBox">
+            <h1>Victory!</h1>
+            <p>You built the Grand Monument and completed your village.</p>
+            <p id="victoryStats"></p>
+            <button type="button" class="btn btn-default" id="victoryClose">Keep Playing</button>
+        </div>
     </div>
--->
+</body>
+</html>

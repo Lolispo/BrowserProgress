@@ -16,6 +16,7 @@ $(document).ready(function(){
 	initTooltips();
 	initHotkeys();
 	initDevMode();
+	initUI();
 	if(loaded){ rebuildUI(); } else { updateGoal(); }
 	if(typeof startAutoSave === "function"){ startAutoSave(); }
 

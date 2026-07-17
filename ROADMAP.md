@@ -139,6 +139,9 @@ buildings → grow more → build the **Monument** to win. Chain:
 - [ ] Real sprite art for stone/gold/crystal nodes + the 5 placeholder-box
       buildings (needs image assets; canvas-drawn icons are an option).
 - [ ] Audio for actions (needs audio assets).
+- [ ] Walking animation for villagers (currently they slide; add a step/bob cycle).
+- [ ] Nicer art/icons across the game — it's functional but not pretty
+      (sprites, building art, resource icons, UI polish).
 
 ## Planned: HUD redesign (minimize chrome, maximize map)
 
@@ -150,8 +153,13 @@ open as closable overlays over the map, Equipment panel dropped, Reset moved int
 Settings. UI-1 = this layout (CSS/HTML + small toggle JS, logic untouched). UI-2
 (later) = sector views: a wider world you switch/pan between (view Hills only, etc.).
 
-- [ ] UI-1 — top bar + bottom work toolbar + overlays; drop Equipment; map fills.
-- [ ] UI-2 — sector views / wider map with per-sector camera.
+- [x] UI-1 — thin top bar (resource + tool + housing chips, menu icons), bottom
+      work toolbar, Shop/Jobs/Goal/Messages/Settings as closable map overlays
+      (mutually exclusive), Equipment panel dropped, Reset + dev speed in Settings.
+      New ui.js for the toggles. Map now fills the middle (letterboxed to aspect).
+      Verified in browser.
+- [ ] UI-2 — sector views / wider map with per-sector camera (view Hills only, etc.).
+- [ ] Map fills without letterbox bands (widen canvas aspect or fit differently).
 
 ## Planned: Villager actor model (manual work done by villagers)
 

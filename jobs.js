@@ -47,7 +47,7 @@ function initJobsButtons(){
 	$("#jobHunter").toggleClass("hidden", true);
 	$("#jobMason").toggleClass("hidden", true);
 	$("#jobTrader").toggleClass("hidden", true);
-	$("#jobColumn").toggleClass("hidden", true);
+	// #jobColumn lives in the Jobs overlay now (always shown when that opens).
 }
 
 function increaseVillagers(){
