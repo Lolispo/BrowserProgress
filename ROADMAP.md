@@ -161,7 +161,12 @@ the free pool. Stats stay global.
       the most-tired free villager to rest (energyCost −100). Work dispatch picks the
       most-rested villager. Global energy system removed (bar, energy.js, energy
       requires). Small energy bar drawn under tired villagers. Verified in browser.
-- [ ] A3 — One tool per worker (tool arrays; reserve/free; gate dispatch on a free tool).
+- [x] A3 — One tool per worker: `state.axes`/`state.spears` are arrays of
+      `{dur, inUse}`. Chop/mine reserve a free axe, hunt a free spear (most-durable
+      free tool); the tool wears on completion and breaks (removed) at 0. Dispatch +
+      greying gate on a free tool, so parallel gathering is capped by tools AND
+      villagers. Equipment panel shows count + most-worn durability. Verified
+      (2 villagers/1 axe → one chops; buy 2nd → both; save/load restores arrays).
 - [ ] A4 — Map UI polish + game-area/sprite sizing; unify scouts onto the villager
       model (they still reduce the unemployed *count* rather than occupying an entity).
 

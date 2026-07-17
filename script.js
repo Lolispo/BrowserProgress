@@ -61,8 +61,6 @@ function initValues(loaded){
 	set("wood", state.wood);
 	set("iron", state.iron);
 	set("food", state.food);
-	set("axe", state.axe);
-	set("spear", state.spear);
 	set("villagers", state.villagers);
 	set("houses", state.houses);
 	set("unemployed", state.unemployed);
@@ -70,9 +68,8 @@ function initValues(loaded){
 	set("ironWorker", state.ironWorker);
 	set("hunter", state.hunter);
 
-	// Init the durability bars (energy is now per-villager, see scene.js)
-	axeUpdate(0);
-	spearUpdate(0);
+	// Init the tool readouts (energy is now per-villager, see scene.js)
+	updateToolDisplay();
 
 	document.getElementById("shopName").innerHTML = "Shop - Main";
 
@@ -110,54 +107,18 @@ function newMsg(msg){
 	console.log(msg);
 }
 
-function axeUpdate(percCost){
-	var text = "";
-	if(state.axe == 0){
-		text = "No Axe Available";
-	} else {
-		if(state.axeDurability - percCost <= 0){
-			set("axe", state.axe - 1);
-			newMsg("Axe broke!");
-			state.axeDurability = 100;
-			if(state.axe != 0){
-				state.axeDurability -= percCost;
-				text = "Axe Durability " + state.axeDurability + "%";
-			} else {
-				text = "No Axe Available";
-				$('#axeDurabilityBar_innertext').toggleClass("innerTextRed", true);
-				newMsg("Out of Axes!");
-			}
-		} else {
-			state.axeDurability -= percCost;
-			text = "Axe Durability " + state.axeDurability + "%";
-		}
-	}
-	$('#axeDurabilityBar_innerdiv').css("width", state.axeDurability + "%");
-	$('#axeDurabilityBar_innertext').text(text);
+// Refresh the tool readouts: count + a durability bar showing the most-worn tool
+// (the one about to break). Tools are per-worker arrays now (see data/registry.js).
+function updateToolDisplay(){
+	toolReadout(state.axes, "axe", "Axe", "axeDurabilityBar");
+	toolReadout(state.spears, "spear", "Spear", "spearDurabilityBar");
 }
 
-function spearUpdate(percCost){
-	var text = "";
-	if(state.spear == 0){
-		text = "No Spear Available";
-	} else {
-		if(state.spearDurability - percCost <= 0){
-			set("spear", state.spear - 1);
-			newMsg("Spear broke!");
-			state.spearDurability = 100;
-			if(state.spear != 0){
-				state.spearDurability -= percCost;
-				text = "Spear Durability " + state.spearDurability + "%";
-			} else {
-				text = "No Spear Available";
-				$('#spearDurabilityBar_innertext').toggleClass("innerTextRed", true);
-				newMsg("Out of Spears!");
-			}
-		} else {
-			state.spearDurability -= percCost;
-			text = "Spear Durability " + state.spearDurability + "%";
-		}
-	}
-	$('#spearDurabilityBar_innerdiv').css("width", state.spearDurability + "%");
-	$('#spearDurabilityBar_innertext').text(text);
+function toolReadout(arr, countId, label, barId){
+	var el = document.getElementById(countId);
+	if(el){ el.innerHTML = arr.length; }
+	var minDur = arr.length ? Math.min.apply(null, arr.map(function(t){ return t.dur; })) : 0;
+	$('#' + barId + '_innerdiv').css("width", Math.max(0, minDur) + "%");
+	$('#' + barId + '_innertext').text(arr.length ? (label + " Durability " + Math.round(minDur) + "%") : ("No " + label + " Available"));
+	$('#' + barId + '_innertext').toggleClass("innerTextRed", arr.length === 0);
 }

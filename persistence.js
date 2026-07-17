@@ -44,7 +44,10 @@ function rebuildUI(){
 	["wood", "iron", "food", "stone", "gold", "crystal", "axe", "spear",
 	 "villagers", "houses", "unemployed", "woodCutter", "ironWorker", "hunter",
 	 "mason", "trader"].forEach(function(k){ set(k, state[k]); });
-	axeUpdate(0); spearUpdate(0);
+	// Reset any tools left reserved mid-action in the save, then refresh readouts.
+	(state.axes || []).forEach(function(t){ t.inUse = false; });
+	(state.spears || []).forEach(function(t){ t.inUse = false; });
+	updateToolDisplay();
 	$("#unemployed").toggleClass("bold", state.unemployed > 0);
 
 	// Reveal claimed regions (unfog + resource labels), then rebuild entities

@@ -165,6 +165,7 @@ var scene = {
 			taskTarget: null,  // {x,y} to walk to
 			progress: 0,       // 0..1 while working
 			workDur: 1000,     // ms of the work phase
+			tool: null,        // reserved tool object for this task (A3)
 		});
 		this.syncJobs();
 	},
@@ -220,13 +221,31 @@ var scene = {
 		var tiredFactor = (id === "sleep") ? 1 : (2 - v.energy / 100);
 		v.workDur = base * tiredFactor;
 		v.taskTarget = (id === "sleep") ? { x: v.home.x, y: v.home.y } : this.actionTarget(id);
+		// Reserve a tool for the run (one tool per worker); freed on completion.
+		v.tool = null;
+		if(a.tool){
+			var t = (a.tool === "axe") ? freeAxe() : freeSpear();
+			if(t){ t.inUse = true; v.tool = t; }
+		}
 	},
 
-	// Apply an action's effect on work completion, drain (or restore) the acting
-	// villager's energy, then head home.
+	// Apply an action's effect on work completion, wear + free the reserved tool,
+	// drain (or restore) the acting villager's energy, then head home.
 	completeTask: function(v){
 		var a = ACTIONS[v.task];
 		if(a.onDone){ a.onDone(); }
+		if(v.tool){
+			v.tool.dur -= equipDamage(a.toolDmg || 0);
+			v.tool.inUse = false;
+			if(v.tool.dur <= 0){
+				var arr = (a.tool === "axe") ? state.axes : state.spears;
+				var idx = arr.indexOf(v.tool);
+				if(idx >= 0){ arr.splice(idx, 1); }
+				newMsg((a.tool === "axe" ? "An axe" : "A spear") + " broke!");
+			}
+			if(typeof updateToolDisplay === "function"){ updateToolDisplay(); }
+			v.tool = null;
+		}
 		var cost = a.energyCost || 0;
 		v.energy = Math.max(0, Math.min(100, v.energy - cost)); // negative cost restores
 		v.taskPhase = "return";

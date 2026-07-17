@@ -22,8 +22,9 @@ var state = {
 	wood: 0, iron: 0, food: 0,
 	// Phase 3 gating resources (revealed as regions are claimed)
 	stone: 0, gold: 0, crystal: 0,
-	// Equipment + durability (%)
-	axe: 1, spear: 1, axeDurability: 100, spearDurability: 100,
+	// Equipment: each tool is { dur: 0-100, inUse: bool }. One tool per worker.
+	axes: [{ dur: 100, inUse: false }],
+	spears: [{ dur: 100, inUse: false }],
 	// Buildings + housing capacity
 	houses: 2, housesBuilt: 0, lumberMill: 0, mine: 0, huntingLodge: 0, trainingYard: 0,
 	// Phase 3 buildings
@@ -114,6 +115,17 @@ function equipDamage(base){
 	return Math.round(base * (state.blacksmith > 0 ? 0.6 : 1));
 }
 
+// Tools: the most-durable tool not currently reserved by an in-flight action.
+function freeTool(arr){
+	var best = null;
+	for(var i = 0; i < arr.length; i++){
+		if(!arr[i].inUse && (!best || arr[i].dur > best.dur)){ best = arr[i]; }
+	}
+	return best;
+}
+function freeAxe(){ return freeTool(state.axes); }
+function freeSpear(){ return freeTool(state.spears); }
+
 
 // ---------------------------------------------------------------------------
 // ACTIONS registry — the clickable progress bars in the middle "Work" column.
@@ -129,11 +141,12 @@ var ACTIONS = {
 		barId: "woodBar",
 		label: "Chop wood",
 		tooltip: "Chop wood from the forest. Needs an axe; each chop wears it down.",
-		requires: [{ key: "axe", min: 1 }],
+		requires: [],
+		tool: "axe", toolDmg: axeWoodDmg,
 		startsHidden: false,
 		energyCost: 8,
 		maxTime: function(){ return Math.floor(woodSpeed / state.speed); },
-		onStart: function(){ axeUpdate(equipDamage(axeWoodDmg)); },
+		onStart: function(){},
 		onDone: function(){
 			var amt = gatherAmount(woodInc);
 			set("wood", state.wood + amt);
@@ -145,11 +158,12 @@ var ACTIONS = {
 		barId: "ironBar",
 		label: "Mine Iron",
 		tooltip: "Mine iron ore. Needs an axe; each swing wears it down.",
-		requires: [{ key: "axe", min: 1 }],
+		requires: [],
+		tool: "axe", toolDmg: axeIronDmg,
 		startsHidden: false,
 		energyCost: 10,
 		maxTime: function(){ return Math.floor(ironSpeed / state.speed); },
-		onStart: function(){ axeUpdate(equipDamage(axeIronDmg)); },
+		onStart: function(){},
 		onDone: function(){
 			var amt = gatherAmount(ironInc);
 			set("iron", state.iron + amt);
@@ -161,7 +175,8 @@ var ACTIONS = {
 		barId: "huntBar",
 		label: "Go Hunting",
 		tooltip: "Hunt for food. Needs a spear. Success scales with strength; tiring.",
-		requires: [{ key: "spear", min: 1 }],
+		requires: [],
+		tool: "spear", toolDmg: spearHuntDmg,
 		startsHidden: false,
 		energyCost: 25,
 		maxTime: function(){ return Math.floor(huntSpeed / state.speed); },
@@ -176,7 +191,6 @@ var ACTIONS = {
 			} else {
 				newMsg("Hunt failed! (" + roll + "/100 - needed " + Math.round(successRate) + ")");
 			}
-			spearUpdate(equipDamage(spearHuntDmg));
 		},
 	},
 	clawTree: {
@@ -284,11 +298,10 @@ var SHOP_ITEMS = {
 		category: "goods",
 		key: "a",
 		cost: { wood: 50, iron: 10 },
-		tooltip: "Buy an axe. Required to chop wood and mine iron.",
+		tooltip: "Buy an axe. Required to chop wood and mine iron. One tool per worker.",
 		onBuy: function(){
-			set("axe", state.axe + 1);
-			$('#axeDurabilityBar_innertext').text("Axe Durability " + state.axeDurability + "%");
-			$('#axeDurabilityBar_innertext').toggleClass("innerTextRed", false);
+			state.axes.push({ dur: 100, inUse: false });
+			updateToolDisplay();
 			newMsg("Bought Axe!");
 		},
 	},
@@ -299,9 +312,8 @@ var SHOP_ITEMS = {
 		cost: { food: 10 },
 		tooltip: "Trade food for an axe. An alternate path when you have food but no wood/iron.",
 		onBuy: function(){
-			set("axe", state.axe + 1);
-			$('#axeDurabilityBar_innertext').text("Axe Durability " + state.axeDurability + "%");
-			$('#axeDurabilityBar_innertext').toggleClass("innerTextRed", false);
+			state.axes.push({ dur: 100, inUse: false });
+			updateToolDisplay();
 			newMsg("Bought Axe!");
 		},
 	},
@@ -310,11 +322,10 @@ var SHOP_ITEMS = {
 		name: "Spear",
 		category: "goods",
 		cost: { wood: 130 },
-		tooltip: "Buy a spear. Required for hunting.",
+		tooltip: "Buy a spear. Required for hunting. One tool per worker.",
 		onBuy: function(){
-			set("spear", state.spear + 1);
-			$('#spearDurabilityBar_innertext').text("Spear Durability " + state.spearDurability + "%");
-			$('#spearDurabilityBar_innertext').toggleClass("innerTextRed", false);
+			state.spears.push({ dur: 100, inUse: false });
+			updateToolDisplay();
 			newMsg("Bought Spear!");
 		},
 	},

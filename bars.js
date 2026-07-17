@@ -84,6 +84,7 @@ function ActionButton(id, action){
 function dispatchAction(id){
 	var action = ACTIONS[id];
 	if(!meetsRequirements(action.requires)){ return; }
+	if(action.tool && !(action.tool === "axe" ? freeAxe() : freeSpear())){ return; } // need a free tool
 	// Sleep sends the most-tired free villager; everything else the most-rested.
 	var v = (id === "sleep") ? scene.tiredestFreeVillager() : scene.freeVillager();
 	if(!v){ return; }
@@ -105,7 +106,8 @@ function refreshBarStates(){
 	var noFree = !scene.freeVillager();
 	for(var id in ACTIONS){
 		var a = ACTIONS[id];
-		$("#" + a.barId + "_outerdiv").toggleClass("barUnavailable", !meetsRequirements(a.requires) || noFree);
+		var toolOk = !a.tool || (a.tool === "axe" ? freeAxe() : freeSpear());
+		$("#" + a.barId + "_outerdiv").toggleClass("barUnavailable", !meetsRequirements(a.requires) || noFree || !toolOk);
 	}
 	// Scout bars grey out when you lack the villagers to send.
 	for(var sid in SCOUTS){
