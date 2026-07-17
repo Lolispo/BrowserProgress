@@ -8,6 +8,23 @@ items off as they land; delete stale notes as they're absorbed into code.
 > **village growth** (population/building milestones, new tiers) and **expansion**
 > (unlock new map regions with richer nodes). The animated map is where both are felt.
 
+## Outstanding — pick up here
+
+The core loop, animated tile map, villager actor model (A1–A3 + map A4), and the
+HUD redesign (UI-1) all shipped. Biggest leftovers, roughly by value:
+
+1. **Balance / pacing pass** — the game *works* but is slow to *play* (small early
+   yields + long walks). The highest-value next step. See the Balance section.
+2. **A4 remainder** — unify scouts onto the villager model; add resource-area nodes
+   for Hills/Mountains/Cavern (stone/gold/crystal) like Home's Mine/Hunt.
+3. **UI-2 — sector views** — a wider world you switch/pan between (view one sector).
+   Plus: remove the map's letterbox bands.
+4. **Art & animation** — villager walking animation; nicer sprites/icons throughout.
+5. **Smaller** — shop-items-hidden-until-affordable, alternate skins, fuller keyboard
+   play, responsive/mobile, prestige/achievements/events.
+
+Detail for each lives in the phase sections below.
+
 ---
 
 ## Phase 0 — Ship an honest build (deploy without debug) ✅
@@ -48,16 +65,15 @@ the spear label said "130 spear" instead of "130 wood".
 ### Cost/affordability feedback (also falls out of data)
 - [x] Grey out shop items when unaffordable (`.unaffordable`).
 - [x] Main-shop category buttons highlight when they contain something affordable.
-- [ ] Recolor action bars by whether requirements are met (equipment + energy).
-      *(Energy-based bar recolour still lives in `energy.js`; unify with requires later.)*
+- [x] Action bars grey out when requirements aren't met / no worker is free
+      (`refreshBarStates`).
 
 ### Absorbed from the old TODO wall (comment block now deleted from script.js)
 - [x] Round resource gains (strength-scaled) to whole numbers.
 - [x] Old TODO wall removed from `script.js` (folded into this roadmap).
-- [ ] Hide things until relevant (e.g. no jobs column until first villager/building).
-- [ ] Show counts of special buildings (e.g. "LumberMill: 1") in the interface.
+- [x] Show counts of special buildings (×N on shop buttons).
+- [x] Inline panel `width`/style attrs removed from `index.html` (via HUD redesign).
 - [ ] Shop items stay hidden until you have ~half the price, then always visible.
-- [ ] Move remaining inline `width`/style attrs out of `index.html` into `style.css`.
 
 ---
 
@@ -257,13 +273,11 @@ T2 road + gateways → T3 snap entities → T4 polish.
       grass-green accent headers, resource numbers colored to match the on-map
       "+N" floaters, tactile buy list with affordable/locked/greyed states.
       (style.css now loads after Bootstrap so custom rules win.)
-- [ ] Extend the panel theme to the right column (Action Messages + Goal) and
-      frame the canvas to match.
 - [ ] Offer alternate skins — theme is centralized in CSS variables, so a
       modern / cozy-night / playful reskin is a quick swap. Confirm direction.
 - [ ] Push progress bars + typography further (heading face, bar detailing).
-- [ ] Move the inline `width: 25%` column styles out of index.html into CSS
-      (layout still depends on those inline widths; carried over from Phase 1).
+- [ ] Style the overlay panels + top/bottom bars further (they reuse the theme
+      but could be polished now they're the main chrome).
 
 ## Later / deluxe (not scheduled)
 
