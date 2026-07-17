@@ -176,6 +176,7 @@ var scene = {
 			progress: 0,       // 0..1 while working
 			workDur: 1000,     // ms of the work phase
 			tool: null,        // reserved tool object for this task (A3)
+			dropResource: null, dropAmount: 0, // resource carried to a drop-off
 		});
 		this.syncJobs();
 	},
@@ -243,7 +244,12 @@ var scene = {
 	// drain (or restore) the acting villager's energy, then head home.
 	completeTask: function(v){
 		var a = ACTIONS[v.task];
+		var res = a.yields || null;
+		var before = res ? state[res] : 0;
 		if(a.onDone){ a.onDone(); }
+		// Carry whatever was actually gained to the drop-off (floated on arrival).
+		v.dropResource = (res && state[res] - before > 0) ? res : null;
+		v.dropAmount = res ? state[res] - before : 0;
 		if(v.tool){
 			v.tool.dur -= equipDamage(a.toolDmg || 0);
 			v.tool.inUse = false;
@@ -286,9 +292,23 @@ var scene = {
 			v.progress += (dt * 1000) / Math.max(1, v.workDur);
 			if(v.progress >= 1){ this.completeTask(v); }
 		} else if(v.taskPhase === "return"){
-			v.tx = v.home.x; v.ty = v.home.y;
+			// Carry the harvest to its drop-off: the resource's building if built,
+			// else home. The "+N" pops where it's deposited.
+			var dest = v.home;
+			if(v.dropResource){
+				var bt = this.dropBuilding[v.dropResource];
+				var bld = bt ? this.firstBuilding(bt) : null;
+				if(bld){ dest = { x: bld.x, y: bld.y + this.spriteH(bld.img) - this.spriteH(imgVillager) }; }
+			}
+			v.tx = dest.x; v.ty = dest.y;
 			v.working = false;
-			if(this.moveToward(v, dt)){ v.busy = false; v.task = null; v.taskPhase = null; }
+			if(this.moveToward(v, dt)){
+				if(v.dropResource){
+					this.floater("+" + v.dropAmount + " " + v.dropResource, v.x, v.y - 6, this.resColor(v.dropResource));
+					v.dropResource = null;
+				}
+				v.busy = false; v.task = null; v.taskPhase = null;
+			}
 		}
 	},
 
@@ -335,16 +355,19 @@ var scene = {
 		this.floaters.push({ text: text, x: x, y: y, life: 1.3, color: color || "#fff" });
 	},
 
-	// Chopping wood: deplete a grown tree and float the gain over it.
-	chopWoodFx: function(amount){
+	// Deplete a grown tree (visual) when wood is gathered. The "+N" floater is
+	// shown later at the drop-off, not here (see the carry leg in updateTask).
+	chopTree: function(){
 		var grown = this.trees.filter(function(t){ return t.growth > 0.5; });
 		var t = grown.length ? grown[Math.floor(Math.random() * grown.length)] : this.trees[0];
-		if(t){
-			t.growth = 0.12;
-			this.floater("+" + amount + " wood", t.col * this.tileW, (t.row + 1) * this.tileH, "#2e7d32");
-		} else {
-			this.gainFx("wood", amount);
-		}
+		if(t){ t.growth = 0.12; }
+	},
+
+	// Where a villager drops a gathered resource: the resource's building if built,
+	// else the villager's home.
+	dropBuilding: { wood: "lumberMill", iron: "mine", food: "huntingLodge" },
+	resColor: function(res){
+		return { wood: "#2e7d32", iron: "#607d8b", food: "#c76b28", stone: "#6d6d6d", gold: "#c9a227", crystal: "#9b6dc9" }[res] || "#fff";
 	},
 
 	// Generic resource gain: float over the relevant building, or top-left.

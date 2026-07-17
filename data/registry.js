@@ -142,15 +142,14 @@ var ACTIONS = {
 		label: "Chop wood",
 		tooltip: "Chop wood from the forest. Needs an axe; each chop wears it down.",
 		requires: [],
-		tool: "axe", toolDmg: axeWoodDmg,
+		tool: "axe", toolDmg: axeWoodDmg, yields: "wood",
 		startsHidden: false,
 		energyCost: 8,
 		maxTime: function(){ return Math.floor(woodSpeed / state.speed); },
 		onStart: function(){},
 		onDone: function(){
-			var amt = gatherAmount(woodInc);
-			set("wood", state.wood + amt);
-			scene.chopWoodFx(amt);
+			set("wood", state.wood + gatherAmount(woodInc));
+			scene.chopTree();
 			newMsg("Gathered Wood!");
 		},
 	},
@@ -159,15 +158,13 @@ var ACTIONS = {
 		label: "Mine Iron",
 		tooltip: "Mine iron ore. Needs an axe; each swing wears it down.",
 		requires: [],
-		tool: "axe", toolDmg: axeIronDmg,
+		tool: "axe", toolDmg: axeIronDmg, yields: "iron",
 		startsHidden: false,
 		energyCost: 10,
 		maxTime: function(){ return Math.floor(ironSpeed / state.speed); },
 		onStart: function(){},
 		onDone: function(){
-			var amt = gatherAmount(ironInc);
-			set("iron", state.iron + amt);
-			scene.gainFx("iron", amt);
+			set("iron", state.iron + gatherAmount(ironInc));
 			newMsg("Gathered Iron!");
 		},
 	},
@@ -176,7 +173,7 @@ var ACTIONS = {
 		label: "Go Hunting",
 		tooltip: "Hunt for food. Needs a spear. Success scales with strength; tiring.",
 		requires: [],
-		tool: "spear", toolDmg: spearHuntDmg,
+		tool: "spear", toolDmg: spearHuntDmg, yields: "food",
 		startsHidden: false,
 		energyCost: 25,
 		maxTime: function(){ return Math.floor(huntSpeed / state.speed); },
@@ -186,7 +183,6 @@ var ACTIONS = {
 			var roll = Math.floor((Math.random() * 100) + 1);
 			if(roll < successRate){
 				set("food", state.food + foodInc);
-				scene.gainFx("food", foodInc);
 				newMsg("Hunted Successfully!");
 			} else {
 				newMsg("Hunt failed! (" + roll + "/100 - needed " + Math.round(successRate) + ")");
@@ -198,14 +194,14 @@ var ACTIONS = {
 		label: "Claw Tree",
 		tooltip: "Claw wood by hand. No axe needed, but slow and very tiring.",
 		requires: [],
+		yields: "wood",
 		startsHidden: false,
 		energyCost: 15,
 		maxTime: function(){ return Math.floor(clawTreeSpeed / state.speed); },
 		onStart: function(){},
 		onDone: function(){
-			var amt = gatherAmount(clawInc);
-			set("wood", state.wood + amt);
-			scene.chopWoodFx(amt);
+			set("wood", state.wood + gatherAmount(clawInc));
+			scene.chopTree();
 			newMsg("Clawed some wood!");
 		},
 	},
@@ -247,12 +243,13 @@ var ACTIONS = {
 		label: "Mine Crystal",
 		tooltip: "Personally mine rare crystal from the Cavern. Slow, but the Monument needs it.",
 		requires: [],
+		yields: "crystal",
 		startsHidden: true, // revealed when the Crystal Cavern is claimed
 		rawTime: true,
 		energyCost: 12,
 		maxTime: function(){ return 6000; },
 		onStart: function(){},
-		onDone: function(){ set("crystal", state.crystal + 1); scene.gainFx("crystal", 1); newMsg("Mined a Crystal!"); },
+		onDone: function(){ set("crystal", state.crystal + 1); newMsg("Mined a Crystal!"); },
 	},
 	sleep: {
 		barId: "sleepBar",
