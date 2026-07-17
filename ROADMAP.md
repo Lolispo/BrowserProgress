@@ -165,9 +165,12 @@ T2 road + gateways → T3 snap entities → T4 polish.
 ## Controls & dev tools
 
 - [x] Hotkeys: 1–8 fire the work/action bars, Q/W/E fire region scouts (key
-      badges on the bars), `?` toggles a help overlay listing all bindings.
-- [x] Dev-only speed toggle (backtick / Dev-panel button): 1x↔5x `timeScale`
-      that shortens bar/scout/income timers for testing. Never ships live.
+      badges on the bars + each tooltip ends with "[Key: X]"); `H` toggles a help
+      overlay listing all bindings (`?` also works; `H` is Swedish-layout safe).
+- [x] Dev-only speed toggle, pinned to a fixed top-right card (backtick or the
+      button): 1x↔5x `timeScale` shortening bar/scout/income timers. Never ships.
+- [x] Fresh game + Reset start at 0 resources (removed the localhost auto-grant;
+      grind fast with the speed toggle instead).
 - [x] Buildings no longer bob (villagers still do).
 - [ ] Extend hotkeys to shop buys / job steppers for full keyboard play (chose
       actions+scouts only for now).
