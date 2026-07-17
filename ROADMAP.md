@@ -172,8 +172,14 @@ T2 road + gateways → T3 snap entities → T4 polish.
 - [x] Fresh game + Reset start at 0 resources (removed the localhost auto-grant;
       grind fast with the speed toggle instead).
 - [x] Buildings no longer bob (villagers still do).
-- [ ] Extend hotkeys to shop buys / job steppers for full keyboard play (chose
-      actions+scouts only for now).
+- [x] Buy-by-key for shop items (A buys an axe from anywhere); shop-item keys in
+      tooltips + help.
+- [x] "Go to Sleep" action (key 9): restores energy to full over ~3s, blocks
+      other actions while asleep.
+- [ ] Extend buy-hotkeys to more shop items / job steppers for fuller keyboard
+      play (only axe wired so far).
+- [x] Shop: merged the food-only Resources tab into "Goods"; emoji icons on all
+      shop buttons.
 
 ## Visual / HUD polish
 
