@@ -140,6 +140,20 @@ buildings → grow more → build the **Monument** to win. Chain:
       buildings (needs image assets; canvas-drawn icons are an option).
 - [ ] Audio for actions (needs audio assets).
 
+## Planned: Tile-based world + living road
+
+**Design spec:** [`docs/superpowers/specs/2026-07-17-tile-world-design.md`](docs/superpowers/specs/2026-07-17-tile-world-design.md)
+
+Render the world as a tile grid with procedural per-region terrain, connected by
+a road that physically extends as each region is scouted (gateways at borders).
+Rendering redesign of `scene.js`; game logic untouched. Sub-phases T1 terrain →
+T2 road + gateways → T3 snap entities → T4 polish.
+
+- [ ] T1 — Tile grid + procedural terrain replacing the flat bands.
+- [ ] T2 — Living road + gateways; road extends on claim; hint at the gateway.
+- [ ] T3 — Snap buildings / trees / villagers onto the grid.
+- [ ] T4 — Polish (villagers walk the road, paving animation, prop tiles).
+
 ## Visual / HUD polish
 
 - [x] Village-ledger HUD theme for the top chrome + buy menu: parchment panels,
