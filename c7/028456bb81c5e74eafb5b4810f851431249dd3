@@ -1,0 +1,21 @@
+docs/superpowers/specs/2026-07-17-hud-redesign-design.md
+  s_c49c3d8017c580::t_5b8e7510f5eb35 1-88
+ROADMAP.md
+  s_c49c3d8017c580::t_1a52d66d6e1acd 143-155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "c7028456bb81c5e74eafb5b4810f851431249dd3",
+  "prompts": {},
+  "sessions": {
+    "s_c49c3d8017c580": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dd0841db-e951-424c-9840-348c0762face",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
