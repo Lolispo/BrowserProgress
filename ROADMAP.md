@@ -75,7 +75,9 @@ the spear label said "130 spear" instead of "130 wood".
 - [x] Old TODO wall removed from `script.js` (folded into this roadmap).
 - [x] Show counts of special buildings (×N on shop buttons).
 - [x] Inline panel `width`/style attrs removed from `index.html` (via HUD redesign).
-- [ ] Shop items stay hidden until you have ~half the price, then always visible.
+- [x] Shop items stay hidden until you have ~half the price, then always visible
+      (sticky `state.discovered`, half-of-each-resource threshold; re-evaluated on
+      every resource change + category switch; persists across save/load).
 
 ---
 
@@ -273,8 +275,9 @@ T2 road + gateways → T3 snap entities → T4 polish.
       tooltips + help.
 - [x] "Go to Sleep" action (key 9): restores energy to full over ~3s, blocks
       other actions while asleep.
-- [ ] Extend buy-hotkeys to more shop items / job steppers for fuller keyboard
-      play (only axe wired so far).
+- [x] Buy-hotkeys for the common goods: A axe, S spear, F food, V hire villager
+      (badges in tooltips + help overlay, buy from anywhere via the shared handler).
+- [ ] Extend buy-hotkeys further (buildings / job steppers) for fuller keyboard play.
 - [x] Shop: merged the food-only Resources tab into "Goods"; emoji icons on all
       shop buttons.
 

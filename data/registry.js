@@ -36,6 +36,8 @@ var state = {
 	speed: 100, strength: 100, cardio: 100,
 	// Claimed regions (home is free; the rest are scouted). See REGIONS.
 	regions: { home: true, hills: false, mountains: false, cavern: false },
+	// Shop items revealed once you've reached ~half their price (sticky). See shops.js.
+	discovered: {},
 };
 
 // Resource keys drive shop affordability colouring; changing one refreshes the shop.
@@ -75,6 +77,7 @@ function set(key, val){
 	if(el){ el.innerHTML = formatNum(val); }
 	if(RESOURCE_KEYS.indexOf(key) !== -1){
 		if(typeof refreshShopColors === "function"){ refreshShopColors(); }
+		if(typeof updateShopVisibility === "function"){ updateShopVisibility(); }
 		if(typeof updateGoal === "function"){ updateGoal(); }
 	}
 }
@@ -279,6 +282,7 @@ var SHOP_ITEMS = {
 		btnId: "hireVillagerShop",
 		name: "Hire Villager",
 		category: "main",
+		key: "v",
 		cost: { food: 20 },
 		tooltip: "Hire a villager. Needs a free house. Villagers can be assigned to jobs for passive income.",
 		canBuy: function(){ return state.villagers + 1 <= state.houses; },
@@ -318,6 +322,7 @@ var SHOP_ITEMS = {
 		btnId: "spearShop",
 		name: "Spear",
 		category: "goods",
+		key: "s",
 		cost: { wood: 130 },
 		tooltip: "Buy a spear. Required for hunting. One tool per worker.",
 		onBuy: function(){
@@ -330,6 +335,7 @@ var SHOP_ITEMS = {
 		btnId: "tradeFoodShop",
 		name: "Buy Food",
 		category: "goods",
+		key: "f",
 		cost: { wood: 100 },
 		tooltip: "Trade wood for " + foodShopInc + " food. Food hires villagers.",
 		onBuy: function(){ set("food", state.food + foodShopInc); newMsg("Bought " + foodShopInc + " Food"); },

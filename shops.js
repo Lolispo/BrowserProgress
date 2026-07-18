@@ -77,12 +77,27 @@ function itemAvailable(item){
 	return !item.region || state.regions[item.region];
 }
 
+// Discovery: a shop item stays hidden until you have ~half of every resource in
+// its cost, then it's revealed for good (sticky in state.discovered, so it
+// survives spending back below the threshold and save/load). Costless items are
+// always discovered.
+function halfAfforded(cost){
+	if(!cost){ return true; }
+	for(var k in cost){ if(state[k] < cost[k] / 2){ return false; } }
+	return true;
+}
+function itemDiscovered(id, item){
+	if(state.discovered[id]){ return true; }
+	if(halfAfforded(item.cost)){ state.discovered[id] = true; return true; }
+	return false;
+}
+
 // Show the buttons whose category is active and whose region gate is satisfied;
 // nav + back visibility follow the current category.
 function updateShopVisibility(){
 	for(var id in SHOP_ITEMS){
 		var item = SHOP_ITEMS[id];
-		var show = item.category === currentShopCategory && itemAvailable(item);
+		var show = item.category === currentShopCategory && itemAvailable(item) && itemDiscovered(id, item);
 		$("#" + item.btnId).toggleClass("hidden", !show);
 	}
 	for(var i = 0; i < SHOP_NAV.length; i++){
