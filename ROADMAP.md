@@ -13,8 +13,10 @@ items off as they land; delete stale notes as they're absorbed into code.
 The core loop, animated tile map, villager actor model (A1–A3 + map A4), and the
 HUD redesign (UI-1) all shipped. Biggest leftovers, roughly by value:
 
-1. **Balance / pacing pass** — the game *works* but is slow to *play* (small early
-   yields + long walks). The highest-value next step. See the Balance section.
+1. **Balance / pacing pass** — a coordinated opening pass shipped (faster villagers,
+   higher early yields, cheaper first buildings): time-to-first-LumberMill ~8min →
+   ~3min. Remaining: the wood trek is still ~80% of each trip (a layout fix, not
+   numbers). See the Balance section.
 2. **A4 remainder** — unify scouts onto the villager model; add resource-area nodes
    for Hills/Mountains/Cavern (stone/gold/crystal) like Home's Mine/Hunt.
 3. **UI-2 — sector views** — a wider world you switch/pan between (view one sector).
@@ -220,11 +222,20 @@ the free pool. Stats stay global.
 
 ## Balance / pacing (own pass, flagged)
 
-- [ ] Early game is slow: chop yields 10 wood and now includes a long walk (the
-      taller map made home→forest ~5s each way, ~10s+ round trip), so reaching an axe
-      / first buildings drags badly. Options: raise early yields, move the home band
-      nearer the forest / shorten distances, speed villagers, and/or lower early
-      costs. Its own pass — playtest via `?nodev`.
+- [x] Coordinated opening pass (all three levers, moderate strength):
+      villager speed 62-88 → 100-130 px/s; early yields chop 10→20, iron/food 10→15;
+      iron/hunt work shortened (ironSpeed 6M→4M, huntSpeed 8M→6M); first-building
+      costs cut ~40% (LumberMill 500/100→300/60, Mine 500/150→300/80, HuntingLodge
+      800/200→500/120, houses 600/100→400/60, TrainingYard 1000/250→600/150).
+      Verified via `?nodev` in-browser: no errors, chop yields 20 / iron 15,
+      time-to-first-LumberMill ~8min → ~3min (50 chops → 15). Throughput ~1.0 →
+      ~1.8 wood/s.
+- [ ] Walk distance is still the dominant per-trip cost: even at the new speed the
+      wood round trip is ~11s (≈80% walking), because the forest is pinned to rows
+      0-1 while villagers live at the bottom. Next lever if the opening still drags:
+      shorten the wood trek itself — bring some forest tiles nearer the home band,
+      or lift the home band up. Left for a follow-up (it's a layout change, not
+      number-tuning). Playtest via `?nodev`.
 
 ## Planned: Tile-based world + living road
 

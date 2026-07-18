@@ -338,7 +338,7 @@ var SHOP_ITEMS = {
 		btnId: "buildHousesShop",
 		name: "Build Farm Houses",
 		category: "houses",
-		cost: { wood: 600, iron: 100 },
+		cost: { wood: 400, iron: 60 },
 		tooltip: "Build houses (+" + houseShopInc + " housing). Housing caps how many villagers you can have.",
 		onBuy: function(){
 			set("housesBuilt", state.housesBuilt + 1);
@@ -351,7 +351,7 @@ var SHOP_ITEMS = {
 		btnId: "buildLumberMillShop",
 		name: "Build LumberMill",
 		category: "houses",
-		cost: { wood: 500, iron: 100 },
+		cost: { wood: 300, iron: 60 },
 		tooltip: "Build a lumber mill. Unlocks the WoodCutter job for passive wood income.",
 		onBuy: function(){
 			set("lumberMill", state.lumberMill + 1);
@@ -365,7 +365,7 @@ var SHOP_ITEMS = {
 		btnId: "buildMineShop",
 		name: "Build Mine",
 		category: "houses",
-		cost: { wood: 500, iron: 150 },
+		cost: { wood: 300, iron: 80 },
 		tooltip: "Build a mine. Unlocks the IronWorker job for passive iron income.",
 		onBuy: function(){
 			set("mine", state.mine + 1);
@@ -379,7 +379,7 @@ var SHOP_ITEMS = {
 		btnId: "buildHuntingLodgeShop",
 		name: "Build HuntingLodge",
 		category: "houses",
-		cost: { wood: 800, iron: 200 },
+		cost: { wood: 500, iron: 120 },
 		tooltip: "Build a hunting lodge. Unlocks the Hunter job for passive food income.",
 		onBuy: function(){
 			set("huntingLodge", state.huntingLodge + 1);
@@ -393,7 +393,7 @@ var SHOP_ITEMS = {
 		btnId: "buildTrainingYardShop",
 		name: "Build TrainingYard",
 		category: "houses",
-		cost: { wood: 1000, iron: 250 },
+		cost: { wood: 600, iron: 150 },
 		tooltip: "Build a training yard. Unlocks Speed / Strength / Cardio training bars.",
 		onBuy: function(){
 			set("trainingYard", state.trainingYard + 1);

@@ -24,14 +24,14 @@ var developer = (location.hostname === "localhost" ||
 
 // Action base speeds (ms), scaled by player speed and speedRatio in ACTIONS.maxTime()
 var woodSpeed = 2000000;
-var ironSpeed = 6000000;
-var huntSpeed = 8000000;
+var ironSpeed = 4000000;
+var huntSpeed = 6000000;
 var clawTreeSpeed = 5000000;
 
 // Action tuning - yields, equipment damage and energy requirements/costs
-var woodInc = 10;
-var ironInc = 10;
-var foodInc = 10;
+var woodInc = 20;
+var ironInc = 15;
+var foodInc = 15;
 var clawInc = 2;
 var axeWoodDmg = 5;
 var axeIronDmg = 5;

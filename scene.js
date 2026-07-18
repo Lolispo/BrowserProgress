@@ -166,7 +166,7 @@ var scene = {
 			jobTarget: null,
 			working: false,
 			phase: Math.random() * 6.28,
-			speed: 62 + Math.random() * 26, // px/s — fast enough to cross the map to tasks
+			speed: 100 + Math.random() * 30, // px/s — brisk enough that the wood trek isn't a slog
 			energy: 100,       // per-villager (A2): drains with work, recovers idle
 			// Manual-task state (A1): a free villager dispatched to an action.
 			busy: false,       // running a manual action
