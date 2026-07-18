@@ -4,12 +4,7 @@
   display: none;
 }
 
-#canvas1{
-  float: left;
-  border: 1px black solid;
-  width: 100%;
-  height: auto; /* scale proportionally to the 1150x460 internal resolution */
-}
+/* #canvas1 is styled in the HUD layout section below (UI-1). */
 
 .bold{
   font-weight: bold;
@@ -213,34 +208,6 @@ body{
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
-/* Top-row panels as parchment cards */
-.hudPanel{
-  box-sizing: border-box;
-  width: calc(25% - 12px) !important;
-  margin: 8px 6px !important;
-  padding: 12px 14px !important;
-  background: var(--panel);
-  border: 1px solid var(--edge);
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  /* Cap the top section so the map stays visible; overflow scrolls in-panel. */
-  max-height: 46vh;
-  overflow-y: auto;
-}
-
-.hudPanel h3{
-  margin: 0 0 10px;
-  font-size: 15px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--ink);
-  border-bottom: 2px solid var(--accent);
-  padding-bottom: 5px;
-}
-
-.hudPanel p{ margin: 3px 0; font-size: 13px; }
-
 /* Signature: resource numbers use the same colors as the "+N" floaters on the map */
 #wood, #iron, #food, #stone, #gold, #crystal,
 #villagers, #houses, #axe, #spear{
@@ -323,6 +290,7 @@ body{
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh; /* dvh excludes mobile browser chrome; ignored where unsupported */
 }
 
 /* Top bar */
@@ -476,116 +444,42 @@ body{
   border-radius: 3px;
 }
 
-
-/*p{
-	font-size: 20px;
+/* ===========================================================================
+   Mobile: tighten the chrome and enlarge touch targets on small screens.
+   The map bitmap is a wide 2.5:1, so portrait letterboxes badly — rather than
+   rewrite the canvas we nudge players to landscape (see #rotateHint below).
+   =========================================================================== */
+@media (max-width: 820px){
+  #topBar{ gap: 6px; padding: 4px 8px; }
+  #resBar{ gap: 6px; }
+  .resChip{ font-size: 12px; }
+  .resSep{ margin-left: 3px; padding-left: 6px; }
+  .menuBtn{ padding: 5px 9px; font-size: 12px; }
+  #workToolbar{ gap: 4px; padding: 4px 8px; }
+  .workBtn{ flex: 1 1 100px; min-width: 88px; }
+  .workBtn .outerdiv{ height: 32px; }      /* larger tap target */
+  .workBtn .innertext{ line-height: 32px; }
+  .overlay{ width: min(440px, 96%); }
 }
 
-body {
-	position: absolute;
-	overflow-y: auto;
- }
-
-.center-block {
-	text-align: center;
-	margin-left: auto;
-  margin-right: auto;
-  float: none;
-  display: inline-block;
+/* Portrait rotate nudge: hidden by default, shown only on narrow portrait. */
+#rotateHint{ display: none; }
+@media (max-width: 600px) and (orientation: portrait){
+  #rotateHint{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    padding: 28px;
+    text-align: center;
+    background: var(--panel);
+    color: var(--ink);
+  }
+  #rotateHint .rotIcon{ font-size: 68px; transform: rotate(90deg); margin-bottom: 14px; }
+  #rotateHint h2{ margin: 0 0 8px; }
+  #rotateHint p{ margin: 0; color: var(--muted); font-size: 14px; max-width: 260px; }
 }
 
-.boat{
- 	margin-right: 2px;
-	margin-top: 2px;
-	margin-bottom: 2px;
-	background-color: yellow;
-	border: 1px black solid;
-	z-index: 10;
-}
-
-
-.dock{
-    margin-top: 54px;
-		margin-left: -13px !important;
-}
-
-.col-md-2 {
-	margin-right: -24.5px !important;
-}
-
-.background {
-  padding-top: 50px;
-  background: linear-gradient(to bottom, #8ec5e8 0%, #b9dff0 45%, #cfe9c8 70%, #7cbf5a 100%) center center fixed;
-  background-repeat: no-repeat;
-  background-size: cover;
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  padding-bottom: 50px;
-}
-
-.board{
-    margin: 80px;
-}
-
-.text{
-    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
-    color: white;
-}
-
-.transformed{
-	transform: rotate(90deg);
-}
-
-.size2 {
-    width: 40px;
-    height: 83px;
-}
-
-.size3 {
-    width: 40px;
-    height: 127px;
-}
-
-.size4 {
-    width: 40px;
-    height: 172px;
-}
-
-.size5 {
-    width: 40px;
-    height: 215px;
-}
-
-.ruta{
-	min-width: 40px;
-	max-width: 40px;
-  min-height: 40px !important;
-  border: 2px solid black;
-  margin: 2px;
-}
-
-.def{
-	background-color: blue;
-}
-
-.gi {
-	width: 1195px !important;
-}
-
-.chosenColor{
-	background-color: yellow;
-}
-
-.hitColor{
-    background-color: green;
-}
-
-.missColor{
-    background-color: red;
-}
-
-.faded{
-  opacity: 0.5;
-}
-*/

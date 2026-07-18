@@ -301,8 +301,14 @@ T2 road + gateways → T3 snap entities → T4 polish.
       early-game safety net if the opening drags.
 - [ ] Optional highscore / speedrun timer.
 - [ ] Replace text resource labels with icons.
-- [ ] Responsive / mobile layout (top is a fixed 4-column grid; canvas is a
-      fixed 1150px — desktop-only today).
+- [x] Mobile (landscape-first): added the viewport meta tag (was missing — the
+      big one), a mobile media query (tighter top/bottom bars, larger tap targets,
+      100dvh), and a portrait "rotate your device" hint since the map is a wide
+      2.5:1. Verified at 390×844 / 844×390 / 568×320. Also cleaned dead CSS
+      (legacy .hudPanel, duplicate #canvas1 rule, the big commented block).
+- [ ] Full portrait support (optional): make the canvas fill a tall container
+      instead of letterboxing — needs the responsive-canvas rewrite (reposition
+      stored entity coords on resize). Deferred; landscape is the intended mode.
 - [ ] Replayability: prestige/ascension, achievements, random events.
 - [ ] Full canvas width: buildings still cluster in the left of each region
       zone; spread them to use the space better.
