@@ -21,7 +21,7 @@ HUD redesign (UI-1) all shipped. Biggest leftovers, roughly by value:
    for Hills/Mountains/Cavern (stone/gold/crystal) like Home's Mine/Hunt.
 3. **UI-2 — sector views** — a wider world you switch/pan between (view one sector).
    Plus: remove the map's letterbox bands.
-4. **Art & animation** — villager walking animation; nicer sprites/icons throughout.
+4. **Art & animation** — nicer sprites/icons throughout (walking animation shipped).
 5. **Smaller** — shop-items-hidden-until-affordable, alternate skins, fuller keyboard
    play, responsive/mobile, prestige/achievements/events.
 
@@ -159,7 +159,9 @@ buildings → grow more → build the **Monument** to win. Chain:
 - [ ] Real sprite art for stone/gold/crystal nodes + the 5 placeholder-box
       buildings (needs image assets; canvas-drawn icons are an option).
 - [ ] Audio for actions (needs audio assets).
-- [ ] Walking animation for villagers (currently they slide; add a step/bob cycle).
+- [x] Walking animation for villagers: a bouncy step-hop while moving (walk/return/
+      wander), distinct from the gentle sway while working. Driven by a `v.moving`
+      flag set in moveToward; no logic change.
 - [ ] Nicer art/icons across the game — it's functional but not pretty
       (sprites, building art, resource icons, UI polish).
 

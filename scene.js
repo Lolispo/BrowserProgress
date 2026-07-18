@@ -165,6 +165,7 @@ var scene = {
 			rest: Math.random() * 3,        // seconds to stand still before drifting
 			jobTarget: null,
 			working: false,
+			moving: false,     // walking this frame (drives the step-bob in draw)
 			phase: Math.random() * 6.28,
 			speed: 100 + Math.random() * 30, // px/s — brisk enough that the wood trek isn't a slog
 			energy: 100,       // per-villager (A2): drains with work, recovers idle
@@ -274,8 +275,8 @@ var scene = {
 		var dx = v.tx - v.x, dy = v.ty - v.y;
 		var dist = Math.sqrt(dx * dx + dy * dy);
 		var step = v.speed * dt / timeScale;
-		if(dist > step){ v.x += (dx / dist) * step; v.y += (dy / dist) * step; return false; }
-		v.x = v.tx; v.y = v.ty; return true;
+		if(dist > step){ v.x += (dx / dist) * step; v.y += (dy / dist) * step; v.moving = true; return false; }
+		v.x = v.tx; v.y = v.ty; v.moving = false; return true;
 	},
 
 	// Drive a busy villager through walk -> work -> return.
@@ -649,11 +650,13 @@ var scene = {
 			this.drawBuilding(this.buildings[i], this.buildings[i].y);
 		}
 
-		// Villagers (bob while working)
+		// Villagers: a gentle sway while working, a bouncy step cycle while walking.
 		for(i = 0; i < this.villagers.length; i++){
 			var v = this.villagers[i];
 			if(!imgVillager || !imgVillager.width){ continue; }
-			var vbob = v.working ? Math.sin(now * 6 + v.phase) * 1.5 : 0;
+			var vbob = 0;
+			if(v.working){ vbob = Math.sin(now * 6 + v.phase) * 1.5; }
+			else if(v.moving){ vbob = -Math.abs(Math.sin(now * 9 + v.phase)) * 2.2; } // hop up on each step
 			ctx.drawImage(imgVillager, v.x, v.y + vbob, this.spriteW(imgVillager), this.spriteH(imgVillager));
 			var vw = this.spriteW(imgVillager);
 			// Per-villager work progress bar (A1)
