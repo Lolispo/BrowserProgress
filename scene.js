@@ -127,12 +127,15 @@ var scene = {
 
 	// --- entity creation (called from the registry) -----------------------
 
-	addBuilding: function(type){
+	addBuilding: function(type, opts){
 		this.buildings.push({
 			type: type,
 			img: this.buildingImg(type),
 			x: 0, y: 0, // set by layoutBuildings
 			phase: Math.random() * 6.28,
+			// Birth time drives a one-shot spawn-pop (see drawBuilding). Suppressed
+			// on load (animate:false) so a restored village doesn't pop all at once.
+			bornAt: (opts && opts.animate === false) ? -1 : this.lastTime / 1000,
 		});
 		this.layoutBuildings();
 	},
@@ -340,7 +343,7 @@ var scene = {
 			market: state.market, monument: state.monument,
 		};
 		for(var type in counts){
-			for(var i = 0; i < counts[type]; i++){ this.addBuilding(type); }
+			for(var i = 0; i < counts[type]; i++){ this.addBuilding(type, { animate: false }); }
 		}
 		for(var v = 0; v < state.villagers; v++){ this.addVillager(); }
 		this.syncJobs();
@@ -617,22 +620,35 @@ var scene = {
 		ctx.fillRect(ax + tw * 0.34, ay - th * 0.1, tw * 0.12, th * 0.14);
 	},
 
+	// One-shot spawn-pop scale for a freshly-built building (grows from the ground
+	// with a little overshoot). Returns 1 once the ~0.45s animation is done, or for
+	// buildings restored from a save (bornAt < 0).
+	buildingScale: function(b){
+		if(b.bornAt < 0){ return 1; }
+		var age = this.lastTime / 1000 - b.bornAt;
+		return age < 0.45 ? Anim.easeOutBack(Anim.clamp01(age / 0.45)) : 1;
+	},
+
 	// Draw a building sprite, or a labelled colored box when it has no art yet.
 	drawBuilding: function(b, y){
 		var ctx = this.ctx;
+		var s = this.buildingScale(b);
 		if(b.img && b.img.width){
-			ctx.drawImage(b.img, b.x, y, this.spriteW(b.img), this.spriteH(b.img));
+			var w = this.spriteW(b.img), h = this.spriteH(b.img);
+			// scale around the bottom-centre so it rises out of its plot
+			ctx.drawImage(b.img, b.x + (w - w * s) / 2, y + (h - h * s), w * s, h * s);
 			return;
 		}
+		var sp = SPRITE_PX * s, bx = b.x + (SPRITE_PX - sp) / 2, by = y + (SPRITE_PX - sp);
 		var colors = { quarry: "#8d99ae", farm: "#7cb342", blacksmith: "#5d4037", market: "#c9a227", monument: "#7e57c2" };
 		ctx.fillStyle = colors[b.type] || "#888";
-		ctx.fillRect(b.x, y, SPRITE_PX, SPRITE_PX);
+		ctx.fillRect(bx, by, sp, sp);
 		ctx.strokeStyle = "rgba(0,0,0,0.4)";
-		ctx.strokeRect(b.x, y, SPRITE_PX, SPRITE_PX);
+		ctx.strokeRect(bx, by, sp, sp);
 		ctx.fillStyle = "#fff";
 		ctx.font = "bold 16px sans-serif";
 		ctx.textAlign = "center";
-		ctx.fillText(b.type.charAt(0).toUpperCase(), b.x + SPRITE_PX / 2, y + SPRITE_PX / 2 + 6);
+		ctx.fillText(b.type.charAt(0).toUpperCase(), bx + sp / 2, by + sp / 2 + 6);
 		ctx.textAlign = "left";
 	},
 
@@ -670,8 +686,8 @@ var scene = {
 			var v = this.villagers[i];
 			if(!imgVillager || !imgVillager.width){ continue; }
 			var vbob = 0;
-			if(v.working){ vbob = Math.sin(now * 6 + v.phase) * 1.5; }
-			else if(v.moving){ vbob = -Math.abs(Math.sin(now * 9 + v.phase)) * 2.2; } // hop up on each step
+			if(v.working){ vbob = Anim.oscillate(now, 6, 1.5, v.phase); }        // gentle work sway
+			else if(v.moving){ vbob = -Anim.pulse(now, 9, v.phase) * 2.2; }       // hop up on each step
 			ctx.drawImage(imgVillager, v.x, v.y + vbob, this.spriteW(imgVillager), this.spriteH(imgVillager));
 			var vw = this.spriteW(imgVillager);
 			// Per-villager work progress bar (A1)
@@ -698,7 +714,7 @@ var scene = {
 		ctx.textAlign = "left";
 		for(i = 0; i < this.floaters.length; i++){
 			var fl = this.floaters[i];
-			ctx.globalAlpha = Math.max(0, Math.min(1, fl.life / 1.3));
+			ctx.globalAlpha = Anim.clamp01(fl.life / 1.3);
 			ctx.fillStyle = "#000";
 			ctx.fillText(fl.text, fl.x + 1, fl.y + 1);
 			ctx.fillStyle = fl.color;

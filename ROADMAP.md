@@ -169,6 +169,11 @@ buildings → grow more → build the **Monument** to win. Chain:
 - [x] Walking animation for villagers: a bouncy step-hop while moving (walk/return/
       wander), distinct from the gentle sway while working. Driven by a `v.moving`
       flag set in moveToward; no logic change.
+- [x] Animation toolkit (`anim.js`): reusable `Anim.oscillate/pulse/tween/clamp01`
+      + easings, so new juice is "compose primitives" not inline trig. Villager
+      bobs + floater fade refactored onto it; added a building spawn-pop
+      (easeOutBack, grows from the ground, suppressed on load) as the first new
+      effect built from it. Next capability when needed: sprite-sheet frame anim.
 - [ ] Nicer art/icons across the game — it's functional but not pretty
       (sprites, building art, resource icons, UI polish).
 
