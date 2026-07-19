@@ -165,6 +165,10 @@ buildings → grow more → build the **Monument** to win. Chain:
 - [ ] Nicer/consistent art: the 5 new building SVGs are simple flat icons next to
       pixel-art PNGs — unify the style, and add real art for stone/gold/crystal
       nodes. All now one-line swaps in the SPRITES manifest.
+- [ ] Prune unused image assets: `images/` still has orphaned PNGs (hunter,
+      oldVillager, player, player2, player3, police) + the whole `nonTransparent/`
+      folder — none referenced by the SPRITES manifest or code. Safe to delete
+      (they deploy to Pages for nothing).
 - [ ] Audio for actions (needs audio assets).
 - [x] Walking animation for villagers: a bouncy step-hop while moving (walk/return/
       wander), distinct from the gentle sway while working. Driven by a `v.moving`
