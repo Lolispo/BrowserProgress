@@ -194,6 +194,13 @@ Settings. UI-1 = this layout (CSS/HTML + small toggle JS, logic untouched). UI-2
       Verified in browser.
 - [ ] UI-2 — sector views / wider map with per-sector camera (view Hills only, etc.).
 - [ ] Map fills without letterbox bands (widen canvas aspect or fit differently).
+      **Approach decided (deferred until this is built):** introduce a camera /
+      world→screen transform rather than migrating entities to tile coords. All
+      input is HTML (no canvas hit-testing), so a single `ctx` transform applied
+      in scene.draw() maps the fixed 1150×460 world onto a container-sized backing
+      buffer — near-zero entity churn, and it unlocks responsive fill, portrait,
+      zoom, and per-sector panning together. Scalability review #3; not built yet
+      (no consumer until UI-2), so it stays out to avoid speculative infra.
 
 ## Planned: Villager actor model (manual work done by villagers)
 
