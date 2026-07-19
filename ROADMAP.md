@@ -156,8 +156,15 @@ buildings → grow more → build the **Monument** to win. Chain:
       ("Build a Mine to scout" → "Scout it in Expeditions"); scout bars grey out
       until you have the villagers. Action hints moved to hover tooltips; the
       static bottom-right Information block removed.
-- [ ] Real sprite art for stone/gold/crystal nodes + the 5 placeholder-box
-      buildings (needs image assets; canvas-drawn icons are an option).
+- [x] Asset pipeline: a single `SPRITES` manifest (`data/assets.js`) is the one
+      source of truth — adding art is one line, buildings resolve by type name.
+      Supports PNG / SVG / data-URI (drawImage rasterises all three). The 5
+      placeholder-box buildings now have vector SVG art (quarry/farm/blacksmith/
+      market/monument). Replaced the old `<img>`-tags + per-sprite globals +
+      hardcoded buildingImg switch.
+- [ ] Nicer/consistent art: the 5 new building SVGs are simple flat icons next to
+      pixel-art PNGs — unify the style, and add real art for stone/gold/crystal
+      nodes. All now one-line swaps in the SPRITES manifest.
 - [ ] Audio for actions (needs audio assets).
 - [x] Walking animation for villagers: a bouncy step-hop while moving (walk/return/
       wander), distinct from the gentle sway while working. Driven by a `v.moving`

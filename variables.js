@@ -66,12 +66,7 @@ var farmFoodPerTick = 2;     // food per Farm per income tick
 var masonStonePerTick = 3;   // stone per Mason per income tick
 var traderGoldPerTick = 2;   // gold per Trader per income tick
 
-// Sprite image elements (populated in initValues, consumed by scene.js)
-var imgHouse;
+// Hot-path sprite aliases, populated from the SPRITES manifest by
+// scene.loadAssets() (all other sprites are looked up via scene.assets[key]).
 var imgVillager;
-var imgHunter;
-var imgLumberMill;
-var imgMine;
-var imgHuntingLodge;
-var imgTrainingYard;
 var imgTree;

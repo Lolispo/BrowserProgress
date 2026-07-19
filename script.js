@@ -74,18 +74,9 @@ function initValues(loaded){
 
 	document.getElementById("shopName").innerHTML = "Shop - Main";
 
-	// Init canvas and corresponding images
+	// Init canvas; scene.init loads sprites from the SPRITES manifest.
 	var c = document.getElementById("canvas1");
 	ctx = c.getContext("2d");
-
-	imgHouse = document.getElementById("imgHouse");
-	imgVillager = document.getElementById("imgVillager");
-	imgHunter = document.getElementById("imgHunter");
-	imgLumberMill = document.getElementById("imgLumberMill");
-	imgMine = document.getElementById("imgMine");
-	imgHuntingLodge = document.getElementById("imgHuntingLodge");
-	imgTrainingYard = document.getElementById("imgTrainingYard");
-	imgTree = document.getElementById("imgTree");
 
 	// Hand the canvas to the animated scene and start the render loop. The loop
 	// redraws every frame, so sprite images that are still loading simply appear

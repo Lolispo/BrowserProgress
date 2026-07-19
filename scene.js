@@ -17,6 +17,7 @@ var SPRITE_PX = 20 * SPRITE_SCALE;
 var scene = {
 	canvas: null, ctx: null, W: 0, H: 0,
 	buildings: [], villagers: [], trees: [], floaters: [],
+	assets: {}, // sprite key -> Image, populated from SPRITES by loadAssets()
 	lastTime: 0, running: false,
 
 	treeLane: 4, // y of the forest strip in Home
@@ -61,9 +62,24 @@ var scene = {
 		return [z[0] * this.W, z[1] * this.W];
 	},
 
+	// Load every sprite in the SPRITES manifest into an Image. drawImage handles
+	// PNG / SVG / data-URI uniformly, so entries can be any of those. The two
+	// hot-path sprites keep module-global aliases so the draw code stays terse.
+	loadAssets: function(){
+		this.assets = {};
+		for(var key in SPRITES){
+			var im = new Image();
+			im.src = SPRITES[key].src;
+			this.assets[key] = im;
+		}
+		imgVillager = this.assets.villager;
+		imgTree = this.assets.tree;
+	},
+
 	init: function(canvas, ctx){
 		this.canvas = canvas;
 		this.ctx = ctx;
+		this.loadAssets();
 		this.W = canvas.width;
 		this.H = canvas.height;
 		// Tile grid: fill the canvas exactly (tiles may be slightly non-square).
@@ -93,11 +109,10 @@ var scene = {
 
 	// --- image + geometry helpers -----------------------------------------
 
+	// A building's art is the manifest entry sharing its type name (see SPRITES).
+	// Types with no sprite fall back to a labelled box in drawBuilding.
 	buildingImg: function(type){
-		return {
-			house: imgHouse, lumberMill: imgLumberMill, mine: imgMine,
-			huntingLodge: imgHuntingLodge, trainingYard: imgTrainingYard,
-		}[type];
+		return this.assets[type];
 	},
 
 	firstBuilding: function(type){
