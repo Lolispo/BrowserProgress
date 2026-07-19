@@ -29,6 +29,57 @@ Detail for each lives in the phase sections below.
 
 ---
 
+## Feedback pass — onboarding, feedback & controls (queued, 2026-07-19)
+
+A batch from live play. Theme: the opening is slow and under-signposted, and the
+game doesn't explain *why* things are (or aren't) available. Decisions in brackets
+were made with the user; the tool model is intentionally unchanged.
+
+- [ ] **Onboarding — "Next goal" HUD hint.** A persistent line in the top bar that
+      always points at the recommended next purchase with progress, e.g.
+      `Next: Hire a Villager (12/40 wood)`. Visible from turn 0 (even at 0 resources)
+      so a new player has an obvious target. Drives the pull the discovery-threshold
+      reveal doesn't. *(Decision: dedicated HUD hint, not lowering the reveal
+      threshold.)* Addresses the "very slow start / what do I buy first?" feedback.
+- [ ] **Equipment overlay (shared pool + durability).** A viewable Equipment menu
+      (closable overlay like Shop/Jobs, its own top-bar button) listing every axe and
+      spear in the pool with a durability bar each — revives the Equipment panel the
+      HUD redesign dropped, now as an overlay. *(Decision: tools stay a **shared
+      pool**, not per-villager — so the menu shows per-tool durability, not per-villager
+      gear.)* Include a one-line note that any free villager uses any free tool, so the
+      alternating-worker behavior reads as intended, not a bug.
+- [ ] **Top bar — move Shop + Goal to the left.** Reorder so Shop and Goal sit on the
+      left of the top bar; Jobs, Messages, Settings stay right. *(Decision: just Shop +
+      Goal, as asked.)* Fold the new Equipment button + the Next-goal hint into the
+      layout.
+- [ ] **Blocked-reason in action tooltips.** When an action can't run, say *why* in its
+      tooltip — "No axe available", "No free villager", "Requires a LumberMill" — instead
+      of only greying the bar (`refreshBarStates`). The reason is already computable from
+      `requires` + tool/free-villager checks; surface the specific one. Directly the
+      "tooltip on Chop Wood should say why I can't chop" ask.
+- [ ] **Auto-action toggle ("auto chop").** A small per-action toggle beside each work
+      bar that keeps re-dispatching that action whenever it becomes runnable, and
+      auto-disables itself when it can't (no free villager / no free tool / requirement
+      unmet). Idle-game QoL so you don't hand-spam a bar.
+- [ ] **Tiredness — gradual walk slowdown + visible tired marker.** Low energy currently
+      only slows *work* (`workDur × (2 − energy/100)`); make it also slow *walking* —
+      scale `v.speed` with energy down to a **30% floor** at empty (`moveToward`). Plus a
+      clear tired marker above a low-energy villager (icon/tint) so the state reads at a
+      glance, not just via the thin energy bar. *(Decision: gradual to 30%, not a cliff.)*
+- [ ] **Nicer building/house SVG icons.** The built-house art (and the flat Phase-3
+      SVGs) aren't pretty. Upgrade to nicer vector icons — one-line swaps in the SPRITES
+      manifest. *(Overlaps the "nicer/consistent art" items below; this flags houses
+      specifically.)*
+
+**Answered (no code change):** the brown strip through the Home grass is the **road**
+(`drawRoad`, row 6) — permanent, paves rightward as regions are claimed, buildings sit
+on the grass plots around it. Villagers walking the road is the separate T4 polish item.
+The "a villager without the tool did the task" observation is **expected**: tools are a
+shared pool, and dispatch sends the most-rested free villager, so which one works
+alternates (not per-villager ownership).
+
+---
+
 ## Phase 0 — Ship an honest build (deploy without debug) ✅
 
 Goal: the deployed game starts at zero, while local dev keeps its resource sandbox.
