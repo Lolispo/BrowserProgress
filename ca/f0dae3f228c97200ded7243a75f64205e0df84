@@ -1,0 +1,22 @@
+atmosphere.js
+  s_c7914038abf791::t_c97accc3f5a824 143-168
+  s_c7914038abf791::t_beea7a9807bbc5 169-192
+  s_c7914038abf791::t_eb3eb733e5a54c 36-40
+  s_c7914038abf791::t_14e46d21fe07bc 193-204
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "caf0dae3f228c97200ded7243a75f64205e0df84",
+  "prompts": {},
+  "sessions": {
+    "s_c7914038abf791": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83eb0fbc-871c-4c39-977d-f815550ad18c",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
