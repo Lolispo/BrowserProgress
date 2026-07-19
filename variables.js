@@ -70,3 +70,7 @@ var traderGoldPerTick = 2;   // gold per Trader per income tick
 // scene.loadAssets() (all other sprites are looked up via scene.assets[key]).
 var imgVillager;
 var imgTree;
+
+// Atmosphere layer master intensity (0 = fully off, 1 = designed strength).
+// See atmosphere.js. Kept here with the other rendering tuning constants.
+var ATMOSPHERE_INTENSITY = 1;

@@ -93,6 +93,8 @@ var scene = {
 		this.buildings = [];
 		this.villagers = [];
 		this.floaters = [];
+		this.particles = [];
+		Atmosphere.initCache(this.W, this.H);
 		this.buildTreeRow();
 	},
 
@@ -441,6 +443,7 @@ var scene = {
 			f.life -= dt;
 			if(f.life <= 0){ this.floaters.splice(i, 1); }
 		}
+		Atmosphere.updateParticles(this, dt);
 	},
 
 	updateVillager: function(v, dt){
@@ -657,13 +660,16 @@ var scene = {
 		if(!ctx){ return; }
 		var now = this.lastTime / 1000;
 
-		// Tile terrain, the road across claimed regions, fog over locked regions,
-		// then gateways on top (so a closed gate reads at the fogged frontier).
+		// --- WORLD ---------------------------------------------------------
 		this.drawTerrain(ctx);
 		this.drawRoad(ctx);
 		this.drawFog(ctx);
 		this.drawGateways(ctx);
 		this.drawFeatures(ctx); // Home mining/hunting areas
+
+		// --- GROUND FX (over terrain, under entities) ----------------------
+		Atmosphere.cloudShadows(ctx, this, now);
+		Atmosphere.groundShadows(ctx, this, now);
 
 		// Trees (grow from the bottom of their cell)
 		var i, fullH = this.spriteH(imgTree), fullW = this.spriteW(imgTree);
@@ -709,6 +715,10 @@ var scene = {
 			}
 		}
 
+		// --- OVER-ENTITY FX ------------------------------------------------
+		Atmosphere.glow(ctx, this, now);
+		Atmosphere.drawParticles(ctx, this, now);
+
 		// Floaters
 		ctx.font = "bold 14px sans-serif";
 		ctx.textAlign = "left";
@@ -721,5 +731,8 @@ var scene = {
 			ctx.fillText(fl.text, fl.x, fl.y);
 		}
 		ctx.globalAlpha = 1;
+
+		// --- POST (frontmost) ----------------------------------------------
+		Atmosphere.post(ctx, this, now);
 	},
 };
