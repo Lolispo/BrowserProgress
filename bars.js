@@ -75,8 +75,43 @@ function ActionButton(id, action){
 		"<div class='outerdiv actionBtn' id='" + barName + "_outerdiv' data-tip=\"" + tipText(action) + "\">" +
 		"<div class='innertext' id='" + barName + "_innertext'>" + action.label + "</div>" +
 		(action.key ? "<div class='barKey'>" + action.key.toUpperCase() + "</div>" : "") +
-		"</div>");
+		"</div>" +
+		"<button type='button' class='autoBtn' id='" + barName + "_auto' data-tip=\"Auto-repeat: keep dispatching this action while a villager and (if needed) a tool are free. Auto-stops if it becomes impossible.\">A</button>");
 	$(document.getElementById(barName + "_outerdiv")).on("click", function(){ dispatchAction(id); });
+	$(document.getElementById(barName + "_auto")).on("click", function(){ toggleAuto(id); });
+}
+
+// --- auto-repeat ("auto chop") --------------------------------------------
+// A per-action toggle keeps dispatching the action whenever it's runnable, and
+// auto-stops when it becomes impossible (requirement lost / no tool exists at
+// all). A momentary "no free villager / all tools in use" is temporary, so it
+// keeps the toggle on and just waits for a worker/tool to free up.
+var autoActions = {};
+
+function toggleAuto(id){
+	autoActions[id] = !autoActions[id];
+	$("#" + ACTIONS[id].barId + "_auto").toggleClass("autoOn", !!autoActions[id]);
+}
+
+// Can this action be dispatched right now? Single source of truth: it's exactly
+// "no blocking reason" (worker + tool + requirements), so the tooltip and the
+// auto-driver can never drift apart.
+function canDispatch(a){ return !blockReason(a); }
+
+// A permanent block that only player action can clear (so auto should give up).
+function autoHardStop(a){
+	if(!meetsRequirements(a.requires)){ return true; }
+	if(a.tool){ var arr = (a.tool === "axe") ? state.axes : state.spears; if(!arr.length){ return true; } }
+	return false;
+}
+
+function autoDriverTick(){
+	for(var id in autoActions){
+		if(!autoActions[id]){ continue; }
+		var a = ACTIONS[id];
+		if(autoHardStop(a)){ toggleAuto(id); newMsg("Auto " + a.label + " stopped"); continue; }
+		if(canDispatch(a)){ dispatchAction(id); }
+	}
 }
 
 // Send the most-rested free villager to perform an action (if any is free and
@@ -98,16 +133,33 @@ function initBars(){
 			$("#" + ACTIONS[id].barId).toggleClass("hidden", true);
 		}
 	}
+	setInterval(autoDriverTick, 250); // drive any auto-enabled actions
 }
 
-// Grey out action buttons that can't be dispatched right now: requirements unmet
-// (e.g. no axe) or no free villager available. Throttled from the scene loop.
+// Why can't this action be dispatched right now? Returns the most actionable
+// reason (or null if it's runnable). Surfaced in the tooltip so "greyed out"
+// always explains itself — e.g. "No axe — buy one in Shop".
+function blockReason(a){
+	if(!meetsRequirements(a.requires)){
+		return "Requires " + a.requires.map(prettyReq).join(", ");
+	}
+	if(a.tool && !(a.tool === "axe" ? freeAxe() : freeSpear())){
+		var have = (a.tool === "axe") ? state.axes.length : state.spears.length;
+		return have ? ("All " + a.tool + "s in use") : ("No " + a.tool + " — buy one in 🛒 Shop");
+	}
+	if(!scene.freeVillager()){ return "No free villager (all busy)"; }
+	return null;
+}
+
+// Grey out un-dispatchable action bars AND refresh their tooltip with the reason.
+// Throttled from the scene loop.
 function refreshBarStates(){
-	var noFree = !scene.freeVillager();
 	for(var id in ACTIONS){
 		var a = ACTIONS[id];
-		var toolOk = !a.tool || (a.tool === "axe" ? freeAxe() : freeSpear());
-		$("#" + a.barId + "_outerdiv").toggleClass("barUnavailable", !meetsRequirements(a.requires) || noFree || !toolOk);
+		var reason = blockReason(a);
+		$("#" + a.barId + "_outerdiv")
+			.toggleClass("barUnavailable", !!reason)
+			.attr("data-tip", tipText(a) + (reason ? "  <span class='tipWarn'>⚠ " + reason + "</span>" : ""));
 	}
 	// Scout bars grey out when you lack the villagers to send.
 	for(var sid in SCOUTS){

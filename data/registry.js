@@ -80,6 +80,8 @@ function set(key, val){
 		if(typeof updateShopVisibility === "function"){ updateShopVisibility(); }
 		if(typeof updateGoal === "function"){ updateGoal(); }
 	}
+	// Next-goal hint tracks villagers/buildings too, not just resources.
+	if(typeof updateNextGoal === "function"){ updateNextGoal(); }
 }
 
 // Requirements are data: [{key, min}] -> true when every state[key] >= min.

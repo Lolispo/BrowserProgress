@@ -9,6 +9,7 @@ function initUI(){
 		btnShop: "shopOverlay",
 		btnJobs: "jobsOverlay",
 		btnGoal: "goalOverlay",
+		btnEquipment: "equipmentOverlay",
 		btnMessages: "messagesOverlay",
 		btnSettings: "settingsOverlay",
 	};
@@ -22,7 +23,11 @@ function initUI(){
 			$("#" + id).on("click", function(){
 				var willOpen = $("#" + ov).hasClass("hidden");
 				closeAll();
-				if(willOpen){ $("#" + ov).removeClass("hidden"); }
+				if(willOpen){
+					$("#" + ov).removeClass("hidden");
+					// Refresh the equipment list on open so durability is current.
+					if(ov === "equipmentOverlay" && typeof updateEquipmentPanel === "function"){ updateEquipmentPanel(); }
+				}
 			});
 		})(btn, overlays[btn]);
 	}

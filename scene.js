@@ -294,7 +294,10 @@ var scene = {
 	moveToward: function(v, dt){
 		var dx = v.tx - v.x, dy = v.ty - v.y;
 		var dist = Math.sqrt(dx * dx + dy * dy);
-		var step = v.speed * dt / timeScale;
+		// Tired = slower walking too (not just slower work): energy scales speed
+		// linearly from full down to a 30% floor at empty.
+		var eFactor = 0.3 + 0.7 * (v.energy / 100);
+		var step = v.speed * eFactor * dt / timeScale;
 		if(dist > step){ v.x += (dx / dist) * step; v.y += (dy / dist) * step; v.moving = true; return false; }
 		v.x = v.tx; v.y = v.ty; v.moving = false; return true;
 	},
@@ -712,6 +715,16 @@ var scene = {
 				ctx.fillRect(v.x, ey, vw, 3);
 				ctx.fillStyle = e > 0.5 ? "#e0c040" : (e > 0.25 ? "#e08a2a" : "#d0402a");
 				ctx.fillRect(v.x, ey, vw * e, 3);
+			}
+			// Clear "tired" marker above a low-energy villager (they also walk
+			// slower now, see moveToward). Gently pulses so it reads at a glance.
+			if(v.energy < 35){
+				ctx.font = "13px sans-serif";
+				ctx.textAlign = "center";
+				ctx.globalAlpha = 0.55 + 0.45 * Anim.pulse(now, 3, v.phase);
+				ctx.fillText("💤", v.x + vw / 2, v.y - 8);
+				ctx.globalAlpha = 1;
+				ctx.textAlign = "left";
 			}
 		}
 

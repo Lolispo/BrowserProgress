@@ -29,23 +29,30 @@
 <body class="noPadding">
     <div id="gameRoot">
 
-        <!-- Thin top bar: resource icons + tool counts + menu icons -->
+        <!-- Thin top bar: (left) Shop/Goal/Gear + resource chips, (centre) next-goal
+             hint, (right) Jobs/Messages/Settings. Shop + Goal sit left by request. -->
         <div id="topBar">
-            <div id="resBar">
-                <span class="resChip" title="Wood">🪵 <text id="wood">0</text></span>
-                <span class="resChip" title="Iron">⛏️ <text id="iron">0</text></span>
-                <span class="resChip" title="Food">🍖 <text id="food">0</text></span>
-                <span class="resChip hidden" id="resStone" title="Stone">🪨 <text id="stone">0</text></span>
-                <span class="resChip hidden" id="resGold" title="Gold">💰 <text id="gold">0</text></span>
-                <span class="resChip hidden" id="resCrystal" title="Crystal">💎 <text id="crystal">0</text></span>
-                <span class="resChip resSep" title="Axes">🪓 <text id="axe">1</text></span>
-                <span class="resChip" title="Spears">🗡️ <text id="spear">1</text></span>
-                <span class="resChip" title="Housing">🏠 <text id="villagers">0</text>/<text id="houses">2</text></span>
+            <div id="topLeft">
+                <div id="menuBarLeft">
+                    <button type="button" class="menuBtn" id="btnShop">🛒 Shop</button>
+                    <button type="button" class="menuBtn" id="btnGoal">🎯 Goal</button>
+                    <button type="button" class="menuBtn" id="btnEquipment">🎒 Gear</button>
+                </div>
+                <div id="resBar">
+                    <span class="resChip" title="Wood">🪵 <text id="wood">0</text></span>
+                    <span class="resChip" title="Iron">⛏️ <text id="iron">0</text></span>
+                    <span class="resChip" title="Food">🍖 <text id="food">0</text></span>
+                    <span class="resChip hidden" id="resStone" title="Stone">🪨 <text id="stone">0</text></span>
+                    <span class="resChip hidden" id="resGold" title="Gold">💰 <text id="gold">0</text></span>
+                    <span class="resChip hidden" id="resCrystal" title="Crystal">💎 <text id="crystal">0</text></span>
+                    <span class="resChip resSep" title="Axes">🪓 <text id="axe">1</text></span>
+                    <span class="resChip" title="Spears">🗡️ <text id="spear">1</text></span>
+                    <span class="resChip" title="Housing">🏠 <text id="villagers">0</text>/<text id="houses">2</text></span>
+                </div>
             </div>
+            <div id="nextGoal" title="Recommended next purchase"></div>
             <div id="menuBar">
-                <button type="button" class="menuBtn" id="btnShop">🛒 Shop</button>
                 <button type="button" class="menuBtn" id="btnJobs">👷 Jobs</button>
-                <button type="button" class="menuBtn" id="btnGoal">🎯 Goal</button>
                 <button type="button" class="menuBtn" id="btnMessages">💬</button>
                 <button type="button" class="menuBtn" id="btnSettings">⚙</button>
             </div>
@@ -156,6 +163,14 @@
                         <p class="bold underBorder">Dev</p>
                         <button type="button" class="btn btn-default btnSmall" id="devSpeedBtn">Speed: 1x</button>
                     </div>
+                </div>
+            </div>
+
+            <div id="equipmentOverlay" class="overlay hidden">
+                <div class="overlayHead"><h3>Equipment</h3><button type="button" class="overlayClose">✕</button></div>
+                <div class="overlayBody">
+                    <p style="font-size: 11px; color: grey;">Tools are a shared pool — any free villager grabs any free tool for a task, then returns it. Durability wears with use; a tool breaks at 0%.</p>
+                    <div id="equipList"></div>
                 </div>
             </div>
         </div>

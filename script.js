@@ -18,6 +18,7 @@ $(document).ready(function(){
 	initDevMode();
 	initUI();
 	if(loaded){ rebuildUI(); } else { updateGoal(); }
+	updateNextGoal();
 	if(typeof startAutoSave === "function"){ startAutoSave(); }
 
 	$(document.getElementById("victoryClose")).on("click", function(){
@@ -44,6 +45,61 @@ function updateGoal(){
 		}
 	}
 	el.innerHTML = parts.join("<br>");
+}
+
+// Next-goal HUD hint: a persistent north-star pointing at the recommended next
+// purchase, with have/need progress, so the opening always has an obvious target.
+// Ordered milestones; the first unmet one is shown. Re-run from set() on any change.
+var NEXT_GOALS = [
+	{ key: "hireVillager", done: function(){ return state.villagers >= 2; } },
+	{ key: "lumberMill",   done: function(){ return state.lumberMill >= 1; } },
+	{ key: "mine",         done: function(){ return state.mine >= 1; } },
+	{ key: "huntingLodge", done: function(){ return state.huntingLodge >= 1; } },
+	{ key: "houses",       done: function(){ return state.villagers >= 4; } },
+];
+
+function updateNextGoal(){
+	var el = document.getElementById("nextGoal");
+	if(!el || typeof SHOP_ITEMS === "undefined"){ return; }
+	var goal = null;
+	for(var i = 0; i < NEXT_GOALS.length; i++){
+		if(!NEXT_GOALS[i].done()){ goal = NEXT_GOALS[i]; break; }
+	}
+	if(!goal){ el.className = ""; el.innerHTML = "🏆 Next: build the Monument"; return; }
+	var item = SHOP_ITEMS[goal.key];
+	var ready = canAfford(item.cost) && (!item.canBuy || item.canBuy());
+	el.className = ready ? "ngReady" : "";
+	if(ready){
+		el.innerHTML = "Next: <span class='ngName'>" + item.name + "</span> — ready! (open 🛒 Shop)";
+		return;
+	}
+	var parts = [];
+	for(var k in item.cost){ parts.push(Math.min(state[k], item.cost[k]) + "/" + item.cost[k] + " " + k); }
+	el.innerHTML = "Next: <span class='ngName'>" + item.name + "</span> — " + parts.join(", ");
+}
+
+// Equipment overlay: one row per pooled tool with its durability. Tools are a
+// shared pool (not per-villager), so this lists the pool, not owners.
+function updateEquipmentPanel(){
+	var el = document.getElementById("equipList");
+	if(!el){ return; }
+	el.innerHTML =
+		"<div class='equipHead'>🪓 Axes (" + state.axes.length + ")</div>" + toolRows(state.axes) +
+		"<div class='equipHead'>🗡️ Spears (" + state.spears.length + ")</div>" + toolRows(state.spears);
+}
+
+function toolRows(arr){
+	if(!arr.length){ return "<div class='equipRow'><span class='equipNone'>none</span></div>"; }
+	var html = "";
+	for(var i = 0; i < arr.length; i++){
+		var d = Math.max(0, Math.round(arr[i].dur));
+		var col = d > 50 ? "#2e7d32" : (d > 25 ? "#e08a2a" : "#d0402a");
+		html += "<div class='equipRow'>" +
+			"<span class='equipName'>#" + (i + 1) + (arr[i].inUse ? " · in use" : "") + "</span>" +
+			"<span class='equipBar'><span class='equipFill' style='width:" + d + "%;background:" + col + "'></span></span>" +
+			"<span class='equipPct'>" + d + "%</span></div>";
+	}
+	return html;
 }
 
 // Show the win overlay when the Monument is built.
@@ -104,6 +160,7 @@ function newMsg(msg){
 function updateToolDisplay(){
 	toolReadout(state.axes, "axe", "Axe", "axeDurabilityBar");
 	toolReadout(state.spears, "spear", "Spear", "spearDurabilityBar");
+	if(typeof updateEquipmentPanel === "function"){ updateEquipmentPanel(); }
 }
 
 function toolReadout(arr, countId, label, barId){

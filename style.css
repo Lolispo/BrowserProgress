@@ -137,6 +137,7 @@ header{
   z-index: 1000;
   box-shadow: 0 2px 6px rgba(0,0,0,0.4);
 }
+.tipWarn{ color: #ff9a3a; display: block; margin-top: 3px; }
 
 /* Shop affordability feedback (see shops.js refreshShopColors) */
 .unaffordable{
@@ -308,6 +309,8 @@ body{
 .resChip{ font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .resSep{ margin-left: 6px; border-left: 1px solid var(--edge); padding-left: 12px; }
 #menuBar{ display: flex; gap: 6px; }
+#topLeft{ display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+#menuBarLeft{ display: flex; gap: 6px; }
 .menuBtn{
   border: 1px solid var(--edge);
   background: var(--panel-2);
@@ -319,6 +322,34 @@ body{
   cursor: pointer;
 }
 .menuBtn:hover{ filter: brightness(1.06); }
+
+/* Next-goal hint: centred north-star pointing at the recommended next purchase. */
+#nextGoal{
+  flex: 1 1 auto; min-width: 0; text-align: center;
+  font-size: 13px; font-weight: 600; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#nextGoal .ngName{ color: var(--ink); font-weight: 700; }
+#nextGoal.ngReady{ color: #2e7d32; }
+
+/* Equipment overlay: one row per pooled tool with a durability bar. */
+.equipRow{ display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 13px; }
+.equipRow > .equipName{ flex: 0 0 120px; }
+.equipBar{ flex: 1 1 auto; height: 8px; background: rgba(0,0,0,0.15); border-radius: 4px; overflow: hidden; }
+.equipFill{ display: block; height: 100%; }
+.equipPct{ flex: 0 0 40px; text-align: right; font-variant-numeric: tabular-nums; }
+.equipNone{ color: grey; }
+.equipHead{ font-weight: 700; margin: 8px 0 2px; }
+
+/* Auto-repeat toggle beside each work action bar. */
+.autoBtn{
+  flex: 0 0 auto; width: 24px; align-self: stretch;
+  border: 1px solid var(--edge); border-radius: 6px;
+  background: var(--panel-2); color: var(--muted);
+  font-size: 12px; font-weight: 700; cursor: pointer; line-height: 1;
+}
+.autoBtn:hover{ filter: brightness(1.06); }
+.autoBtn.autoOn{ background: #2e7d32; color: #fff; border-color: #2e7d32; }
 
 /* Map fills the middle; canvas letterboxes to keep the 1150x460 aspect */
 #mapWrap{ flex: 1 1 auto; position: relative; overflow: hidden; min-height: 0; background: #2b2b2b; }
@@ -335,8 +366,8 @@ body{
   background: var(--panel);
   border-top: 1px solid var(--edge);
 }
-.workBtn{ flex: 1 1 120px; min-width: 110px; max-width: 210px; }
-.workBtn .outerdiv{ height: 26px; }
+.workBtn{ flex: 1 1 120px; min-width: 110px; max-width: 210px; display: flex; gap: 4px; }
+.workBtn .outerdiv{ height: 26px; flex: 1 1 auto; }
 .workBtn .innertext{ line-height: 26px; }
 #scoutHeader{ font-size: 12px; font-weight: 700; color: var(--muted); align-self: center; margin: 0 4px; }
 
