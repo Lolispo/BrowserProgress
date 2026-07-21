@@ -189,6 +189,7 @@ var scene = {
 			phase: Math.random() * 6.28,
 			speed: 100 + Math.random() * 30, // px/s — brisk enough that the wood trek isn't a slog
 			energy: 100,       // per-villager (A2): drains with work, recovers idle
+			hunger: 100,       // per-villager food upkeep: drains over time, eats from state.food
 			// Manual-task state (A1): a free villager dispatched to an action.
 			busy: false,       // running a manual action
 			task: null,        // action id
@@ -294,9 +295,10 @@ var scene = {
 	moveToward: function(v, dt){
 		var dx = v.tx - v.x, dy = v.ty - v.y;
 		var dist = Math.sqrt(dx * dx + dy * dy);
-		// Tired = slower walking too (not just slower work): energy scales speed
-		// linearly from full down to a 30% floor at empty.
-		var eFactor = 0.3 + 0.7 * (v.energy / 100);
+		// Tired OR hungry = slower walking: the worse of energy/hunger scales speed
+		// from full down to a 30% floor at empty (they don't compound below 30%).
+		var vitality = Math.min(v.energy, v.hunger);
+		var eFactor = 0.3 + 0.7 * (vitality / 100);
 		var step = v.speed * eFactor * dt / timeScale;
 		if(dist > step){ v.x += (dx / dist) * step; v.y += (dy / dist) * step; v.moving = true; return false; }
 		v.x = v.tx; v.y = v.ty; v.moving = false; return true;
@@ -450,7 +452,19 @@ var scene = {
 		Atmosphere.updateParticles(this, dt);
 	},
 
+	// Per-villager food upkeep: hunger drains over time; when peckish and the
+	// village has food, the villager eats a meal (consumes food, restores hunger).
+	// Empty food -> hunger sits low -> slower movement (see moveToward), never blocked.
+	feed: function(v, dt){
+		v.hunger = Math.max(0, v.hunger - hungerDrain * dt);
+		if(v.hunger < hungerEatAt && state.food >= foodPerMeal){
+			set("food", state.food - foodPerMeal);
+			v.hunger = Math.min(100, v.hunger + hungerPerMeal);
+		}
+	},
+
 	updateVillager: function(v, dt){
+		this.feed(v, dt); // all villagers eat, whatever they're doing
 		if(v.busy){ this.updateTask(v, dt); return; } // running a manual action
 		// Idle/unemployed villagers recover energy; rate scales with global cardio.
 		if(!v.jobTarget && v.energy < 100){
@@ -709,21 +723,32 @@ var scene = {
 				ctx.fillRect(v.x, py, vw * Math.min(1, v.progress), 4);
 			}
 			// Per-villager energy bar (A2), shown when tired
+			var sh = this.spriteH(imgVillager);
 			if(v.energy < 99.5){
-				var ey = v.y + this.spriteH(imgVillager) + 2;
+				var ey = v.y + sh + 2;
 				var e = v.energy / 100;
 				ctx.fillStyle = "rgba(0,0,0,0.5)";
 				ctx.fillRect(v.x, ey, vw, 3);
 				ctx.fillStyle = e > 0.5 ? "#e0c040" : (e > 0.25 ? "#e08a2a" : "#d0402a");
 				ctx.fillRect(v.x, ey, vw * e, 3);
 			}
-			// Clear "tired" marker above a low-energy villager (they also walk
-			// slower now, see moveToward). Gently pulses so it reads at a glance.
-			if(v.energy < 35){
+			// Per-villager hunger bar, just below the energy bar (food-brown fill).
+			if(v.hunger < 99.5){
+				var hy = v.y + sh + 6;
+				var hn = v.hunger / 100;
+				ctx.fillStyle = "rgba(0,0,0,0.5)";
+				ctx.fillRect(v.x, hy, vw, 3);
+				ctx.fillStyle = hn > 0.5 ? "#c9863a" : (hn > 0.25 ? "#c76b28" : "#a33");
+				ctx.fillRect(v.x, hy, vw * hn, 3);
+			}
+			// One status marker above the villager for the more urgent need: 🍖 when
+			// hungry, 💤 when tired (they also move slower, see moveToward). Pulses.
+			if(v.energy < 35 || v.hunger < 35){
+				var icon = (v.hunger < 35 && v.hunger <= v.energy) ? "🍖" : "💤";
 				ctx.font = "13px sans-serif";
 				ctx.textAlign = "center";
 				ctx.globalAlpha = 0.55 + 0.45 * Anim.pulse(now, 3, v.phase);
-				ctx.fillText("💤", v.x + vw / 2, v.y - 8);
+				ctx.fillText(icon, v.x + vw / 2, v.y - 8);
 				ctx.globalAlpha = 1;
 				ctx.textAlign = "left";
 			}
