@@ -70,6 +70,39 @@ alternates (not per-villager ownership).
 
 ---
 
+## Progression & depth pass (from 2026-07-21 playtest)
+
+Feedback: opening felt slow/under-signposted, mid-late chain was invisible, and
+regions are same-y ("get a resource here too"). Mechanically the whole
+Home→Hills→Mountains→Cavern→Monument chain is complete and reachable — the gaps
+were guidance and depth.
+
+- [x] **Full-chain next-goal guidance.** The `#nextGoal` hint now walks the whole
+      path (build Mine → Scout Hills → Quarry → Assign a Mason → Blacksmith → Scout
+      Mountains → Market → Assign a Trader → Scout Cavern → Mine Crystal → Build the
+      Monument), with scout/job/gather guidance steps, not just the opening. Fixes
+      "quest jumped to the Monument / I didn't know how to get stone." Capitalised
+      "Build the Monument".
+- [x] **Wear most-worn tool first.** `freeTool` picks the lowest-durability free tool
+      so nearly-spent tools get used up and replaced, not spread thin.
+- [x] **Starter house visual** for the 2 base housing slots (persists across save/load).
+- [x] **Farm Houses +8 → +2** per purchase — gentler population ramp.
+- [ ] **Hunger meter (per-villager food upkeep).** A second per-villager meter like
+      energy: villagers consume **food** over time and slow down (to the same ~30%
+      floor, with a marker) when hungry, so food is an ongoing sink throughout the
+      game, not just the one-off hiring cost. *(Direction set; model TBD — see the
+      open question: does it drain the global `food` resource, and what happens at
+      empty.)* Mirrors the energy/tiredness system (scene.js updateVillager + draw,
+      moveToward already has the slowdown hook).
+- [ ] **Region events / discoveries (make regions feel different).** Beyond "another
+      resource + job", each region gets one-time finds and small events on arrival —
+      a ruin with a cache, a hazard to clear, a bonus — so scouting a region is an
+      *event*, not a reskin. *(Chosen direction: per-region events/discoveries.
+      Needs its own design pass: event framework + per-region content, one-time vs
+      repeatable, reward types, how it surfaces on the map/messages.)*
+
+---
+
 ## Phase 0 — Ship an honest build (deploy without debug) ✅
 
 Goal: the deployed game starts at zero, while local dev keeps its resource sandbox.
