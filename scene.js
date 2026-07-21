@@ -341,6 +341,7 @@ var scene = {
 	rebuildFromState: function(){
 		this.buildings = [];
 		this.villagers = [];
+		this.addBuilding("house", { animate: false }); // starting dwelling, always present (matches fresh-game init)
 		var counts = {
 			house: state.housesBuilt, lumberMill: state.lumberMill, mine: state.mine,
 			huntingLodge: state.huntingLodge, trainingYard: state.trainingYard,

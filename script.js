@@ -171,6 +171,7 @@ function initValues(loaded){
 	// Fresh game: spawn the starting villager entities to match the count.
 	// (A loaded game rebuilds them from state in rebuildUI/scene.rebuildFromState.)
 	if(!loaded){
+		scene.addBuilding("house", { animate: false }); // starting dwelling (the 2 base housing slots)
 		for(var v = 0; v < state.villagers; v++){ scene.addVillager(); }
 		$("#unemployed").toggleClass("bold", state.unemployed > 0);
 	}

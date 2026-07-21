@@ -58,7 +58,7 @@ var trainingCardioEnergyReq = 100;
 
 // Shop increments (how much a purchase grants when it is more than 1)
 var foodShopInc = 10;
-var houseShopInc = 8;
+var houseShopInc = 2;
 
 // Phase 3 building tuning
 var farmHousing = 8;         // housing each Farm adds
