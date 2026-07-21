@@ -120,11 +120,13 @@ function equipDamage(base){
 	return Math.round(base * (state.blacksmith > 0 ? 0.6 : 1));
 }
 
-// Tools: the most-durable tool not currently reserved by an in-flight action.
+// Tools: the most-worn free tool (lowest durability not currently reserved), so
+// nearly-spent tools get used up and replaced instead of spreading wear across
+// the whole pool.
 function freeTool(arr){
 	var best = null;
 	for(var i = 0; i < arr.length; i++){
-		if(!arr[i].inUse && (!best || arr[i].dur > best.dur)){ best = arr[i]; }
+		if(!arr[i].inUse && (!best || arr[i].dur < best.dur)){ best = arr[i]; }
 	}
 	return best;
 }

@@ -48,14 +48,49 @@ function updateGoal(){
 }
 
 // Next-goal HUD hint: a persistent north-star pointing at the recommended next
-// purchase, with have/need progress, so the opening always has an obvious target.
-// Ordered milestones; the first unmet one is shown. Re-run from set() on any change.
+// step, with progress, so there's always an obvious target — right through the
+// mid/late chain (build Mine -> scout Hills -> Quarry + Mason for stone ->
+// Blacksmith -> scout Mountains -> Market + Trader -> scout Cavern -> Monument),
+// not just the opening. Ordered; the first unmet step is shown. Re-run from set().
+
+// A purchasable step: shows "ready! (open Shop)" or the resource shortfall.
+function goalBuy(key){
+	var item = SHOP_ITEMS[key];
+	var ready = canAfford(item.cost) && (!item.canBuy || item.canBuy());
+	if(ready){ return { ready: true, html: "<span class='ngName'>" + item.name + "</span> — ready! (open 🛒 Shop)" }; }
+	var parts = [];
+	for(var k in item.cost){ parts.push(Math.min(state[k], item.cost[k]) + "/" + item.cost[k] + " " + k); }
+	return { ready: false, html: "<span class='ngName'>" + item.name + "</span> — " + parts.join(", ") };
+}
+
+// A free-text guidance step (assign a job, mine crystal, grow population).
+function goalHint(name, tail){ return { ready: false, html: "<span class='ngName'>" + name + "</span> — " + tail }; }
+
+// A scout step: nudge toward the population it needs, then to the Expeditions bar.
+function goalScout(regionId){
+	var s = SCOUTS[regionId], needV = 0;
+	for(var i = 0; i < s.requires.length; i++){ if(s.requires[i].key === "villagers"){ needV = s.requires[i].min; } }
+	var label = "Scout the " + REGIONS[regionId].label;
+	if(state.villagers < needV){ return goalHint(label, "grow to " + needV + " villagers (" + state.villagers + "/" + needV + ")"); }
+	return { ready: true, html: "<span class='ngName'>" + label + "</span> — ready in Expeditions (bottom bar)" };
+}
+
 var NEXT_GOALS = [
-	{ key: "hireVillager", done: function(){ return state.villagers >= 2; } },
-	{ key: "lumberMill",   done: function(){ return state.lumberMill >= 1; } },
-	{ key: "mine",         done: function(){ return state.mine >= 1; } },
-	{ key: "huntingLodge", done: function(){ return state.huntingLodge >= 1; } },
-	{ key: "houses",       done: function(){ return state.villagers >= 4; } },
+	{ done: function(){ return state.villagers >= 2; },      get: function(){ return goalBuy("hireVillager"); } },
+	{ done: function(){ return state.lumberMill >= 1; },     get: function(){ return goalBuy("lumberMill"); } },
+	{ done: function(){ return state.huntingLodge >= 1; },   get: function(){ return goalBuy("huntingLodge"); } },
+	{ done: function(){ return state.mine >= 1; },           get: function(){ return goalBuy("mine"); } },
+	{ done: function(){ return state.villagers >= 4; },      get: function(){ return goalHint("Grow to 4 villagers", "hire more / build Farm Houses — needed to scout the Hills"); } },
+	{ done: function(){ return !!state.regions.hills; },     get: function(){ return goalScout("hills"); } },
+	{ done: function(){ return state.quarry >= 1; },         get: function(){ return goalBuy("quarry"); } },
+	{ done: function(){ return state.mason >= 1; },          get: function(){ return goalHint("Assign a Mason", "open 👷 Jobs and add a Mason to produce Stone"); } },
+	{ done: function(){ return state.blacksmith >= 1; },     get: function(){ return goalBuy("blacksmith"); } },
+	{ done: function(){ return !!state.regions.mountains; }, get: function(){ return goalScout("mountains"); } },
+	{ done: function(){ return state.market >= 1; },         get: function(){ return goalBuy("market"); } },
+	{ done: function(){ return state.trader >= 1; },         get: function(){ return goalHint("Assign a Trader", "open 👷 Jobs and add a Trader to produce Gold"); } },
+	{ done: function(){ return !!state.regions.cavern; },    get: function(){ return goalScout("cavern"); } },
+	{ done: function(){ return state.crystal >= SHOP_ITEMS.monument.cost.crystal; }, get: function(){ return goalHint("Mine Crystal", "use the Mine Crystal action bar to gather Crystal for the Monument"); } },
+	{ done: function(){ return state.monument >= 1; },       get: function(){ return goalBuy("monument"); } },
 ];
 
 function updateNextGoal(){
@@ -65,17 +100,10 @@ function updateNextGoal(){
 	for(var i = 0; i < NEXT_GOALS.length; i++){
 		if(!NEXT_GOALS[i].done()){ goal = NEXT_GOALS[i]; break; }
 	}
-	if(!goal){ el.className = ""; el.innerHTML = "🏆 Next: build the Monument"; return; }
-	var item = SHOP_ITEMS[goal.key];
-	var ready = canAfford(item.cost) && (!item.canBuy || item.canBuy());
-	el.className = ready ? "ngReady" : "";
-	if(ready){
-		el.innerHTML = "Next: <span class='ngName'>" + item.name + "</span> — ready! (open 🛒 Shop)";
-		return;
-	}
-	var parts = [];
-	for(var k in item.cost){ parts.push(Math.min(state[k], item.cost[k]) + "/" + item.cost[k] + " " + k); }
-	el.innerHTML = "Next: <span class='ngName'>" + item.name + "</span> — " + parts.join(", ");
+	if(!goal){ el.className = "ngReady"; el.innerHTML = "🏆 Village complete!"; return; }
+	var g = goal.get();
+	el.className = g.ready ? "ngReady" : "";
+	el.innerHTML = "Next: " + g.html;
 }
 
 // Equipment overlay: one row per pooled tool with its durability. Tools are a
