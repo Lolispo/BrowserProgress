@@ -87,13 +87,12 @@ were guidance and depth.
       so nearly-spent tools get used up and replaced, not spread thin.
 - [x] **Starter house visual** for the 2 base housing slots (persists across save/load).
 - [x] **Farm Houses +8 → +2** per purchase — gentler population ramp.
-- [ ] **Hunger meter (per-villager food upkeep).** A second per-villager meter like
-      energy: villagers consume **food** over time and slow down (to the same ~30%
-      floor, with a marker) when hungry, so food is an ongoing sink throughout the
-      game, not just the one-off hiring cost. *(Direction set; model TBD — see the
-      open question: does it drain the global `food` resource, and what happens at
-      empty.)* Mirrors the energy/tiredness system (scene.js updateVillager + draw,
-      moveToward already has the slowdown hook).
+- [x] **Hunger meter (per-villager food upkeep).** Villagers get a `hunger` meter
+      that drains over time and eats from the **global food stockpile** (`scene.feed`);
+      when food runs dry they slow to the shared ~30% floor (`moveToward` uses the
+      worse of energy/hunger) with a 🍖 marker + hunger bar. Food is now ongoing
+      upkeep, not just the hire cost. Rates in variables.js (`hungerDrain` etc.).
+      *(Decisions: global food sink; soft slow-only, never blocked.)* Reviewed clean.
 - [ ] **Region events / discoveries (make regions feel different).** Beyond "another
       resource + job", each region gets one-time finds and small events on arrival —
       a ruin with a cache, a hazard to clear, a bonus — so scouting a region is an
