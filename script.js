@@ -130,6 +130,57 @@ function toolRows(arr){
 	return html;
 }
 
+// --- Villager inspect panel (opened by clicking a villager; see ui.js) -------
+// Structure + action buttons are built ONCE on open (buttons bound once, so the
+// ~4x/sec live refresh can never eat a click); refreshVillagerPanel() updates
+// only the numbers/bars/status while the panel is open.
+function openVillagerPanel(){
+	var v = scene.selected;
+	var body = document.getElementById("villagerBody");
+	if(!v || !body){ return; }
+	document.getElementById("villagerTitle").innerHTML = "Villager #" + (scene.villagers.indexOf(v) + 1);
+	body.innerHTML =
+		"<div class='vStats'>" +
+			"<span class='vStat'>🏃 Speed <b id='vSpeed'>-</b></span>" +
+			"<span class='vStat'>💪 Strength <b id='vStr'>-</b></span>" +
+			"<span class='vStat'>🫀 Cardio <b id='vCardio'>-</b></span>" +
+		"</div>" +
+		vMeter("Energy", "vEnergyFill", "#e0c040") +
+		vMeter("Hunger", "vHungerFill", "#c9863a") +
+		"<p class='vStatus' id='vStatus'></p>" +
+		"<div class='vActions' id='vActions'></div>";
+	var acts = [];
+	if(state.trainingYard > 0){
+		acts.push(["trainSpeed", "🏃 Train Speed"], ["trainStrength", "💪 Train Strength"], ["trainCardio", "🫀 Train Cardio"]);
+	}
+	acts.push(["sleep", "😴 Sleep"]);
+	document.getElementById("vActions").innerHTML = acts.map(function(a){
+		return "<button type='button' class='btn btn-default btnSmall vAct' data-act='" + a[0] + "'>" + a[1] + "</button>";
+	}).join("");
+	$("#vActions .vAct").each(function(){
+		var id = this.getAttribute("data-act");
+		$(this).on("click", function(){ dispatchActionFor(scene.selected, id); });
+	});
+	refreshVillagerPanel();
+}
+
+function vMeter(label, fillId, color){
+	return "<div class='vMeter'><span class='vMeterLabel'>" + label + "</span>" +
+		"<span class='vMeterBar'><span class='vMeterFill' id='" + fillId + "' style='background:" + color + "'></span></span></div>";
+}
+
+function refreshVillagerPanel(){
+	var v = scene.selected;
+	if(!v || $("#villagerOverlay").hasClass("hidden") || !document.getElementById("vSpeed")){ return; }
+	document.getElementById("vSpeed").innerHTML = Math.round(v.stats.speed);
+	document.getElementById("vStr").innerHTML = Math.round(v.stats.strength);
+	document.getElementById("vCardio").innerHTML = Math.round(v.stats.cardio);
+	$("#vEnergyFill").css("width", Math.max(0, v.energy) + "%");
+	$("#vHungerFill").css("width", Math.max(0, v.hunger) + "%");
+	document.getElementById("vStatus").innerHTML =
+		v.busy ? ("Working: " + (v.task || "")) : (v.jobTarget ? ("Working a " + v.jobTarget + " job") : "Idle");
+}
+
 // Show the win overlay when the Monument is built.
 function showVictory(){
 	document.getElementById("victoryStats").innerHTML =

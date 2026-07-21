@@ -126,6 +126,21 @@ function dispatchAction(id){
 	scene.startTask(v, id);
 }
 
+// Dispatch a SPECIFIC villager to an action (from the inspect panel). Reuses the
+// tool/requirement gating, but intentionally allows commanding an *employed*
+// villager (only `busy` blocks) — direct control is the point of the panel; they
+// return to their job post when done. Passive income is count-based, so pulling a
+// worker off briefly doesn't drop their income.
+function dispatchActionFor(v, id){
+	if(!v){ return; }
+	var a = ACTIONS[id];
+	if(v.busy){ newMsg("That villager is busy"); return; }
+	if(!meetsRequirements(a.requires)){ return; }
+	if(a.tool && !(a.tool === "axe" ? freeAxe() : freeSpear())){ newMsg("No free " + a.tool); return; }
+	scene.startTask(v, id);
+	if(typeof refreshVillagerPanel === "function"){ refreshVillagerPanel(); }
+}
+
 function initBars(){
 	for(var id in ACTIONS){
 		new ActionButton(id, ACTIONS[id]);
@@ -166,6 +181,8 @@ function refreshBarStates(){
 		var s = SCOUTS[sid];
 		$("#" + s.barId + "_outerdiv").toggleClass("barUnavailable", !meetsRequirements(s.requires));
 	}
+	// Keep the open villager inspect panel's live values current.
+	if(typeof refreshVillagerPanel === "function"){ refreshVillagerPanel(); }
 }
 
 // Live scout bar instances, keyed by region id.

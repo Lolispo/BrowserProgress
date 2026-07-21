@@ -12,6 +12,9 @@ function hasSavedGame(){
 }
 
 function saveGame(){
+	// Snapshot per-villager progression (stats/energy/hunger) into state before
+	// serialising — villagers are entities, not part of state until dumped here.
+	if(typeof scene !== "undefined" && scene.dumpVillagers){ state.villagerData = scene.dumpVillagers(); }
 	try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e){}
 }
 

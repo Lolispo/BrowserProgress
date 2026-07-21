@@ -15,7 +15,8 @@ function initUI(){
 	};
 
 	function closeAll(){
-		for(var k in overlays){ $("#" + overlays[k]).addClass("hidden"); }
+		$(".overlay").addClass("hidden"); // covers villagerOverlay (no menu button)
+		if(typeof scene !== "undefined"){ scene.selected = null; }
 	}
 
 	for(var btn in overlays){
@@ -45,5 +46,16 @@ function initUI(){
 	// Escape closes any open overlay (and the hotkey help).
 	$(document).on("keydown", function(e){
 		if(e.key === "Escape"){ closeAll(); $("#hotkeyHelp").addClass("hidden"); }
+	});
+
+	// Click a villager on the map to inspect them; empty space just closes menus.
+	$("#canvas1").on("click", function(e){
+		var v = scene.pickVillager(e.clientX, e.clientY);
+		closeAll();
+		if(v){
+			scene.selected = v;
+			$("#villagerOverlay").removeClass("hidden");
+			if(typeof openVillagerPanel === "function"){ openVillagerPanel(); }
+		}
 	});
 }

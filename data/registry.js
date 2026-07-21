@@ -32,8 +32,9 @@ var state = {
 	// Population / jobs (start with one villager — the actor for manual work)
 	villagers: 1, unemployed: 1, woodCutter: 0, ironWorker: 0, hunter: 0,
 	mason: 0, trader: 0,
-	// Player stats (global). Energy is now per-villager (see scene.js), not here.
-	speed: 100, strength: 100, cardio: 100,
+	// Speed / strength / cardio are now per-villager (v.stats, see scene.js), as is
+	// energy/hunger. Per-villager stats are persisted via villagerData below.
+	villagerData: [],
 	// Claimed regions (home is free; the rest are scouted). See REGIONS.
 	regions: { home: true, hills: false, mountains: false, cavern: false },
 	// Shop items revealed once you've reached ~half their price (sticky). See shops.js.
@@ -110,9 +111,10 @@ function costToText(cost){
 	return parts.join(" + ");
 }
 
-// Resource gathered per action: strength-scaled, with a +15% Blacksmith bonus each.
-function gatherAmount(base){
-	return Math.round(base * (state.strength / 100.0) * (1 + 0.15 * state.blacksmith));
+// Resource gathered per action: scaled by the acting villager's strength, with a
+// +15% Blacksmith bonus each.
+function gatherAmount(base, strength){
+	return Math.round(base * (strength / 100.0) * (1 + 0.15 * state.blacksmith));
 }
 
 // Equipment durability damage per use: a Blacksmith softens it to 60%.
@@ -152,10 +154,10 @@ var ACTIONS = {
 		tool: "axe", toolDmg: axeWoodDmg, yields: "wood",
 		startsHidden: false,
 		energyCost: 8,
-		maxTime: function(){ return Math.floor(woodSpeed / state.speed); },
+		maxTime: function(spd){ return Math.floor(woodSpeed / spd); },
 		onStart: function(){},
-		onDone: function(){
-			set("wood", state.wood + gatherAmount(woodInc));
+		onDone: function(v){
+			set("wood", state.wood + gatherAmount(woodInc, v.stats.strength));
 			scene.chopTree();
 			newMsg("Gathered Wood!");
 		},
@@ -168,10 +170,10 @@ var ACTIONS = {
 		tool: "axe", toolDmg: axeIronDmg, yields: "iron",
 		startsHidden: false,
 		energyCost: 10,
-		maxTime: function(){ return Math.floor(ironSpeed / state.speed); },
+		maxTime: function(spd){ return Math.floor(ironSpeed / spd); },
 		onStart: function(){},
-		onDone: function(){
-			set("iron", state.iron + gatherAmount(ironInc));
+		onDone: function(v){
+			set("iron", state.iron + gatherAmount(ironInc, v.stats.strength));
 			newMsg("Gathered Iron!");
 		},
 	},
@@ -183,10 +185,10 @@ var ACTIONS = {
 		tool: "spear", toolDmg: spearHuntDmg, yields: "food",
 		startsHidden: false,
 		energyCost: 25,
-		maxTime: function(){ return Math.floor(huntSpeed / state.speed); },
+		maxTime: function(spd){ return Math.floor(huntSpeed / spd); },
 		onStart: function(){},
-		onDone: function(){
-			var successRate = successHuntRate * (state.strength / 100.0);
+		onDone: function(v){
+			var successRate = successHuntRate * (v.stats.strength / 100.0);
 			var roll = Math.floor((Math.random() * 100) + 1);
 			if(roll < successRate){
 				set("food", state.food + foodInc);
@@ -204,10 +206,10 @@ var ACTIONS = {
 		yields: "wood",
 		startsHidden: false,
 		energyCost: 15,
-		maxTime: function(){ return Math.floor(clawTreeSpeed / state.speed); },
+		maxTime: function(spd){ return Math.floor(clawTreeSpeed / spd); },
 		onStart: function(){},
-		onDone: function(){
-			set("wood", state.wood + gatherAmount(clawInc));
+		onDone: function(v){
+			set("wood", state.wood + gatherAmount(clawInc, v.stats.strength));
 			scene.chopTree();
 			newMsg("Clawed some wood!");
 		},
@@ -221,7 +223,7 @@ var ACTIONS = {
 		energyCost: 20,
 		maxTime: function(){ return speedSpeed; },
 		onStart: function(){},
-		onDone: function(){ set("speed", state.speed + speedInc); newMsg("Improved your speed!"); },
+		onDone: function(v){ v.stats.speed += speedInc; newMsg("Improved a villager's speed!"); },
 	},
 	trainStrength: {
 		barId: "strengthBar",
@@ -232,7 +234,7 @@ var ACTIONS = {
 		energyCost: 20,
 		maxTime: function(){ return strengthSpeed; },
 		onStart: function(){},
-		onDone: function(){ set("strength", state.strength + strengthInc); newMsg("Improved your strength!"); },
+		onDone: function(v){ v.stats.strength += strengthInc; newMsg("Improved a villager's strength!"); },
 	},
 	trainCardio: {
 		barId: "cardioBar",
@@ -243,7 +245,7 @@ var ACTIONS = {
 		energyCost: 20,
 		maxTime: function(){ return cardioSpeed; },
 		onStart: function(){},
-		onDone: function(){ set("cardio", state.cardio + cardioInc); newMsg("Improved your cardio!"); },
+		onDone: function(v){ v.stats.cardio += cardioInc; newMsg("Improved a villager's cardio!"); },
 	},
 	mineCrystal: {
 		barId: "crystalBar",

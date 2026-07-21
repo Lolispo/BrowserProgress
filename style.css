@@ -341,6 +341,18 @@ body{
 .equipNone{ color: grey; }
 .equipHead{ font-weight: 700; margin: 8px 0 2px; }
 
+/* Villager inspect panel */
+.vStats{ display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.vStat{ font-size: 13px; }
+.vStat b{ font-variant-numeric: tabular-nums; }
+.vMeter{ display: flex; align-items: center; gap: 8px; margin: 4px 0; font-size: 12px; }
+.vMeterLabel{ flex: 0 0 56px; }
+.vMeterBar{ flex: 1 1 auto; height: 8px; background: rgba(0,0,0,0.15); border-radius: 4px; overflow: hidden; }
+.vMeterFill{ display: block; height: 100%; width: 0; }
+.vStatus{ font-size: 12px; color: var(--muted); margin: 6px 0; }
+.vActions{ display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.vActions .vAct{ flex: 1 1 auto; }
+
 /* Auto-repeat toggle beside each work action bar. */
 .autoBtn{
   flex: 0 0 auto; width: 24px; align-self: stretch;

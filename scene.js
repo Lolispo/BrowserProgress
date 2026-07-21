@@ -19,6 +19,7 @@ var scene = {
 	buildings: [], villagers: [], trees: [], floaters: [],
 	assets: {}, // sprite key -> Image, populated from SPRITES by loadAssets()
 	lastTime: 0, running: false,
+	selected: null, // villager shown in the inspect panel (see pickVillager)
 
 	treeLane: 4, // y of the forest strip in Home
 
@@ -172,7 +173,8 @@ var scene = {
 		if(res && labels[res]){ $("#" + labels[res]).toggleClass("hidden", false); }
 	},
 
-	addVillager: function(){
+	addVillager: function(data){
+		data = data || {}; // restored per-villager fields on load (see villagerData)
 		var rc = this.regionCols.home;
 		var hx = (rc[0] + Math.random() * (rc[1] - rc[0])) * this.tileW;
 		var hy = (this.ROWS - 1.3) * this.tileH; // home band below the road
@@ -187,9 +189,12 @@ var scene = {
 			working: false,
 			moving: false,     // walking this frame (drives the step-bob in draw)
 			phase: Math.random() * 6.28,
-			speed: 100 + Math.random() * 30, // px/s — brisk enough that the wood trek isn't a slog
-			energy: 100,       // per-villager (A2): drains with work, recovers idle
-			hunger: 100,       // per-villager food upkeep: drains over time, eats from state.food
+			speed: 100 + Math.random() * 30, // movement px/s (NOT the trained speed stat below)
+			// Per-villager progression, persisted via state.villagerData: trained stats
+			// + energy + hunger. Restored from `data` on load, else fresh defaults.
+			stats: { speed: data.speed || 100, strength: data.strength || 100, cardio: data.cardio || 100 },
+			energy: data.energy === undefined ? 100 : data.energy,
+			hunger: data.hunger === undefined ? 100 : data.hunger,
 			// Manual-task state (A1): a free villager dispatched to an action.
 			busy: false,       // running a manual action
 			task: null,        // action id
@@ -249,7 +254,7 @@ var scene = {
 		v.task = id;
 		v.taskPhase = "walk";
 		v.progress = 0;
-		var base = (a.rawTime ? a.maxTime() : a.maxTime() * speedRatio) * timeScale;
+		var base = (a.rawTime ? a.maxTime(v.stats.speed) : a.maxTime(v.stats.speed) * speedRatio) * timeScale;
 		// Tired = slower: 100 energy -> x1, 0 energy -> x2. Sleep isn't slowed by tiredness.
 		var tiredFactor = (id === "sleep") ? 1 : (2 - v.energy / 100);
 		v.workDur = base * tiredFactor;
@@ -268,7 +273,7 @@ var scene = {
 		var a = ACTIONS[v.task];
 		var res = a.yields || null;
 		var before = res ? state[res] : 0;
-		if(a.onDone){ a.onDone(); }
+		if(a.onDone){ a.onDone(v); }
 		// Carry whatever was actually gained to the drop-off (floated on arrival).
 		v.dropResource = (res && state[res] - before > 0) ? res : null;
 		v.dropAmount = res ? state[res] - before : 0;
@@ -312,7 +317,7 @@ var scene = {
 			if(this.moveToward(v, dt)){
 				v.taskPhase = "work";
 				v.progress = 0;
-				if(ACTIONS[v.task].onStart){ ACTIONS[v.task].onStart(); } // pay cost on arrival
+				if(ACTIONS[v.task].onStart){ ACTIONS[v.task].onStart(v); } // pay cost on arrival
 			}
 		} else if(v.taskPhase === "work"){
 			v.working = true;
@@ -353,7 +358,8 @@ var scene = {
 		for(var type in counts){
 			for(var i = 0; i < counts[type]; i++){ this.addBuilding(type, { animate: false }); }
 		}
-		for(var v = 0; v < state.villagers; v++){ this.addVillager(); }
+		var saved = state.villagerData || [];
+		for(var v = 0; v < state.villagers; v++){ this.addVillager(saved[v]); }
 		this.syncJobs();
 	},
 
@@ -375,6 +381,39 @@ var scene = {
 			if(t){ var s = slots[t] | 0; this.villagers[v].slot = s; slots[t] = s + 1; }
 			else { this.villagers[v].slot = 0; }
 		}
+	},
+
+	// Per-villager save payload: the persistent progression fields (trained stats
+	// + energy/hunger). Consumed by saveGame -> state.villagerData; restored by
+	// addVillager(data) in rebuildFromState. Job/slot are re-derived by syncJobs.
+	dumpVillagers: function(){
+		var out = [];
+		for(var i = 0; i < this.villagers.length; i++){
+			var v = this.villagers[i];
+			out.push({
+				speed: v.stats.speed, strength: v.stats.strength, cardio: v.stats.cardio,
+				energy: v.energy, hunger: v.hunger,
+			});
+		}
+		return out;
+	},
+
+	// Hit-test a screen click to a villager. The canvas is object-fit:contain, so
+	// map the client point through the letterbox into the fixed 1150x460 world,
+	// then return the topmost villager whose (slightly padded) sprite box contains
+	// it, or null for empty space.
+	pickVillager: function(clientX, clientY){
+		if(!this.canvas){ return null; }
+		var rect = this.canvas.getBoundingClientRect();
+		var scale = Math.min(rect.width / this.W, rect.height / this.H);
+		var ox = (rect.width - this.W * scale) / 2, oy = (rect.height - this.H * scale) / 2;
+		var wx = (clientX - rect.left - ox) / scale, wy = (clientY - rect.top - oy) / scale;
+		var vw = this.spriteW(imgVillager), vh = this.spriteH(imgVillager), pad = 4;
+		for(var i = this.villagers.length - 1; i >= 0; i--){
+			var v = this.villagers[i];
+			if(wx >= v.x - pad && wx <= v.x + vw + pad && wy >= v.y - pad && wy <= v.y + vh + pad){ return v; }
+		}
+		return null;
 	},
 
 	// --- effects -----------------------------------------------------------
@@ -466,9 +505,9 @@ var scene = {
 	updateVillager: function(v, dt){
 		this.feed(v, dt); // all villagers eat, whatever they're doing
 		if(v.busy){ this.updateTask(v, dt); return; } // running a manual action
-		// Idle/unemployed villagers recover energy; rate scales with global cardio.
+		// Idle/unemployed villagers recover energy; rate scales with the villager's cardio.
 		if(!v.jobTarget && v.energy < 100){
-			v.energy = Math.min(100, v.energy + (3 + state.cardio / 50) * dt);
+			v.energy = Math.min(100, v.energy + (3 + v.stats.cardio / 50) * dt);
 		}
 		if(v.jobTarget){
 			var b = this.firstBuilding(v.jobTarget);
