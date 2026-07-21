@@ -29,6 +29,7 @@ function itemLabel(id){
 	var label = (SHOP_ICONS[id] ? SHOP_ICONS[id] + " " : "") + item.name + " (" + costToText(item.cost) + ")";
 	var ck = BUILDING_COUNT_KEY[id];
 	if(ck && state[ck] > 0){ label += " ×" + state[ck]; }
+	if(item.key){ label += " <span class='shopKey'>" + item.key.toUpperCase() + "</span>"; }
 	return label;
 }
 

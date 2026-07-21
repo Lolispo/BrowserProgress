@@ -427,17 +427,30 @@ body{
   border-radius: 3px;
 }
 
-/* Dev panel (only shown when developer): pinned top-right so it's easy to find */
+/* Hotkey badge on shop buttons (inline, since shop buttons flow text) */
+.shopKey{
+  display: inline-block;
+  min-width: 15px;
+  padding: 0 4px;
+  margin-left: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
+/* Dev panel (only shown when developer): flows inline inside the Settings
+   overlay body (was pinned top-right, where it covered the overlay ✕). */
 #devPanel{
-  position: fixed;
-  top: 6px;
-  right: 8px;
-  z-index: 1500;
-  background: var(--panel);
+  margin-top: 10px;
+  background: var(--panel-2);
   border: 1px solid var(--edge);
   border-radius: 6px;
-  padding: 4px 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  padding: 8px;
 }
 #devPanel p{ margin: 0 0 4px; font-size: 11px; }
 #devPanel #devSpeedBtn{ font-size: 12px; }

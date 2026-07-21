@@ -33,4 +33,17 @@ function initUI(){
 	}
 
 	$(".overlayClose").on("click", closeAll);
+
+	// Clicking anywhere outside an overlay closes the menus. Ignore clicks on a
+	// menu button (its own handler toggles) and clicks inside an overlay.
+	$(document).on("mousedown", function(e){
+		var $t = $(e.target);
+		if($t.closest(".overlay").length || $t.closest("#menuBar, #menuBarLeft").length){ return; }
+		closeAll();
+	});
+
+	// Escape closes any open overlay (and the hotkey help).
+	$(document).on("keydown", function(e){
+		if(e.key === "Escape"){ closeAll(); $("#hotkeyHelp").addClass("hidden"); }
+	});
 }
