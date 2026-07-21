@@ -1,0 +1,23 @@
+bars.js
+  s_c7914038abf791::t_8ae14911e8e52a 129-133
+scene.js
+  s_c7914038abf791::t_262acb7c680c80 508
+docs/superpowers/specs/2026-07-21-villager-specialization-design.md
+  s_c7914038abf791::t_b692fa3ce1f346 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "ea4cbf77a26770f929f1d214ef3cad7b9186ab95",
+  "prompts": {},
+  "sessions": {
+    "s_c7914038abf791": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "83eb0fbc-871c-4c39-977d-f815550ad18c",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
