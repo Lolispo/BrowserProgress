@@ -93,6 +93,15 @@ were guidance and depth.
       worse of energy/hunger) with a 🍖 marker + hunger bar. Food is now ongoing
       upkeep, not just the hire cost. Rates in variables.js (`hungerDrain` etc.).
       *(Decisions: global food sink; soft slow-only, never blocked.)* Reviewed clean.
+- [x] **Per-villager specialization + inspect panel.** Speed/Strength/Cardio moved
+      from global `state` onto each villager (`v.stats`, persisted via
+      `villagerData`); manual actions use the *acting* villager's stats and training
+      improves that villager. Click a villager → a dweller panel (`#villagerOverlay`)
+      with their live stats + energy/hunger and per-villager Train/Sleep actions
+      (`dispatchActionFor`); the game's first canvas hit-testing (`scene.pickVillager`).
+      Global bars kept; passive job income stays flat (v1). Spec:
+      `docs/superpowers/specs/2026-07-21-villager-specialization-design.md`. Reviewed clean.
+      *(Follow-up: scale passive job income by the assigned villager's stats.)*
 - [ ] **Region events / discoveries (make regions feel different).** Beyond "another
       resource + job", each region gets one-time finds and small events on arrival —
       a ruin with a cache, a hazard to clear, a bonus — so scouting a region is an
