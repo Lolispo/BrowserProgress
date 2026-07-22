@@ -12,15 +12,18 @@ var incomeInterval = null; // Used for job income
 var energyInterval = null; // Used for energy increase for energy meter
 var ctx = null; // the canvas 2d graphics
 
-// Dev sandbox flag: true only when running locally (localhost / 127.0.0.1 / opened
-// as a file://). On the deployed GitHub Pages host this is false, so the live game
-// starts honest at zero resources. See initValues() for the resource top-up.
-// Add ?nodev to the local URL to force the real zero-resource economy (for balance
-// playtesting without deploying).
-var developer = (location.hostname === "localhost" ||
+// Dev flag: unlocks the dev-only fast-forward speed toggle (see controls.js). On by
+// default when running locally (localhost / 127.0.0.1 / file://), off on the deployed
+// host. Two URL overrides win over the host default, so you can flip it either way
+// anywhere (e.g. to fast-forward the live game): ?dev forces it on, ?nodev forces it
+// off. If both are present, ?nodev wins. (It no longer grants any resources — a fresh
+// game always starts honest at zero — so this is purely the debug speed control.)
+var _devParams = new URLSearchParams(location.search);
+var _devIsLocal = location.hostname === "localhost" ||
 	location.hostname === "127.0.0.1" ||
-	location.protocol === "file:") &&
-	location.search.indexOf("nodev") === -1;
+	location.protocol === "file:";
+var developer = _devParams.has("nodev") ? false :
+	(_devParams.has("dev") ? true : _devIsLocal);
 
 // Action base speeds (ms), scaled by player speed and speedRatio in ACTIONS.maxTime()
 var woodSpeed = 2000000;
