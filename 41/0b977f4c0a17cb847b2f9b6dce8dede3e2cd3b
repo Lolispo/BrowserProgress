@@ -1,0 +1,21 @@
+variables.js
+  s_cbdc051d5131a7::t_15bbf989ba9ba2 48-57
+scene.js
+  s_cbdc051d5131a7::t_476b04155cf3ee 529-532
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "410b977f4c0a17cb847b2f9b6dce8dede3e2cd3b",
+  "prompts": {},
+  "sessions": {
+    "s_cbdc051d5131a7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "68236be5-637a-4168-b42b-cce9b0932982",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
