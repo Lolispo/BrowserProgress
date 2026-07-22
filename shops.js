@@ -49,6 +49,9 @@ function buyItem(item){
 	if(!canAfford(item.cost) || !meetsRequirements(item.requires)){ return; }
 	payCost(item.cost);
 	item.onBuy();
+	// Once bought, an item stays in the shop for good — mark it discovered so it
+	// never hides again, even after spending back below its reveal threshold.
+	for(var id in SHOP_ITEMS){ if(SHOP_ITEMS[id] === item){ state.discovered[id] = true; break; } }
 	updateShopLabels();
 	refreshShopColors();
 	if(typeof refreshScouts === "function"){ refreshScouts(); }
