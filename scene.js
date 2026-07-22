@@ -141,6 +141,8 @@ var scene = {
 			bornAt: (opts && opts.animate === false) ? -1 : this.lastTime / 1000,
 		});
 		this.layoutBuildings();
+		// A new house shifts the base-zone layout, so re-anchor existing villagers.
+		if(type === "house"){ this.assignHomes(); }
 	},
 
 	// Snap each building onto a tile cell, using an occupancy set so two buildings
@@ -189,7 +191,7 @@ var scene = {
 			working: false,
 			moving: false,     // walking this frame (drives the step-bob in draw)
 			phase: Math.random() * 6.28,
-			speed: 100 + Math.random() * 30, // movement px/s (NOT the trained speed stat below)
+			speed: 150 + Math.random() * 45, // movement px/s (NOT the trained speed stat below); 1.5x the old base so early game isn't a crawl
 			// Per-villager progression, persisted via state.villagerData: trained stats
 			// + energy + hunger. Restored from `data` on load, else fresh defaults.
 			stats: { speed: data.speed || 100, strength: data.strength || 100, cardio: data.cardio || 100 },
@@ -206,6 +208,30 @@ var scene = {
 			dropResource: null, dropAmount: 0, // resource carried to a drop-off
 		});
 		this.syncJobs();
+		// Anchor every villager to a house (their base zone), then spawn the new one
+		// at its doorstep instead of the old bottom-of-map band.
+		this.assignHomes();
+		var nv = this.villagers[this.villagers.length - 1];
+		nv.x = nv.tx = nv.home.x; nv.y = nv.ty = nv.home.y;
+	},
+
+	// Assign each villager a home house as its idle/return base. Villager i belongs
+	// to house building (i mod houseCount), so the first villager keeps the starting
+	// house and later hires cluster at their own; villagers beyond the built houses
+	// wrap and share. A few per house fan out around the door so they don't stack.
+	assignHomes: function(){
+		var houses = this.buildings.filter(function(b){ return b.type === "house"; });
+		if(!houses.length){ return; }
+		var perHouse = {};
+		var vh = this.spriteH(imgVillager);
+		for(var i = 0; i < this.villagers.length; i++){
+			var hi = i % houses.length;
+			var h = houses[hi];
+			var n = perHouse[hi] | 0; perHouse[hi] = n + 1;
+			var hx = h.x + (this.spriteW(h.img) - vh) / 2 + ((n % 3) - 1) * 12;
+			var hy = h.y + this.spriteH(h.img) - vh + 6 + Math.floor(n / 3) * 9;
+			this.villagers[i].home = { x: hx, y: hy };
+		}
 	},
 
 	// The most-rested free villager (unemployed + not busy). Used for work dispatch.
@@ -758,9 +784,16 @@ var scene = {
 			else if(v.moving){ vbob = -Anim.pulse(now, 9, v.phase) * 2.2; }       // hop up on each step
 			ctx.drawImage(imgVillager, v.x, v.y + vbob, this.spriteW(imgVillager), this.spriteH(imgVillager));
 			var vw = this.spriteW(imgVillager);
-			// Per-villager work progress bar (A1)
+			// Per-villager work progress bar (A1). When villagers overlap (e.g. several
+			// hunting on the same tile) the bars stack upward so each stays visible
+			// instead of every one drawing over the last.
 			if(v.busy && v.taskPhase === "work"){
-				var py = v.y - 7;
+				var level = 0;
+				for(var j = 0; j < i; j++){
+					var o = this.villagers[j];
+					if(o.busy && o.taskPhase === "work" && Math.abs(o.x - v.x) < 14 && Math.abs(o.y - v.y) < 14){ level++; }
+				}
+				var py = v.y - 7 - level * 6;
 				ctx.fillStyle = "rgba(0,0,0,0.55)";
 				ctx.fillRect(v.x, py, vw, 4);
 				ctx.fillStyle = "#6bbf47";

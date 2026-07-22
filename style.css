@@ -439,6 +439,24 @@ body{
   border-radius: 3px;
 }
 
+/* Count of player-queued one-off orders waiting on this action (see bars.js). */
+.queueBadge{
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  z-index: 4;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+  text-align: center;
+  color: #fff;
+  background: #b5651d;
+  border-radius: 3px;
+}
+
 /* Hotkey badge on shop buttons (inline, since shop buttons flow text) */
 .shopKey{
   display: inline-block;

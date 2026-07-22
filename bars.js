@@ -75,6 +75,7 @@ function ActionButton(id, action){
 		"<div class='outerdiv actionBtn' id='" + barName + "_outerdiv' data-tip=\"" + tipText(action) + "\">" +
 		"<div class='innertext' id='" + barName + "_innertext'>" + action.label + "</div>" +
 		(action.key ? "<div class='barKey'>" + action.key.toUpperCase() + "</div>" : "") +
+		"<div class='queueBadge hidden' id='" + barName + "_q'></div>" +
 		"</div>" +
 		"<button type='button' class='autoBtn' id='" + barName + "_auto' data-tip=\"Auto-repeat: keep dispatching this action while a villager and (if needed) a tool are free. Auto-stops if it becomes impossible.\">A</button>");
 	$(document.getElementById(barName + "_outerdiv")).on("click", function(){ dispatchAction(id); });
@@ -87,6 +88,10 @@ function ActionButton(id, action){
 // all). A momentary "no free villager / all tools in use" is temporary, so it
 // keeps the toggle on and just waits for a worker/tool to free up.
 var autoActions = {};
+// One-off orders the player queued (by clicking a bar / pressing its hotkey). The
+// driver drains these with PRIORITY over auto-repeat, so pressing e.g. Mine Iron
+// while Auto Chop is on jumps a single mine order ahead of the auto dispatch.
+var manualQueue = [];
 
 function toggleAuto(id){
 	autoActions[id] = !autoActions[id];
@@ -105,25 +110,62 @@ function autoHardStop(a){
 	return false;
 }
 
+// Actually send a free villager to perform an action once. Returns true if a
+// villager was dispatched, false if nothing was runnable right now.
+function runDispatch(id){
+	var action = ACTIONS[id];
+	if(!meetsRequirements(action.requires)){ return false; }
+	if(action.tool && !(action.tool === "axe" ? freeAxe() : freeSpear())){ return false; } // need a free tool
+	// Sleep sends the most-tired free villager; everything else the most-rested.
+	var v = (id === "sleep") ? scene.tiredestFreeVillager() : scene.freeVillager();
+	if(!v){ return false; }
+	scene.startTask(v, id);
+	return true;
+}
+
+// Drain the player's queued orders FIFO. A head whose requirement is permanently
+// gone is dropped; one that only lacks a free villager/tool is kept (we stop and
+// wait), preserving order and priority over auto.
+function drainManualQueue(){
+	while(manualQueue.length){
+		var id = manualQueue[0];
+		var a = ACTIONS[id];
+		if(autoHardStop(a)){ manualQueue.shift(); newMsg(a.label + " not possible"); continue; }
+		if(!runDispatch(id)){ break; }
+		manualQueue.shift();
+	}
+}
+
 function autoDriverTick(){
+	drainManualQueue(); // player's one-off orders always dispatch before auto
 	for(var id in autoActions){
 		if(!autoActions[id]){ continue; }
 		var a = ACTIONS[id];
 		if(autoHardStop(a)){ toggleAuto(id); newMsg("Auto " + a.label + " stopped"); continue; }
-		if(canDispatch(a)){ dispatchAction(id); }
+		if(canDispatch(a)){ runDispatch(id); }
 	}
+	refreshQueueBadges();
 }
 
-// Send the most-rested free villager to perform an action (if any is free and
-// the requirements — e.g. having a tool — are met).
+// Player clicked a bar or pressed its hotkey: queue one order and try to run it
+// immediately. If no villager is free it stays queued (with priority over auto).
 function dispatchAction(id){
-	var action = ACTIONS[id];
-	if(!meetsRequirements(action.requires)){ return; }
-	if(action.tool && !(action.tool === "axe" ? freeAxe() : freeSpear())){ return; } // need a free tool
-	// Sleep sends the most-tired free villager; everything else the most-rested.
-	var v = (id === "sleep") ? scene.tiredestFreeVillager() : scene.freeVillager();
-	if(!v){ return; }
-	scene.startTask(v, id);
+	manualQueue.push(id);
+	drainManualQueue();
+	refreshQueueBadges();
+}
+
+// Show a count badge on any action bar with orders still waiting in the queue.
+function refreshQueueBadges(){
+	var counts = {};
+	for(var i = 0; i < manualQueue.length; i++){ counts[manualQueue[i]] = (counts[manualQueue[i]] | 0) + 1; }
+	for(var id in ACTIONS){
+		var el = document.getElementById(ACTIONS[id].barId + "_q");
+		if(!el){ continue; }
+		var n = counts[id] || 0;
+		el.innerHTML = n ? String(n) : "";
+		el.classList.toggle("hidden", n === 0);
+	}
 }
 
 // Dispatch a SPECIFIC villager to an action (from the inspect panel). Reuses the
