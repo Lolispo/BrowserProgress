@@ -1,0 +1,19 @@
+shops.js
+  s_cbdc051d5131a7::t_e560f71454b5c5 52-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "1abb281c1faf8e669c9967fa15515c7c9b2ec482",
+  "prompts": {},
+  "sessions": {
+    "s_cbdc051d5131a7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "68236be5-637a-4168-b42b-cce9b0932982",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
