@@ -1,0 +1,23 @@
+jobs.js
+  s_cbdc051d5131a7::t_0b385b336884c7 61-63
+variables.js
+  s_cbdc051d5131a7::t_32168e3c1ea31c 77-83
+data/registry.js
+  s_cbdc051d5131a7::t_0db72cbe1c2130 468
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "fc12162634d58dacf20b3c9678efbe9e6587c0b1",
+  "prompts": {},
+  "sessions": {
+    "s_cbdc051d5131a7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "68236be5-637a-4168-b42b-cce9b0932982",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
