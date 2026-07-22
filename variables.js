@@ -74,6 +74,13 @@ var trainingCardioEnergyReq = 100;
 var foodShopInc = 10;
 var houseShopInc = 2;
 
+// Passive job income (per villager, per 2s income tick). Home jobs were previously
+// hardcoded in jobs.js; pulled here so every job rate tunes in one place. Iron and
+// food were the mid-late choke points (half the wood/stone rate) — bumped 1 -> 2.
+var woodCutterWoodPerTick = 3;   // wood per WoodCutter per tick
+var ironWorkerIronPerTick = 2;   // iron per IronWorker per tick (was 1 — iron was the bottleneck)
+var hunterFoodPerTick = 2;       // food per Hunter per tick (was 1)
+
 // Phase 3 building tuning
 var farmHousing = 8;         // housing each Farm adds
 var farmFoodPerTick = 2;     // food per Farm per income tick

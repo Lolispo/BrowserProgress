@@ -58,9 +58,9 @@ function increaseVillagers(){
 }
 
 function incomeTick(){
-	if(state.woodCutter != 0){ var w = state.woodCutter * 3; set("wood", state.wood + w); scene.gainFx("wood", w); }
-	if(state.ironWorker != 0){ var ir = state.ironWorker * 1; set("iron", state.iron + ir); scene.gainFx("iron", ir); }
-	if(state.hunter != 0){ var fo = state.hunter * 1; set("food", state.food + fo); scene.gainFx("food", fo); }
+	if(state.woodCutter != 0){ var w = state.woodCutter * woodCutterWoodPerTick; set("wood", state.wood + w); scene.gainFx("wood", w); }
+	if(state.ironWorker != 0){ var ir = state.ironWorker * ironWorkerIronPerTick; set("iron", state.iron + ir); scene.gainFx("iron", ir); }
+	if(state.hunter != 0){ var fo = state.hunter * hunterFoodPerTick; set("food", state.food + fo); scene.gainFx("food", fo); }
 	if(state.mason != 0){ var st = state.mason * masonStonePerTick; set("stone", state.stone + st); scene.gainFx("stone", st); }
 	if(state.trader != 0){ var gd = state.trader * traderGoldPerTick; set("gold", state.gold + gd); scene.gainFx("gold", gd); }
 	if(state.farm != 0){ var ff = state.farm * farmFoodPerTick; set("food", state.food + ff); scene.gainFx("food", ff); }

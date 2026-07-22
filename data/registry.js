@@ -465,7 +465,7 @@ var SHOP_ITEMS = {
 	},
 	monument: {
 		btnId: "monumentShop", name: "Build the Monument", category: "houses", region: "cavern",
-		cost: { wood: 1500, iron: 800, stone: 800, gold: 200, crystal: 12 },
+		cost: { wood: 1200, iron: 500, stone: 800, gold: 200, crystal: 12 },
 		tooltip: "The Grand Monument. Needs materials from every region. Completing it wins the game.",
 		onBuy: function(){
 			set("monument", state.monument + 1);
