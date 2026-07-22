@@ -267,8 +267,9 @@ var scene = {
 		}
 	},
 
-	// Apply an action's effect on work completion, wear + free the reserved tool,
-	// drain (or restore) the acting villager's energy, then head home.
+	// Apply an action's effect on work completion, wear the reserved tool (broken
+	// ones are dropped here), drain (or restore) the acting villager's energy, then
+	// head home. A surviving tool stays in-hand and is only freed once carried back.
 	completeTask: function(v){
 		var a = ACTIONS[v.task];
 		var res = a.yields || null;
@@ -279,15 +280,17 @@ var scene = {
 		v.dropAmount = res ? state[res] - before : 0;
 		if(v.tool){
 			v.tool.dur -= equipDamage(a.toolDmg || 0);
-			v.tool.inUse = false;
 			if(v.tool.dur <= 0){
+				// Broke mid-work: remove it now — there's nothing to carry back.
 				var arr = (a.tool === "axe") ? state.axes : state.spears;
 				var idx = arr.indexOf(v.tool);
 				if(idx >= 0){ arr.splice(idx, 1); }
 				newMsg((a.tool === "axe" ? "An axe" : "A spear") + " broke!");
+				v.tool = null;
+				if(typeof updateToolDisplay === "function"){ updateToolDisplay(); }
 			}
-			if(typeof updateToolDisplay === "function"){ updateToolDisplay(); }
-			v.tool = null;
+			// A surviving tool stays reserved (inUse) — still in the villager's hands
+			// until walked home; freed at the end of the return leg (see updateTask).
 		}
 		var cost = a.energyCost || 0;
 		v.energy = Math.max(0, Math.min(100, v.energy - cost)); // negative cost restores
@@ -339,7 +342,9 @@ var scene = {
 					this.floater("+" + v.dropAmount + " " + v.dropResource, v.x, v.y - 6, this.resColor(v.dropResource));
 					v.dropResource = null;
 				}
-				v.busy = false; v.task = null; v.taskPhase = null;
+				// Back home: only now is the carried tool freed for the next worker.
+					if(v.tool){ v.tool.inUse = false; v.tool = null; if(typeof updateToolDisplay === "function"){ updateToolDisplay(); } }
+					v.busy = false; v.task = null; v.taskPhase = null;
 			}
 		}
 	},
@@ -761,25 +766,34 @@ var scene = {
 				ctx.fillStyle = "#6bbf47";
 				ctx.fillRect(v.x, py, vw * Math.min(1, v.progress), 4);
 			}
-			// Per-villager energy bar (A2), shown when tired
+			// Two need-bars per villager, each tagged with an icon so they read apart at a
+			// glance: ⚡ energy, 🍖 food. Normally stacked just under the sprite; if the
+			// villager is too near the bottom edge to fit them, they flip above the head.
 			var sh = this.spriteH(imgVillager);
+			var IW = 11;                       // left gutter holding the bar's icon
+			var barX = v.x + IW, barW = vw - IW;
+			var eY = (v.y + sh + 16 <= this.H) ? (v.y + sh + 2) : (v.y - 15);
+			var hY = eY + 9;                   // hunger bar sits below energy, icons clear
+			ctx.textAlign = "center";
+			ctx.textBaseline = "middle";
+			ctx.font = "10px sans-serif";
 			if(v.energy < 99.5){
-				var ey = v.y + sh + 2;
 				var e = v.energy / 100;
 				ctx.fillStyle = "rgba(0,0,0,0.5)";
-				ctx.fillRect(v.x, ey, vw, 3);
+				ctx.fillRect(barX, eY, barW, 4);
 				ctx.fillStyle = e > 0.5 ? "#e0c040" : (e > 0.25 ? "#e08a2a" : "#d0402a");
-				ctx.fillRect(v.x, ey, vw * e, 3);
+				ctx.fillRect(barX, eY, barW * e, 4);
+				ctx.fillText("⚡", v.x + IW / 2, eY + 2);
 			}
-			// Per-villager hunger bar, just below the energy bar (food-brown fill).
 			if(v.hunger < 99.5){
-				var hy = v.y + sh + 6;
 				var hn = v.hunger / 100;
 				ctx.fillStyle = "rgba(0,0,0,0.5)";
-				ctx.fillRect(v.x, hy, vw, 3);
+				ctx.fillRect(barX, hY, barW, 4);
 				ctx.fillStyle = hn > 0.5 ? "#c9863a" : (hn > 0.25 ? "#c76b28" : "#a33");
-				ctx.fillRect(v.x, hy, vw * hn, 3);
+				ctx.fillRect(barX, hY, barW * hn, 4);
+				ctx.fillText("🍖", v.x + IW / 2, hY + 2);
 			}
+			ctx.textBaseline = "alphabetic";
 			// One status marker above the villager for the more urgent need: 🍖 when
 			// hungry, 💤 when tired (they also move slower, see moveToward). Pulses.
 			if(v.energy < 35 || v.hunger < 35){
