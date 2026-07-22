@@ -1,0 +1,27 @@
+bars.js
+  s_cbdc051d5131a7::t_f6f52a7e39ecb9 78
+  s_cbdc051d5131a7::t_deab386df4724f 91-94,113-138,140,145,147,150-151,153-168
+style.css
+  s_cbdc051d5131a7::t_9a450d54c63cd7 442-459
+scene.js
+  s_cbdc051d5131a7::t_2a042450bb8d9b 211-234
+  s_cbdc051d5131a7::t_dd15d86d45b65e 144-145
+  s_cbdc051d5131a7::t_0817b23b4a979b 787-789,791-796
+  s_cbdc051d5131a7::t_e00df9f7fa18d1 194
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "0484d9d3495c9c3bb6e35892ececf8630feea02d",
+  "prompts": {},
+  "sessions": {
+    "s_cbdc051d5131a7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "68236be5-637a-4168-b42b-cce9b0932982",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
