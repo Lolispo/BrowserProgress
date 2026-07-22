@@ -45,13 +45,16 @@ var huntEnergyCost = 0.4;
 var clawEnergyReq = 50;
 var clawEnergyCost = 0.6;
 
-// Hunger (per-villager food upkeep): each villager slowly gets hungry and eats
-// from the global food stockpile. When food runs dry they stay hungry and slow
-// down (shared 30% floor with tiredness). Rates are per real second / per meal.
-var hungerDrain = 1.5;   // hunger points lost per second
-var hungerEatAt = 60;    // a villager eats once hunger drops below this
-var foodPerMeal = 1;     // food consumed per meal
-var hungerPerMeal = 45;  // hunger restored per meal
+// Hunger (per-villager food upkeep): each villager gets hungry and eats from the
+// global food stockpile. When food runs dry they stay hungry and slow down (shared
+// 30% floor with tiredness). Hunger is driven mainly by WORK: a villager on a task
+// or employed at a job burns hunger fast; an idle villager barely does. Rates are
+// per real second / per meal (see scene.feed).
+var hungerDrainWork = 2.0;   // hunger points lost per second while working (task or job)
+var hungerDrainIdle = 0.3;   // hunger points lost per second while idle (no task, no job)
+var hungerEatAt = 60;        // a villager eats once hunger drops below this
+var foodPerMeal = 1;         // food consumed per meal
+var hungerPerMeal = 45;      // hunger restored per meal
 
 // Training tuning
 var speedInc = 10;

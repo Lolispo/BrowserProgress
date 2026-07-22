@@ -526,7 +526,10 @@ var scene = {
 	// village has food, the villager eats a meal (consumes food, restores hunger).
 	// Empty food -> hunger sits low -> slower movement (see moveToward), never blocked.
 	feed: function(v, dt){
-		v.hunger = Math.max(0, v.hunger - hungerDrain * dt);
+		// Work drives hunger: on a manual task or employed at a job burns it fast,
+		// standing idle barely at all — so food tracks activity, not just elapsed time.
+		var working = v.busy || v.jobTarget;
+		v.hunger = Math.max(0, v.hunger - (working ? hungerDrainWork : hungerDrainIdle) * dt);
 		if(v.hunger < hungerEatAt && state.food >= foodPerMeal){
 			set("food", state.food - foodPerMeal);
 			v.hunger = Math.min(100, v.hunger + hungerPerMeal);
