@@ -1,3 +1,6 @@
 .gstack/
 .omc/
 .DS_Store
+
+# Build output (staged by scripts/build-static.sh for CI deploy)
+dist/

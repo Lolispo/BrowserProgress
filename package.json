@@ -1,0 +1,9 @@
+{
+  "name": "browser-progress",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BrowserProgress — a browser incremental/village game. Static site, no build step; `build` just stages a clean dist/ for CI deploy.",
+  "scripts": {
+    "build": "bash scripts/build-static.sh"
+  }
+}
