@@ -3,7 +3,7 @@
 
 // Entry point + shared UI helpers. Game data lives in data/registry.js; the
 // per-system renderers live in bars.js / shops.js / jobs.js / energy.js.
-// (The old free-text TODO list that lived here now lives in ROADMAP.md.)
+// (The old free-text TODO list that lived here now lives in TODO.md.)
 
 $(document).ready(function(){
 	var loaded = (typeof loadGame === "function") && loadGame();
