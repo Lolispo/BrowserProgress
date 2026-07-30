@@ -72,14 +72,32 @@ function TimeBar(action){
 function ActionButton(id, action){
 	var barName = action.barId;
 	$('#' + barName).append(
-		"<div class='outerdiv actionBtn' id='" + barName + "_outerdiv' data-tip=\"" + tipText(action) + "\">" +
+		"<div class='outerdiv actionBtn' id='" + barName + "_outerdiv' data-tip=\"" + actionTip(action) + "\">" +
 		"<div class='innertext' id='" + barName + "_innertext'>" + action.label + "</div>" +
 		(action.key ? "<div class='barKey'>" + action.key.toUpperCase() + "</div>" : "") +
-		"<div class='queueBadge hidden' id='" + barName + "_q'></div>" +
+		"<div class='queueBadge hidden' id='" + barName + "_q' data-tip=\"Orders waiting. Click to cancel one.\"></div>" +
 		"</div>" +
 		"<button type='button' class='autoBtn' id='" + barName + "_auto' data-tip=\"Auto-repeat: keep dispatching this action while a villager and (if needed) a tool are free. Auto-stops if it becomes impossible.\">A</button>");
 	$(document.getElementById(barName + "_outerdiv")).on("click", function(){ dispatchAction(id); });
 	$(document.getElementById(barName + "_auto")).on("click", function(){ toggleAuto(id); });
+	// Right-click the bar undoes one order (queued first, else recall a worker).
+	$(document.getElementById(barName + "_outerdiv")).on("contextmenu", function(e){
+		e.preventDefault();
+		cancelOne(id);
+	});
+	// The queue badge is the visible affordance for the same thing: click it to
+	// drop one waiting order. stopPropagation so it doesn't also queue another.
+	$(document.getElementById(barName + "_q")).on("click", function(e){
+		e.stopPropagation();
+		cancelOne(id);
+	});
+}
+
+// Action-bar tooltip: the registry text plus the cancel affordance. Used both at
+// build time and by refreshBarStates (which rewrites data-tip with the block
+// reason), so the hint can't go missing on one path.
+function actionTip(a){
+	return tipText(a) + "  [Right-click: step back — auto off, then queued order, then recall a worker]";
 }
 
 // --- auto-repeat ("auto chop") --------------------------------------------
@@ -155,6 +173,47 @@ function dispatchAction(id){
 	refreshQueueBadges();
 }
 
+// --- cancelling ------------------------------------------------------------
+
+// Drop the newest waiting order for an action, so click-to-queue and
+// click-to-cancel mirror each other (the last one you added is the first to go).
+function cancelQueued(id){
+	for(var i = manualQueue.length - 1; i >= 0; i--){
+		if(manualQueue[i] === id){ manualQueue.splice(i, 1); return true; }
+	}
+	return false;
+}
+
+// Undo one order for an action, cheapest step first:
+//   auto-repeat off -> drop a waiting order -> call back a villager on the job.
+// Auto has to go first: while it's on the driver re-dispatches within 250ms, so
+// cancelling anything underneath it would look like it did nothing. Each press
+// takes one step down the ladder and says which, so holding right-click walks
+// the action all the way back to a stop.
+function cancelOne(id){
+	var a = ACTIONS[id];
+	if(!a){ return false; }
+	if(autoActions[id]){
+		toggleAuto(id);
+		newMsg("Auto " + a.label + " off");
+		return true;
+	}
+	if(cancelQueued(id)){
+		newMsg("Cancelled a queued " + a.label);
+		refreshQueueBadges();
+		return true;
+	}
+	var v = scene.villagerOnTask(id);
+	if(v && scene.cancelTask(v)){
+		newMsg("Called a villager back from " + a.label);
+		refreshQueueBadges();
+		if(typeof refreshVillagerPanel === "function"){ refreshVillagerPanel(); }
+		return true;
+	}
+	newMsg("Nothing to cancel for " + a.label);
+	return false;
+}
+
 // Show a count badge on any action bar with orders still waiting in the queue.
 function refreshQueueBadges(){
 	var counts = {};
@@ -216,7 +275,7 @@ function refreshBarStates(){
 		var reason = blockReason(a);
 		$("#" + a.barId + "_outerdiv")
 			.toggleClass("barUnavailable", !!reason)
-			.attr("data-tip", tipText(a) + (reason ? "  <span class='tipWarn'>⚠ " + reason + "</span>" : ""));
+			.attr("data-tip", actionTip(a) + (reason ? "  <span class='tipWarn'>⚠ " + reason + "</span>" : ""));
 	}
 	// Scout bars grey out when you lack the villagers to send.
 	for(var sid in SCOUTS){

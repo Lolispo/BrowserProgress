@@ -63,6 +63,9 @@ function buildHotkeyHelp(){
 		if(SHOP_ITEMS[id].key){ rows += "<div><b>" + SHOP_ITEMS[id].key.toUpperCase() + "</b> Buy " + SHOP_ITEMS[id].name + "</div>"; }
 	}
 	rows += "<div><b>H</b> Toggle this help</div>";
+	rows += "<div style='margin-top:8px'>Right-click an action bar to walk it back one step: auto-repeat off, " +
+		"then drop a queued order (its orange badge does this too), then call a villager back. " +
+		"A villager already carrying the goods home can't be called off — also cancellable from the villager panel.</div>";
 	if(developer){ rows += "<div><b>`</b> Dev: toggle fast-forward</div>"; }
 
 	var box = document.getElementById("hotkeyHelp");

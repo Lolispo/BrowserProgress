@@ -75,30 +75,49 @@ function goalScout(regionId){
 	return { ready: true, html: "<span class='ngName'>" + label + "</span> — ready in Expeditions (bottom bar)" };
 }
 
+// A "assign someone to this job" step. It clears as soon as the job is staffed,
+// and also once you've banked the stockpile that job exists to build — so a
+// one-off like the Mason doesn't have to stay assigned forever to stay cleared
+// (the milestone below makes it stick either way). `need` shows what the pile
+// is *for*, so the step has a visible finish line rather than an open-ended nag.
+function goalJob(job, resource, need, forWhat){
+	var have = Math.min(state[resource], need);
+	return goalHint("Assign a " + job,
+		"open 👷 Jobs and add a " + job + " — " + have + "/" + need + " " + resource + " for the " + forWhat);
+}
+
+// Ordered; the first step that isn't done is the one shown. Each carries an `id`
+// so updateNextGoal can bank it permanently once cleared (see state.milestones).
 var NEXT_GOALS = [
-	{ done: function(){ return state.villagers >= 2; },      get: function(){ return goalBuy("hireVillager"); } },
-	{ done: function(){ return state.lumberMill >= 1; },     get: function(){ return goalBuy("lumberMill"); } },
-	{ done: function(){ return state.huntingLodge >= 1; },   get: function(){ return goalBuy("huntingLodge"); } },
-	{ done: function(){ return state.mine >= 1; },           get: function(){ return goalBuy("mine"); } },
-	{ done: function(){ return state.villagers >= 4; },      get: function(){ return goalHint("Grow to 4 villagers", "hire more / build Farm Houses — needed to scout the Hills"); } },
-	{ done: function(){ return !!state.regions.hills; },     get: function(){ return goalScout("hills"); } },
-	{ done: function(){ return state.quarry >= 1; },         get: function(){ return goalBuy("quarry"); } },
-	{ done: function(){ return state.mason >= 1; },          get: function(){ return goalHint("Assign a Mason", "open 👷 Jobs and add a Mason to produce Stone"); } },
-	{ done: function(){ return state.blacksmith >= 1; },     get: function(){ return goalBuy("blacksmith"); } },
-	{ done: function(){ return !!state.regions.mountains; }, get: function(){ return goalScout("mountains"); } },
-	{ done: function(){ return state.market >= 1; },         get: function(){ return goalBuy("market"); } },
-	{ done: function(){ return state.trader >= 1; },         get: function(){ return goalHint("Assign a Trader", "open 👷 Jobs and add a Trader to produce Gold"); } },
-	{ done: function(){ return !!state.regions.cavern; },    get: function(){ return goalScout("cavern"); } },
-	{ done: function(){ return state.crystal >= SHOP_ITEMS.monument.cost.crystal; }, get: function(){ return goalHint("Mine Crystal", "use the Mine Crystal action bar to gather Crystal for the Monument"); } },
-	{ done: function(){ return state.monument >= 1; },       get: function(){ return goalBuy("monument"); } },
+	{ id: "hire",      done: function(){ return state.villagers >= 2; },      get: function(){ return goalBuy("hireVillager"); } },
+	{ id: "lumber",    done: function(){ return state.lumberMill >= 1; },     get: function(){ return goalBuy("lumberMill"); } },
+	{ id: "lodge",     done: function(){ return state.huntingLodge >= 1; },   get: function(){ return goalBuy("huntingLodge"); } },
+	{ id: "mine",      done: function(){ return state.mine >= 1; },           get: function(){ return goalBuy("mine"); } },
+	{ id: "pop4",      done: function(){ return state.villagers >= 4; },      get: function(){ return goalHint("Grow to 4 villagers", "hire more / build Farm Houses — needed to scout the Hills"); } },
+	{ id: "hills",     done: function(){ return !!state.regions.hills; },     get: function(){ return goalScout("hills"); } },
+	{ id: "quarry",    done: function(){ return state.quarry >= 1; },         get: function(){ return goalBuy("quarry"); } },
+	{ id: "mason",     done: function(){ return state.mason >= 1 || state.stone >= SHOP_ITEMS.blacksmith.cost.stone; },
+	                                                                         get: function(){ return goalJob("Mason", "stone", SHOP_ITEMS.blacksmith.cost.stone, "Blacksmith"); } },
+	{ id: "blacksmith",done: function(){ return state.blacksmith >= 1; },     get: function(){ return goalBuy("blacksmith"); } },
+	{ id: "mountains", done: function(){ return !!state.regions.mountains; }, get: function(){ return goalScout("mountains"); } },
+	{ id: "market",    done: function(){ return state.market >= 1; },         get: function(){ return goalBuy("market"); } },
+	{ id: "trader",    done: function(){ return state.trader >= 1 || state.gold >= SHOP_ITEMS.monument.cost.gold; },
+	                                                                         get: function(){ return goalJob("Trader", "gold", SHOP_ITEMS.monument.cost.gold, "Monument"); } },
+	{ id: "cavern",    done: function(){ return !!state.regions.cavern; },    get: function(){ return goalScout("cavern"); } },
+	{ id: "crystal",   done: function(){ return state.crystal >= SHOP_ITEMS.monument.cost.crystal; }, get: function(){ return goalHint("Mine Crystal", "use the Mine Crystal action bar to gather Crystal for the Monument"); } },
+	{ id: "monument",  done: function(){ return state.monument >= 1; },       get: function(){ return goalBuy("monument"); } },
 ];
 
 function updateNextGoal(){
 	var el = document.getElementById("nextGoal");
 	if(!el || typeof SHOP_ITEMS === "undefined"){ return; }
+	if(!state.milestones){ state.milestones = {}; }
 	var goal = null;
 	for(var i = 0; i < NEXT_GOALS.length; i++){
-		if(!NEXT_GOALS[i].done()){ goal = NEXT_GOALS[i]; break; }
+		var step = NEXT_GOALS[i];
+		if(state.milestones[step.id]){ continue; }   // banked — never shown again
+		if(step.done()){ state.milestones[step.id] = true; continue; }
+		goal = step; break;
 	}
 	if(!goal){ el.className = "ngReady"; el.innerHTML = "🏆 Village complete!"; return; }
 	var g = goal.get();
@@ -148,7 +167,8 @@ function openVillagerPanel(){
 		vMeter("Energy", "vEnergyFill", "#e0c040") +
 		vMeter("Hunger", "vHungerFill", "#c9863a") +
 		"<p class='vStatus' id='vStatus'></p>" +
-		"<div class='vActions' id='vActions'></div>";
+		"<div class='vActions' id='vActions'></div>" +
+		"<button type='button' class='btn btnSmall vCancel' id='vCancel'>✖ Cancel task</button>";
 	var acts = [];
 	if(state.trainingYard > 0){
 		acts.push(["trainSpeed", "🏃 Train Speed"], ["trainStrength", "💪 Train Strength"], ["trainCardio", "🫀 Train Cardio"]);
@@ -160,6 +180,14 @@ function openVillagerPanel(){
 	$("#vActions .vAct").each(function(){
 		var id = this.getAttribute("data-act");
 		$(this).on("click", function(){ dispatchActionFor(scene.selected, id); });
+	});
+	// Bound once, like the dispatch buttons — the ~4x/sec refresh only toggles its
+	// enabled state, so the live update can never eat the click.
+	$("#vCancel").on("click", function(){
+		var v = scene.selected;
+		if(v && scene.cancelTask(v)){ newMsg("Called the villager back"); }
+		if(typeof refreshQueueBadges === "function"){ refreshQueueBadges(); }
+		refreshVillagerPanel();
 	});
 	refreshVillagerPanel();
 }
@@ -177,8 +205,26 @@ function refreshVillagerPanel(){
 	document.getElementById("vCardio").innerHTML = Math.round(v.stats.cardio);
 	$("#vEnergyFill").css("width", Math.max(0, v.energy) + "%");
 	$("#vHungerFill").css("width", Math.max(0, v.hunger) + "%");
-	document.getElementById("vStatus").innerHTML =
-		v.busy ? ("Working: " + (v.task || "")) : (v.jobTarget ? ("Working a " + v.jobTarget + " job") : "Idle");
+	document.getElementById("vStatus").innerHTML = villagerStatus(v);
+	// Cancel is only meaningful mid-task; on the return leg the work is already
+	// banked, so it stays disabled and the title says why.
+	var btn = document.getElementById("vCancel");
+	if(btn){
+		var can = scene.canCancel(v);
+		btn.disabled = !can;
+		btn.title = can ? "Abort this task and walk home empty-handed"
+			: (v.busy ? "Already done — they're carrying it home" : "Not on a task");
+	}
+}
+
+// Human-readable status line: which leg of which action, by label not raw id.
+function villagerStatus(v){
+	if(v.busy){
+		var label = (typeof ACTIONS !== "undefined" && ACTIONS[v.task] && ACTIONS[v.task].label) || v.task || "";
+		var phase = { walk: "Walking to", work: "Working", "return": "Carrying home" }[v.taskPhase] || "Working";
+		return phase + ": " + label;
+	}
+	return v.jobTarget ? ("Working a " + v.jobTarget + " job") : "Idle";
 }
 
 // Show the win overlay when the Monument is built.

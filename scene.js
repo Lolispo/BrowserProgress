@@ -14,12 +14,30 @@
 var SPRITE_SCALE = 2;            // sprites are ~20px; 2x reads as a real village
 var SPRITE_PX = 20 * SPRITE_SCALE;
 
+// The world is a fixed 1150x460 coordinate space; every entity position, tile and
+// effect below is in world units. The canvas *element* is whatever size the layout
+// gives it, and the camera (see updateCamera/applyCamera) maps one onto the other.
+var WORLD_W = 1150, WORLD_H = 460;
+
+// Below this fit-scale the whole-world view is too small to read (roughly a
+// half-width desktop window), so the camera zooms in to fill the height and pans
+// horizontally instead. At or above it, nothing changes from the classic view.
+var CAM_MIN_FIT = 0.9;
+var CAM_MAX_ZOOM = 3;      // never zoom past this, however tall the viewport is
+var CAM_DEADZONE = 0.5;    // middle fraction of the view the action can roam freely in
+var CAM_LERP = 4;          // camera catch-up rate (per second)
+
 var scene = {
 	canvas: null, ctx: null, W: 0, H: 0,
 	buildings: [], villagers: [], trees: [], floaters: [],
 	assets: {}, // sprite key -> Image, populated from SPRITES by loadAssets()
 	lastTime: 0, running: false,
 	selected: null, // villager shown in the inspect panel (see pickVillager)
+
+	// Camera: world->screen mapping recomputed every frame from the element size.
+	// camX is the world x at the left edge of the view; camScale/camOX/camOY are
+	// derived. See updateCamera.
+	camX: 0, camScale: 1, camOX: 0, camOY: 0, camViewW: WORLD_W,
 
 	treeLane: 4, // y of the forest strip in Home
 
@@ -81,9 +99,10 @@ var scene = {
 		this.canvas = canvas;
 		this.ctx = ctx;
 		this.loadAssets();
-		this.W = canvas.width;
-		this.H = canvas.height;
-		// Tile grid: fill the canvas exactly (tiles may be slightly non-square).
+		this.W = WORLD_W;
+		this.H = WORLD_H;
+		this.camX = 0;
+		// Tile grid: fill the world exactly (tiles may be slightly non-square).
 		this.tileW = this.W / this.COLS;
 		this.tileH = this.H / this.ROWS;
 		this.regionCols = {};
@@ -324,6 +343,45 @@ var scene = {
 		v.progress = 1;
 	},
 
+	// Call a villager off a manual action. Nothing has been granted or spent yet
+	// during walk/work — actions have no onStart cost, and the yield, tool wear
+	// and energy cost all land together in completeTask — so an abort is clean:
+	// release the reserved tool unworn and send them home empty-handed.
+	//
+	// The "return" leg is deliberately NOT cancellable: by then the work is done
+	// and the reward is already banked, so there's nothing to call off; they're
+	// just carrying it to the drop-off.
+	cancelTask: function(v){
+		if(!this.canCancel(v)){ return false; }
+		if(v.tool){
+			v.tool.inUse = false;
+			v.tool = null;
+			if(typeof updateToolDisplay === "function"){ updateToolDisplay(); }
+		}
+		v.busy = false; v.task = null; v.taskPhase = null;
+		v.progress = 0; v.working = false;
+		v.dropResource = null; v.dropAmount = 0;
+		// Point them home; without this they'd keep walking to the abandoned task
+		// target first (the idle wander only re-targets once they've arrived).
+		v.tx = v.home.x; v.ty = v.home.y; v.rest = 0;
+		return true;
+	},
+
+	canCancel: function(v){ return !!v && v.busy && v.taskPhase !== "return"; },
+
+	// A villager currently cancellable on this action, preferring one still
+	// walking there (least work thrown away). Used by the action-bar cancel.
+	villagerOnTask: function(id){
+		var working = null;
+		for(var i = 0; i < this.villagers.length; i++){
+			var v = this.villagers[i];
+			if(v.task !== id || !this.canCancel(v)){ continue; }
+			if(v.taskPhase === "walk"){ return v; }
+			if(!working){ working = v; }
+		}
+		return working;
+	},
+
 	// Move a villager toward its (tx,ty); returns true on arrival. Dev speed
 	// (timeScale < 1) speeds up walking too, so fast-forward affects the whole loop.
 	moveToward: function(v, dt){
@@ -429,16 +487,83 @@ var scene = {
 		return out;
 	},
 
-	// Hit-test a screen click to a villager. The canvas is object-fit:contain, so
-	// map the client point through the letterbox into the fixed 1150x460 world,
-	// then return the topmost villager whose (slightly padded) sprite box contains
-	// it, or null for empty space.
+	// --- camera --------------------------------------------------------------
+
+	// Match the canvas backing store to the size the layout actually gave the
+	// element (times the device pixel ratio, so the map isn't blurry on retina).
+	// Cheap no-op when nothing changed, so it's safe to call every frame.
+	syncCanvasSize: function(){
+		var c = this.canvas;
+		if(!c){ return; }
+		var dpr = window.devicePixelRatio || 1;
+		var cw = c.clientWidth || WORLD_W, ch = c.clientHeight || WORLD_H;
+		var pw = Math.max(1, Math.round(cw * dpr)), ph = Math.max(1, Math.round(ch * dpr));
+		if(c.width !== pw){ c.width = pw; }
+		if(c.height !== ph){ c.height = ph; }
+		this.cssW = cw;
+		this.cssH = ch;
+		this.dpr = dpr;
+	},
+
+	// Pick the zoom and pan for this frame.
+	//
+	// Wide windows keep the classic whole-world view: scale to *contain* the
+	// world, letterbox, no panning. Once the window gets too narrow for that to
+	// stay readable (fit < CAM_MIN_FIT) the camera zooms to fill the height and
+	// pans horizontally, following the villagers — but only once they leave the
+	// middle CAM_DEADZONE of the view, so it sits still during ordinary work.
+	updateCamera: function(dt){
+		this.syncCanvasSize();
+		var cw = this.cssW, ch = this.cssH;
+		var fit = Math.min(cw / this.W, ch / this.H);
+		this.camScale = fit >= CAM_MIN_FIT ? fit : Math.min(ch / this.H, CAM_MAX_ZOOM);
+
+		var viewW = cw / this.camScale;               // world units visible across
+		this.camViewW = viewW;
+		var maxX = Math.max(0, this.W - viewW);
+		if(maxX <= 0){
+			this.camX = 0;                            // world fits: centred, no pan
+		} else {
+			var target = this.camX;
+			var focus = this.focusX();
+			var pad = viewW * (1 - CAM_DEADZONE) / 2;
+			if(focus < this.camX + pad){ target = focus - pad; }
+			else if(focus > this.camX + viewW - pad){ target = focus - viewW + pad; }
+			target = Math.max(0, Math.min(maxX, target));
+			// Snap on the first frame / after a resize; ease otherwise.
+			var k = Math.min(1, (dt || 0) * CAM_LERP);
+			this.camX = this._camReady ? this.camX + (target - this.camX) * k : target;
+		}
+		this._camReady = true;
+		this.camOX = Math.max(0, (cw - this.W * this.camScale) / 2);
+		this.camOY = Math.max(0, (ch - this.H * this.camScale) / 2);
+	},
+
+	// What the camera follows: the middle of the villagers (they are the action).
+	// With none on screen yet, hold on the home region.
+	focusX: function(){
+		var n = this.villagers.length;
+		if(!n){ return this.W * (REGIONS.home.zone[1] / 2); }
+		var sum = 0;
+		for(var i = 0; i < n; i++){ sum += this.villagers[i].x; }
+		return sum / n;
+	},
+
+	// Install the world->device transform for a frame of drawing.
+	applyCamera: function(ctx){
+		var s = this.camScale * (this.dpr || 1);
+		ctx.setTransform(s, 0, 0, s, (this.camOX - this.camX * this.camScale) * (this.dpr || 1), this.camOY * (this.dpr || 1));
+	},
+
+	// Hit-test a screen click to a villager: invert the camera transform to get
+	// world coords, then return the topmost villager whose (slightly padded)
+	// sprite box contains the point, or null for empty space.
 	pickVillager: function(clientX, clientY){
 		if(!this.canvas){ return null; }
 		var rect = this.canvas.getBoundingClientRect();
-		var scale = Math.min(rect.width / this.W, rect.height / this.H);
-		var ox = (rect.width - this.W * scale) / 2, oy = (rect.height - this.H * scale) / 2;
-		var wx = (clientX - rect.left - ox) / scale, wy = (clientY - rect.top - oy) / scale;
+		var scale = this.camScale;
+		var wx = (clientX - rect.left - this.camOX) / scale + this.camX;
+		var wy = (clientY - rect.top - this.camOY) / scale;
 		var vw = this.spriteW(imgVillager), vh = this.spriteH(imgVillager), pad = 4;
 		for(var i = this.villagers.length - 1; i >= 0; i--){
 			var v = this.villagers[i];
@@ -496,6 +621,7 @@ var scene = {
 
 	update: function(dt, now){
 		var i;
+		this.updateCamera(dt);
 		// Refresh action-bar availability shading ~4x/sec (not every frame).
 		this._uiT = (this._uiT || 0) + dt;
 		if(this._uiT > 0.25){
@@ -750,6 +876,12 @@ var scene = {
 		var ctx = this.ctx;
 		if(!ctx){ return; }
 		var now = this.lastTime / 1000;
+
+		// Clear in device space (the letterbox bands live outside the world), then
+		// draw everything below in world coords through the camera transform.
+		ctx.setTransform(1, 0, 0, 1, 0, 0);
+		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		this.applyCamera(ctx);
 
 		// --- WORLD ---------------------------------------------------------
 		this.drawTerrain(ctx);

@@ -39,6 +39,10 @@ var state = {
 	regions: { home: true, hills: false, mountains: false, cavern: false },
 	// Shop items revealed once you've reached ~half their price (sticky). See shops.js.
 	discovered: {},
+	// Next-goal steps already cleared, by id (sticky). Keeps a one-off step like
+	// "Assign a Mason" from re-appearing if you later reassign that villager.
+	// See NEXT_GOALS / updateNextGoal in script.js.
+	milestones: {},
 };
 
 // Resource keys drive shop affordability colouring; changing one refreshes the shop.

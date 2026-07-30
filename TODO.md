@@ -20,10 +20,12 @@ HUD redesign (UI-1) all shipped. Biggest leftovers, roughly by value:
 2. **A4 remainder** — unify scouts onto the villager model; add resource-area nodes
    for Hills/Mountains/Cavern (stone/gold/crystal) like Home's Mine/Hunt.
 3. **UI-2 — sector views** — a wider world you switch/pan between (view one sector).
-   Plus: remove the map's letterbox bands.
+   The camera landed (fill-height + deadzone follow on narrow windows, letterbox
+   bands gone there); what's left is *explicit* sector switching and a world wider
+   than 1150×460 to switch between.
 4. **Art & animation** — nicer sprites/icons throughout (walking animation shipped).
 5. **Smaller** — shop-items-hidden-until-affordable, alternate skins, fuller keyboard
-   play, responsive/mobile, prestige/achievements/events.
+   play, prestige/achievements/events.
 
 Detail for each lives in the phase sections below.
 
@@ -40,6 +42,13 @@ were made with the user; the tool model is intentionally unchanged.
       (`Next: Hire Villager — 0/20 food`), advancing hire → LumberMill → Mine →
       HuntingLodge → grow, green when affordable. Ordered `NEXT_GOALS` in script.js,
       refreshed from `set()`. *(Decision: dedicated HUD hint, not reveal-threshold.)*
+- [x] **Next-goal steps are sticky, and job steps have a finish line.** "Assign a
+      Mason" used to un-complete the moment you reassigned that villager, so it
+      read as a job you had to staff forever. Each `NEXT_GOALS` entry now carries
+      an `id` and is banked into `state.milestones` (persisted) the first time it
+      clears, so it never comes back. The Mason/Trader steps also clear on the
+      stockpile alone (400 stone → Blacksmith, 200 gold → Monument) and show that
+      progress inline, so there's a visible target instead of an open-ended nag.
 - [x] **Equipment overlay (shared pool + durability).** Gear button opens a closable
       overlay listing each pooled axe/spear with a durability bar; refreshed from
       `updateToolDisplay` + on open. Notes tools are a shared pool. *(Decision: shared
@@ -278,15 +287,26 @@ Settings. UI-1 = this layout (CSS/HTML + small toggle JS, logic untouched). UI-2
       (mutually exclusive), Equipment panel dropped, Reset + dev speed in Settings.
       New ui.js for the toggles. Map now fills the middle (letterboxed to aspect).
       Verified in browser.
-- [ ] UI-2 — sector views / wider map with per-sector camera (view Hills only, etc.).
-- [ ] Map fills without letterbox bands (widen canvas aspect or fit differently).
-      **Approach decided (deferred until this is built):** introduce a camera /
-      world→screen transform rather than migrating entities to tile coords. All
-      input is HTML (no canvas hit-testing), so a single `ctx` transform applied
-      in scene.draw() maps the fixed 1150×460 world onto a container-sized backing
-      buffer — near-zero entity churn, and it unlocks responsive fill, portrait,
-      zoom, and per-sector panning together. Scalability review #3; not built yet
-      (no consumer until UI-2), so it stays out to avoid speculative infra.
+- [ ] UI-2 — sector views: explicit per-sector switching (arrows / click a region)
+      and a world wider than 1150×460 to switch between. The camera it needs now
+      exists (below) — this is the "choose what you're looking at" half.
+- [x] **Camera / world→screen transform.** Built as designed: the world stays a
+      fixed 1150×460 coordinate space, the canvas backing store is resized to the
+      element (× DPR), and `scene.updateCamera` + `applyCamera` map one onto the
+      other in `scene.draw`. Entities were untouched. `WORLD_W`/`WORLD_H` and the
+      `CAM_*` tunables live at the top of scene.js.
+      - Wide windows are unchanged: while the contain-fit scale is ≥ `CAM_MIN_FIT`
+        (0.9) it stays the classic whole-world view, letterboxed, no panning.
+      - Narrower than that (roughly a half-width desktop window) it zooms to fill
+        the height and pans horizontally — no letterbox bands, ~2.7× the on-screen
+        map area at 720px wide.
+      - Panning follows the villagers with a `CAM_DEADZONE` (middle 50%), so it
+        sits still during ordinary work in Home and slides only when the action
+        leaves the middle. Eased at `CAM_LERP`.
+      - `pickVillager` inverts the same transform; verified click-to-select still
+        hits at 720px and at devicePixelRatio 2.
+      Verified at 1920×1080 (unchanged), 1030/1000/900/720/640 wide, 900×500,
+      500×700, live resize, and dpr 2.
 
 ## Planned: Villager actor model (manual work done by villagers)
 
@@ -328,6 +348,29 @@ the free pool. Stats stay global.
 - [ ] A4 (rest) — Unify scouts onto the villager model (they still reduce the
       unemployed *count* rather than occupying an entity); further per-villager UI
       polish; new-resource region nodes (stone/gold/crystal areas).
+- [x] **Cancel a villager's queued actions.** `scene.cancelTask(v)` aborts a task:
+      releases the reserved tool *unworn*, grants nothing, and points the villager
+      home (without the explicit re-target they'd finish walking to the abandoned
+      target first, since the idle wander only re-aims on arrival). Clean by
+      construction — every action's `onStart` is a no-op, and yield + tool wear +
+      energy cost all land together in `completeTask`.
+      - The **return leg is not cancellable** (`scene.canCancel`): the work is done
+        and the reward already banked, so there's nothing to call off — they're
+        just carrying it to the drop-off.
+      - **Villager panel:** a "✖ Cancel task" button, bound once and enabled/disabled
+        by the live refresh (so the ~4x/sec update can't eat the click). Its status
+        line now reads the leg and the action's label — `Walking to: Chop wood`
+        rather than the raw `chopWood` id.
+      - **Action bar:** right-click steps the action back one notch —
+        auto-repeat off → drop a queued order → recall a worker. Auto has to go
+        first, or the 250ms driver re-dispatches and the cancel looks like a no-op.
+        Clicking the orange queue badge does the queued-order step directly.
+      - Cancelling the queue removes the *newest* matching order, so click-to-queue
+        and click-to-cancel mirror each other.
+      Verified: tool freed with durability unchanged, no resource/energy granted,
+      villager walks home, return leg refuses both paths without corrupting state,
+      panel button states, real right-click (browser menu suppressed) and badge
+      click (doesn't also queue another).
 
 ## Balance / pacing (own pass, flagged)
 
@@ -411,9 +454,14 @@ T2 road + gateways → T3 snap entities → T4 polish.
       100dvh), and a portrait "rotate your device" hint since the map is a wide
       2.5:1. Verified at 390×844 / 844×390 / 568×320. Also cleaned dead CSS
       (legacy .hudPanel, duplicate #canvas1 rule, the big commented block).
-- [ ] Full portrait support (optional): make the canvas fill a tall container
-      instead of letterboxing — needs the responsive-canvas rewrite (reposition
-      stored entity coords on resize). Deferred; landscape is the intended mode.
+- [x] Small/split-screen windows: the map used to letterbox into a thin strip
+      (720×288 inside a 790px-tall area) with the Home region only 216px wide.
+      Fixed by the camera above — fill-height + deadzone follow. The next-goal
+      hint also moved to its own full-width row under 820px, where it used to
+      ellipsise away ("Hire Villager — 0/20...").
+- [ ] Full portrait support (optional): the camera can now fill a tall container,
+      but portrait still shows the rotate hint — landscape is the intended mode.
+      Would need the toolbar/top bar reflowed for a tall narrow viewport.
 - [ ] Replayability: prestige/ascension, achievements, random events.
 - [ ] Full canvas width: buildings still cluster in the left of each region
       zone; spread them to use the space better.
