@@ -1,0 +1,62 @@
+scene.js
+  s_cec141126ef310::t_a96323f6fc94b2 102-105
+  s_cec141126ef310::t_cac91af12dcbbb 17-29,37-40
+  s_cec141126ef310::t_d2fe6beb3653e4 490-560,564-566
+  s_cec141126ef310::t_9689923f78b4e4 624
+  s_cec141126ef310::t_83ea7c96541b67 346-384
+  s_cec141126ef310::t_b20a24a6641166 880-885
+  s_aecafe83e2406d::t_a3b0d4ce8a4747 41
+data/registry.js
+  s_cec141126ef310::t_a82de26d90989a 42-45
+script.js
+  s_cec141126ef310::t_9adfd291a58e72 117-120
+  s_cec141126ef310::t_879eaa24df11cd 208-227
+  s_cec141126ef310::t_5947e40fb54f1c 170-171
+  s_cec141126ef310::t_24f4a21d942f39 184-191
+  s_cec141126ef310::t_94387d5a6fe145 78-90,92-108,114
+controls.js
+  s_cec141126ef310::t_64eae0fa6da8aa 66-68
+TODO.md
+  s_cec141126ef310::t_99172609f5e38d 290-309
+  s_cec141126ef310::t_319785435a9118 23-25,28
+  s_cec141126ef310::t_3b65a380006fdc 351-373
+  s_cec141126ef310::t_4f22efdfeb8297 457
+  s_cec141126ef310::t_77313e27d20421 45-51
+  s_cec141126ef310::t_1d1765115d96bf 458-464
+style.css
+  s_cec141126ef310::t_a141c1bc285a57 356-375
+  s_cec141126ef310::t_891d306eecb643 552-555
+  s_cec141126ef310::t_6acf63ab039fa5 464-465,481,483
+  s_cec141126ef310::t_f16784a5508300 386-388,390
+bars.js
+  s_cec141126ef310::t_96e346ac124366 278
+  s_cec141126ef310::t_6c5fed9eea6195 75,78
+  s_cec141126ef310::t_41916f67436004 83-99
+  s_cec141126ef310::t_1cad54b41e1452 100
+  s_cec141126ef310::t_def3924b45d82d 176-186,193-195,201-216
+  s_cec141126ef310::t_aa385f43e965d1 187-192,196-200
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "de3e2b50f43e99de66415c49b3098154cf3ec421",
+  "prompts": {},
+  "sessions": {
+    "s_aecafe83e2406d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4b4fad1a-b23d-412b-9683-2cf11bef8085",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    },
+    "s_cec141126ef310": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "809c1c7a-7af9-4795-8f45-f1c95cd85267",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
