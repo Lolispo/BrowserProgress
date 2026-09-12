@@ -42,4 +42,22 @@ function initTooltips(){
 	$(document).on("mouseleave", "[data-tip]", function(){
 		box.style.display = "none";
 	});
+
+	// Touch has no hover, and every "what am I still missing?" answer in this game
+	// lives in a tooltip. Pressing shows it; releasing hides it. The click still
+	// fires on release, so a tap both tells you about the thing and buys it if you
+	// can afford it — and on something you can't afford, the tap is just the
+	// explanation, which is exactly what you wanted from it.
+	$(document).on("touchstart", "[data-tip]", function(e){
+		var t = e.originalEvent.touches[0];
+		box.innerHTML = $(this).attr("data-tip");
+		box.style.display = "block";
+		// Above the finger, and kept on screen.
+		var w = box.offsetWidth || 220;
+		box.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, t.clientX - w / 2)) + "px";
+		box.style.top = Math.max(6, t.clientY - (box.offsetHeight || 40) - 18) + "px";
+	});
+	$(document).on("touchend touchcancel", "[data-tip]", function(){
+		box.style.display = "none";
+	});
 }

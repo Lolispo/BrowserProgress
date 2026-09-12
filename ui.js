@@ -5,17 +5,22 @@
 // a time: clicking an icon toggles its overlay (and closes any other); the ✕ or
 // clicking the icon again closes it.
 function initUI(){
+	// 🛒 Build and 🎒 Gear are NOT in here: they expand and collapse panels that
+	// live on the map permanently, rather than opening a menu over it.
 	var overlays = {
-		btnShop: "shopOverlay",
 		btnJobs: "jobsOverlay",
 		btnGoal: "goalOverlay",
-		btnEquipment: "equipmentOverlay",
 		btnMessages: "messagesOverlay",
 		btnSettings: "settingsOverlay",
 	};
 
 	function closeAll(){
-		$(".overlay").addClass("hidden"); // covers villagerOverlay (no menu button)
+		$(".overlay").addClass("hidden");
+		deselectVillager();
+	}
+
+	function deselectVillager(){
+		$("#villagerPanel").addClass("hidden");
 		if(typeof scene !== "undefined"){ scene.selected = null; }
 	}
 
@@ -26,20 +31,20 @@ function initUI(){
 				closeAll();
 				if(willOpen){
 					$("#" + ov).removeClass("hidden");
-					// Refresh the equipment list on open so durability is current.
-					if(ov === "equipmentOverlay" && typeof updateEquipmentPanel === "function"){ updateEquipmentPanel(); }
-				}
+					}
 			});
 		})(btn, overlays[btn]);
 	}
 
 	$(".overlayClose").on("click", closeAll);
+	$("#villagerClose").on("click", deselectVillager);
 
 	// Clicking anywhere outside an overlay closes the menus. Ignore clicks on a
 	// menu button (its own handler toggles) and clicks inside an overlay.
 	$(document).on("mousedown", function(e){
 		var $t = $(e.target);
 		if($t.closest(".overlay").length || $t.closest("#menuBar, #menuBarLeft").length){ return; }
+		if($t.closest("#buildBar, #hudDock").length){ return; } // on-map panels, not the map
 		closeAll();
 	});
 
@@ -49,12 +54,18 @@ function initUI(){
 	});
 
 	// Click a villager on the map to inspect them; empty space just closes menus.
-	$("#canvas1").on("click", function(e){
-		var v = scene.pickVillager(e.clientX, e.clientY);
+	// Delegated, because the map surface belongs to the active renderer and is
+	// replaced wholesale when the graphics are switched. Asking the renderer to
+	// pick is the only place input has to know which one is installed: the 2D
+	// view inverts its camera transform, the 3D view casts a ray.
+	$("#mapWrap").on("click", "canvas", function(e){
+		if(!Renderer){ return; }
+		if(Renderer.swallowClick && Renderer.swallowClick()){ return; } // ended a camera drag
+		var v = Renderer.pick(e.clientX, e.clientY);
 		closeAll();
 		if(v){
 			scene.selected = v;
-			$("#villagerOverlay").removeClass("hidden");
+			$("#villagerPanel").removeClass("hidden");
 			if(typeof openVillagerPanel === "function"){ openVillagerPanel(); }
 		}
 	});

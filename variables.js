@@ -10,7 +10,7 @@ var speedRatio = 0.1; // Speedratio of bars
 var timeScale = 1;    // dev speed toggle: multiplies bar/income durations (1 = normal, <1 = faster)
 var incomeInterval = null; // Used for job income
 var energyInterval = null; // Used for energy increase for energy meter
-var ctx = null; // the canvas 2d graphics
+var ctx = null; // the canvas 2d graphics (set by Render2D.init; 2D renderer only)
 
 // Dev flag: unlocks the dev-only fast-forward speed toggle (see controls.js). On by
 // default when running locally (localhost / 127.0.0.1 / file://), off on the deployed
@@ -86,11 +86,6 @@ var farmHousing = 8;         // housing each Farm adds
 var farmFoodPerTick = 2;     // food per Farm per income tick
 var masonStonePerTick = 3;   // stone per Mason per income tick
 var traderGoldPerTick = 2;   // gold per Trader per income tick
-
-// Hot-path sprite aliases, populated from the SPRITES manifest by
-// scene.loadAssets() (all other sprites are looked up via scene.assets[key]).
-var imgVillager;
-var imgTree;
 
 // Atmosphere layer master intensity (0 = fully off, 1 = designed strength).
 // See atmosphere.js. Kept here with the other rendering tuning constants.

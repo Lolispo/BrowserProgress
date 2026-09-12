@@ -282,7 +282,8 @@ var ACTIONS = {
 // ---------------------------------------------------------------------------
 // SHOP_ITEMS registry — the buyable buttons in the shop column.
 //
-// Each entry carries: btnId, name, category (main|equipment|resources|houses),
+// Each entry carries: btnId, name, category (main|goods|houses — the build bar
+// groups by it, see BAR_ORDER),
 // cost {}, an authored tooltip, an optional requires/canBuy gate, and onBuy().
 // The button label is generated as "Name (cost)" so price text can never drift
 // out of sync with the actual cost.
@@ -296,6 +297,7 @@ var SHOP_ITEMS = {
 		cost: { food: 20 },
 		tooltip: "Hire a villager. Needs a free house. Villagers can be assigned to jobs for passive income.",
 		canBuy: function(){ return state.villagers + 1 <= state.houses; },
+		blockedWhy: "No housing free — build Farm Houses first.",
 		onBlocked: function(){ newMsg("Requires more houses"); },
 		onBuy: function(){
 			increaseVillagers();
@@ -513,8 +515,3 @@ var SCOUTS = {
 	},
 };
 
-// Shop navigation buttons (category switching), kept separate from purchasables.
-var SHOP_NAV = [
-	{ btnId: "shopOpenEquipment", label: "Open Goods",   show: "goods",  title: "Shop - Goods" },
-	{ btnId: "shopOpenHouses",    label: "Open Houses",  show: "houses", title: "Shop - Houses" },
-];

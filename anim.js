@@ -5,8 +5,8 @@
 // Tiny animation toolkit: pure helpers the scene composes for motion + juice.
 //
 // Naming the primitives means a new effect is "oscillate + ease", not another
-// block of inline trig in scene.draw(). Every time arg is in seconds (the scene
-// passes now = lastTime/1000). Keep these pure + side-effect-free.
+// block of inline trig in a renderer's draw loop. Every time arg is in seconds
+// (the world passes now = lastTime/1000). Keep these pure + side-effect-free.
 // ===========================================================================
 var Anim = {
 	// Signed sine wave — gentle bobs / sways. amp is the peak displacement.

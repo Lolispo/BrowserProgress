@@ -24,6 +24,8 @@ $(document).ready(function(){
 	$(document.getElementById("victoryClose")).on("click", function(){
 		$("#victoryOverlay").toggleClass("hidden", true);
 	});
+	$("#gfxSwitch .gfxOpt").on("click", function(){ installRenderer(this.getAttribute("data-render")); });
+	$("#btnEquipment, #gearHead").on("click", toggleGear);
 	$(document.getElementById("resetGame")).on("click", function(){
 		if(window.confirm("Reset all progress?")){ resetGame(); }
 	});
@@ -53,11 +55,17 @@ function updateGoal(){
 // Blacksmith -> scout Mountains -> Market + Trader -> scout Cavern -> Monument),
 // not just the opening. Ordered; the first unmet step is shown. Re-run from set().
 
-// A purchasable step: shows "ready! (open Shop)" or the resource shortfall.
+// Which SHOP_ITEMS key the next-goal hint is pointing at, or null when the next
+// step isn't a purchase (scout somewhere, staff a job). The build bar rings this
+// chip (see refreshNextMarker) so the advice and the button are the same thing.
+var nextGoalItem = null;
+
+// A purchasable step: shows "ready to buy" or the resource shortfall.
 function goalBuy(key){
+	nextGoalItem = key;
 	var item = SHOP_ITEMS[key];
 	var ready = canAfford(item.cost) && (!item.canBuy || item.canBuy());
-	if(ready){ return { ready: true, html: "<span class='ngName'>" + item.name + "</span> — ready! (open 🛒 Shop)" }; }
+	if(ready){ return { ready: true, html: "<span class='ngName'>" + item.name + "</span> — ready to buy" }; }
 	var parts = [];
 	for(var k in item.cost){ parts.push(Math.min(state[k], item.cost[k]) + "/" + item.cost[k] + " " + k); }
 	return { ready: false, html: "<span class='ngName'>" + item.name + "</span> — " + parts.join(", ") };
@@ -119,20 +127,76 @@ function updateNextGoal(){
 		if(step.done()){ state.milestones[step.id] = true; continue; }
 		goal = step; break;
 	}
-	if(!goal){ el.className = "ngReady"; el.innerHTML = "🏆 Village complete!"; return; }
+	nextGoalItem = null;                 // goalBuy sets it if this step is a purchase
+	if(!goal){
+		el.className = "ngReady";
+		el.innerHTML = "🏆 Village complete!";
+		if(typeof refreshNextMarker === "function"){ refreshNextMarker(); }
+		return;
+	}
 	var g = goal.get();
 	el.className = g.ready ? "ngReady" : "";
 	el.innerHTML = "Next: " + g.html;
+	if(typeof refreshNextMarker === "function"){ refreshNextMarker(); }
 }
 
-// Equipment overlay: one row per pooled tool with its durability. Tools are a
-// shared pool (not per-villager), so this lists the pool, not owners.
+// --- Gear panel (always on the map; click to expand) ------------------------
+// Tool durability used to live behind the 🎒 button, which meant the number that
+// decides whether your next chop succeeds was one click away and therefore
+// unwatched. The panel sits on the map permanently showing the tool nearest to
+// breaking in each pool; expanding it lists every tool individually.
+
+var gearExpanded = false;
+
+function toggleGear(){
+	gearExpanded = !gearExpanded;
+	updateToolDisplay();
+}
+
+// Colour a durability the same way everywhere: healthy / worn / about to break.
+function durColor(d){ return d > 50 ? "#2e7d32" : (d > 25 ? "#e08a2a" : "#d0402a"); }
+
+// One summary line per pool: count, and a bar for the MOST WORN tool in it —
+// that is the one that decides when the next breakage message arrives.
+function gearSummaryRow(arr, icon, label){
+	if(!arr.length){
+		return "<div class='gearRow'><span class='gearIcon'>" + icon + "</span>" +
+			"<span class='gearNone'>no " + label.toLowerCase() + "</span></div>";
+	}
+	var worst = Math.max(0, Math.round(Math.min.apply(null, arr.map(function(t){ return t.dur; }))));
+	return "<div class='gearRow' title='Lowest durability of your " + arr.length + " " + label.toLowerCase() + "'>" +
+		"<span class='gearIcon'>" + icon + "</span>" +
+		"<span class='gearCount'>×" + arr.length + "</span>" +
+		"<span class='equipBar'><span class='equipFill' style='width:" + worst + "%;background:" + durColor(worst) + "'></span></span>" +
+		"<span class='gearPct'>" + worst + "%</span></div>";
+}
+
+function updateToolDisplay(){
+	// Counts in the top bar.
+	var a = document.getElementById("axe"), sp = document.getElementById("spear");
+	if(a){ a.innerHTML = state.axes.length; }
+	if(sp){ sp.innerHTML = state.spears.length; }
+
+	var sum = document.getElementById("gearSummary");
+	if(sum){
+		sum.innerHTML = gearSummaryRow(state.axes, "🪓", "Axes") +
+			gearSummaryRow(state.spears, "🔱", "Spears");
+	}
+	var tog = document.getElementById("gearToggle");
+	if(tog){ tog.innerHTML = gearExpanded ? "▾" : "▸"; }
+	$("#gearDetail").toggleClass("hidden", !gearExpanded);
+	if(gearExpanded){ updateEquipmentPanel(); }
+}
+
+// The expanded list: one row per pooled tool with its own durability. Tools are
+// a shared pool (not per-villager), so this lists the pool, not owners.
 function updateEquipmentPanel(){
-	var el = document.getElementById("equipList");
+	var el = document.getElementById("gearDetail");
 	if(!el){ return; }
 	el.innerHTML =
-		"<div class='equipHead'>🪓 Axes (" + state.axes.length + ")</div>" + toolRows(state.axes) +
-		"<div class='equipHead'>🗡️ Spears (" + state.spears.length + ")</div>" + toolRows(state.spears);
+		"<div class='equipHead'>🪓 Axes</div>" + toolRows(state.axes) +
+		"<div class='equipHead'>🔱 Spears</div>" + toolRows(state.spears) +
+		"<p class='gearNote'>Tools are a shared pool — any free villager grabs any free tool for a task, then returns it. A tool breaks at 0%.</p>";
 }
 
 function toolRows(arr){
@@ -140,10 +204,9 @@ function toolRows(arr){
 	var html = "";
 	for(var i = 0; i < arr.length; i++){
 		var d = Math.max(0, Math.round(arr[i].dur));
-		var col = d > 50 ? "#2e7d32" : (d > 25 ? "#e08a2a" : "#d0402a");
 		html += "<div class='equipRow'>" +
 			"<span class='equipName'>#" + (i + 1) + (arr[i].inUse ? " · in use" : "") + "</span>" +
-			"<span class='equipBar'><span class='equipFill' style='width:" + d + "%;background:" + col + "'></span></span>" +
+			"<span class='equipBar'><span class='equipFill' style='width:" + d + "%;background:" + durColor(d) + "'></span></span>" +
 			"<span class='equipPct'>" + d + "%</span></div>";
 	}
 	return html;
@@ -199,7 +262,7 @@ function vMeter(label, fillId, color){
 
 function refreshVillagerPanel(){
 	var v = scene.selected;
-	if(!v || $("#villagerOverlay").hasClass("hidden") || !document.getElementById("vSpeed")){ return; }
+	if(!v || $("#villagerPanel").hasClass("hidden") || !document.getElementById("vSpeed")){ return; }
 	document.getElementById("vSpeed").innerHTML = Math.round(v.stats.speed);
 	document.getElementById("vStr").innerHTML = Math.round(v.stats.strength);
 	document.getElementById("vCardio").innerHTML = Math.round(v.stats.cardio);
@@ -253,16 +316,10 @@ function initValues(loaded){
 	// Init the tool readouts (energy is now per-villager, see scene.js)
 	updateToolDisplay();
 
-	document.getElementById("shopName").innerHTML = "Shop - Main";
-
-	// Init canvas; scene.init loads sprites from the SPRITES manifest.
-	var c = document.getElementById("canvas1");
-	ctx = c.getContext("2d");
-
-	// Hand the canvas to the animated scene and start the render loop. The loop
-	// redraws every frame, so sprite images that are still loading simply appear
-	// on a later frame (no cold-load race to guard against anymore).
-	scene.init(c, ctx);
+	// Build the world, attach a renderer to it, then start the loop. The world
+	// simulates the village; the renderer decides how it looks (see scene.js).
+	scene.init();
+	installRenderer(preferredRenderer());
 	scene.start();
 
 	// Fresh game: spawn the starting villager entities to match the count.
@@ -274,6 +331,91 @@ function initValues(loaded){
 	}
 }
 
+// --- renderer selection ----------------------------------------------------
+// The world is renderer-agnostic (see scene.js), so which graphics stack draws
+// it is a startup choice — and a live one: installRenderer() can swap it
+// mid-game without touching a single villager.
+
+// "2d" | "3d". ?render= wins for a one-off look; otherwise the last choice the
+// player made in Settings sticks.
+function preferredRenderer(){
+	var q = new URLSearchParams(location.search).get("render");
+	if(q === "3d" || q === "2d"){ return q; }
+	try { return localStorage.getItem("browserprogress_renderer") || "2d"; }
+	catch(e){ return "2d"; }
+}
+
+// Set once the 3D module has been asked for, so a slow connection can't start
+// two loads by clicking the switch twice.
+var render3dLoading = false;
+
+function installRenderer(name){
+	// The 3D renderer is fetched the first time it is wanted, not on every page
+	// load: it imports three.js, which gzips to more than twice the whole rest of
+	// the game. A player who stays in 2D never pays for it.
+	if(name === "3d" && !window.Render3D){
+		if(render3dLoading){ return "loading"; }
+		render3dLoading = true;
+		newMsg("Loading the 3D village…");
+		import("./render3d.js").then(function(){
+			render3dLoading = false;
+			// Only claim success if it actually landed in 3D — installRenderer falls
+			// back on a machine with no WebGL and has already said so.
+			if(installRenderer("3d") === "3d"){ newMsg("Switched to the 3D village"); }
+		}).catch(function(e){
+			render3dLoading = false;
+			console.error("3D renderer failed to load:", e);
+			newMsg("Couldn't load the 3D village — staying in 2D");
+			installRenderer("2d");
+		});
+		return "loading";
+	}
+
+	var next = (name === "3d") ? window.Render3D : Render2D;
+	if(!next){
+		newMsg("3D renderer unavailable — staying in 2D");
+		next = Render2D; name = "2d";
+	}
+	if(Renderer === next){ return name; }
+
+	var want3dFailed = false;
+	var mapWrap = document.getElementById("mapWrap");
+	if(Renderer && Renderer.destroy){ Renderer.destroy(); }
+	Renderer = null; // the loop tolerates this: it simulates, it just draws nothing
+	try {
+		next.init(mapWrap);
+		Renderer = next;
+	} catch(e){
+		// Creating a WebGL context can fail outright — no GPU, a blocked context,
+		// a headless browser. Tearing down the half-built surface and dropping to
+		// 2D keeps a playable game instead of an empty map.
+		console.error("renderer init failed:", e);
+		if(next.destroy){ try { next.destroy(); } catch(e2){} }
+		newMsg("3D isn't available on this device — staying in 2D");
+		want3dFailed = (name === "3d");
+		name = "2d";
+		Renderer = Render2D;
+		Render2D.init(mapWrap);
+	}
+	try { localStorage.setItem("browserprogress_renderer", name); } catch(e){}
+	$("#gfxSwitch .gfxOpt").each(function(){
+		var mine = this.getAttribute("data-render");
+		$(this).toggleClass("on", mine === name);
+		// If 3D was asked for and we ended up in 2D, this machine can't run it.
+		if(mine === "3d" && name === "2d" && want3dFailed){ this.disabled = true; this.title = "3D isn't available on this device"; }
+	});
+	return name;
+}
+
+function toggleRenderer(){
+	var want = (Renderer === Render2D) ? "3d" : "2d";
+	var got = installRenderer(want);
+	// "loading" means the 3D module is still on its way and will announce itself.
+	// A refused switch has already said why (no WebGL, module failed to load).
+	// Announcing "switched to 2D" over the top of either would be a lie.
+	if(got === want){ newMsg(got === "3d" ? "Switched to the 3D village" : "Switched to the 2D village"); }
+}
+
 function newMsg(msg){
 	document.getElementById("3rdMsg").innerHTML = document.getElementById("prevMsg").innerHTML;
 	document.getElementById("prevMsg").innerHTML = document.getElementById("printText").innerHTML;
@@ -281,19 +423,3 @@ function newMsg(msg){
 	console.log(msg);
 }
 
-// Refresh the tool readouts: count + a durability bar showing the most-worn tool
-// (the one about to break). Tools are per-worker arrays now (see data/registry.js).
-function updateToolDisplay(){
-	toolReadout(state.axes, "axe", "Axe", "axeDurabilityBar");
-	toolReadout(state.spears, "spear", "Spear", "spearDurabilityBar");
-	if(typeof updateEquipmentPanel === "function"){ updateEquipmentPanel(); }
-}
-
-function toolReadout(arr, countId, label, barId){
-	var el = document.getElementById(countId);
-	if(el){ el.innerHTML = arr.length; }
-	var minDur = arr.length ? Math.min.apply(null, arr.map(function(t){ return t.dur; })) : 0;
-	$('#' + barId + '_innerdiv').css("width", Math.max(0, minDur) + "%");
-	$('#' + barId + '_innertext').text(arr.length ? (label + " Durability " + Math.round(minDur) + "%") : ("No " + label + " Available"));
-	$('#' + barId + '_innertext').toggleClass("innerTextRed", arr.length === 0);
-}

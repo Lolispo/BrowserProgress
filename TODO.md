@@ -24,7 +24,10 @@ HUD redesign (UI-1) all shipped. Biggest leftovers, roughly by value:
    bands gone there); what's left is *explicit* sector switching and a world wider
    than 1150×460 to switch between.
 4. **Art & animation** — nicer sprites/icons throughout (walking animation shipped).
-5. **Smaller** — shop-items-hidden-until-affordable, alternate skins, fuller keyboard
+5. **3D polish** — the 3D renderer shipped, with a WC3-style camera and per-activity
+   villager animation and per-building models (see the renderer-split section);
+   what it still lacks is an ambience layer of its own and touch camera controls.
+6. **Smaller** — shop-items-hidden-until-affordable, alternate skins, fuller keyboard
    play, prestige/achievements/events.
 
 Detail for each lives in the phase sections below.
@@ -119,6 +122,291 @@ were guidance and depth.
       repeatable, reward types, how it surfaces on the map/messages.)*
 
 ---
+
+## Build bar — the shop stopped being a menu ✅ (2026-09-12)
+
+Buying a building used to be: open 🛒 Shop → Open Houses → click the item → Back
+→ ✕. Four clicks, with the map hidden behind a modal the whole time. The modal
+is gone. Everything buyable now sits in a bar over the top of the map, so a
+purchase is **one click** and you watch the village while you build it.
+
+- Chips render from `SHOP_ITEMS` (see `shops.js`) — a new item is still one
+  registry entry and no markup. `SHOP_NAV`, the categories screen and the Back
+  button are deleted.
+- A chip shows icon · name · cost · `×N` built · hotkey. The cost is per
+  resource, and **only the resource you are short of goes red**, so a chip
+  answers "what am I still missing?" rather than just "no".
+- **The bar shows what you could work toward now**, which is narrower than
+  "everything". Hiding items until you held half their cost made "what am I saving
+  for?" unanswerable; showing all fifteen swapped that for a wall. The rule:
+  an item is **out of reach** when the building needs an unclaimed region, or its
+  price is in a resource that region is the only source of — you cannot obtain a
+  unit of stone before claiming the Hills, so a stone price is noise. Out of reach
+  is off the bar; everything else gets a full chip. 10 items at the start, 13 after
+  the Hills, 15 at the end. `halfAfforded` / `itemDiscovered` are deleted.
+- **Becoming affordable is an event.** A chip that flips to buyable pops and
+  flashes green (`.justAfforded`). Suppressed on the first pass, or a reload would
+  set off every chip at once; the deferred cleanup takes an id rather than an
+  element, because `var` in a `for-in` loop would hand the timer whatever the loop
+  ended on.
+- **Each chip shows its own progress** — a bar along its bottom edge, filled by
+  the *worst* resource in its cost, since that's the one holding you up.
+- **Region-locked buildings say which region**, rather than dangling a price you
+  can't act on: `🔒 Hills`, dotted border, dimmed.
+- **Hovering anything says exactly what's missing**: "Still need: 120 more wood,
+  20 more iron" / "Locked until you claim the Hills" / "No housing free — build
+  Farm Houses first" (that last one from a `blockedWhy` on the registry entry, so
+  it stays data-driven). Live, appended to the authored tooltip on each refresh.
+- **The next-goal hint and the button are the same object**: `goalBuy()` records
+  which item the top-bar north-star points at, and that chip gets a gold ring.
+- **Buyable vs not differs on four axes at once** — background, border style, text
+  weight, and whether the icon has any colour in it. A greyed-out emoji turned out
+  to be the strongest single signal: a full-colour icon on a dimmed chip still
+  reads as live. Border *width* stays 1px in every state, or the bar would reflow
+  each time you could suddenly afford something. Locked goes one step further down
+  all four. A chip at ≥75% turns gold (`.nearly`) — the "one more trip" state.
+- 🛒 Build toggles the bar; that choice survives the refresh that runs on every
+  resource change.
+
+### Bottom-left HUD cluster
+
+Gear and the selected villager sit side by side on the map (`#hudDock`), not over
+it. The villager inspector used to be a centred modal — you clicked a villager to
+learn about them and the village they were standing in disappeared, which is the
+wrong trade. Both panels share the build bar's visual language.
+
+### Gear panel
+
+Tool durability lived behind the 🎒 button — meaning the number that decides
+whether your next chop succeeds was one click away, and therefore never watched.
+It's now a small panel on the map, permanently showing the **most worn tool** in
+each pool (the one that decides when the next breakage message arrives). Click it
+or 🎒 Gear to expand into a per-tool list. The equipment overlay is deleted, along
+with `toolReadout`'s writes to `#axeDurabilityBar` / `#spearDurabilityBar`, which
+had not existed in the markup for some time and were silently no-ops.
+- Capped at 34% of the map height (scrolls past that), and under 1180px the
+  names drop so the icon + price carry it. One row on a laptop, two when the
+  whole tech tree is open.
+- Hotkeys (V / A / S / F) still buy from anywhere, unchanged.
+
+## Renderer split + 3D village ✅ (2026-09-12)
+
+The world and the graphics are now separate things. `scene.js` is the **simulation**
+— entities, the task state machine, movement, hunger/energy, jobs — and owns no
+pixels at all. A **renderer** is handed that world every frame and decides how it
+looks. Two exist and are interchangeable at runtime:
+
+- `render2d.js` — the original canvas-2D top-down view, unchanged in output.
+- `render3d.js` — a three.js view of the same village (ES module, `lib/three.*.min.js`
+  vendored, still no build step).
+
+The whole seam is four methods: `init(container)`, `frame(world, dt, now)`,
+`pick(clientX, clientY)`, `destroy()` — plus an optional `swallowClick()` for
+renderers with a camera-drag gesture.
+
+> **Gotcha for anything renderer-scoped:** `init()` must establish clean state
+> rather than inherit the last session's. Caches that gate work are the dangerous
+> ones — a stale `_cw`/`_ch` resize cache meant a rebuilt 3D renderer was never
+> sized at all (it kept the canvas default of 300x150, stretched, camera stuck on
+> aspect 1), which is why 3D looked low quality the *second* time you switched to
+> it. Same class of bug for module-level geometry caches that `destroy()`'s
+> traverse disposes but never nulls. Covered by three checks in the suite. Everything else — bars, shops, jobs,
+overlays, saves — is renderer-agnostic and untouched.
+
+- Switch with the **2D | 3D segmented control in the top bar**, by pressing **G**,
+  or with `?render=2d` / `?render=3d`. The choice persists in `localStorage`;
+  switching mid-game keeps the village exactly as it was. It used to be a button
+  buried in Settings — the renderer is a view setting you flip while playing, not
+  something to go hunting for. If 3D init fails (no WebGL) the 3D half disables
+  itself, so you aren't invited to keep trying something this machine can't do.
+- Sprite footprints are **declared** in `data/assets.js` (`w`/`h`) instead of being
+  measured off loaded `Image`s, so layout no longer depends on decode timing — and
+  a renderer that draws no images still gets the same village shape.
+- The 3D renderer **reconciles** meshes against the world each frame (build what's
+  new, drop what's gone), so loads, Resets and mid-game switches need no
+  notification from the game.
+- World `(x, y)` maps to three.js `(x, 0, y)`; height is invented by the renderer
+  from a per-type massing table. The sim has no concept of height.
+- No WebGL (or the module failed to load) falls back to 2D with a message rather
+  than a blank map.
+
+### 3D camera (Warcraft III style)
+
+One control — zoom — and the pitch rides on it. Zooming in tilts the camera down
+toward the horizon until you are at head height looking along the street (175
+units out, 17° up); zooming out swings it back to a tactical near-top-down (820
+units, 66°) that frames the whole strip. Both ends stop hard, and panning is
+fenced to the map, so the view can never get lost or end up staring into space.
+
+- Wheel zooms. Drag horizontally to spin, vertically to zoom. Shift- or
+  middle-drag pans; double-click hands the camera back to following the villagers
+  (same deadzone follow as the 2D camera).
+- **The opening view frames the whole valley**, and **Home** (or Backspace) gets
+  you back to it from anywhere. `fitZoom()` computes it from the real viewport and
+  field of view rather than a magic number, so it stays right on any window shape.
+- **Edge panning, Warcraft style**: push the pointer against the left or right
+  edge of the map and the view slides that way, faster the further in you push,
+  with the cursor changing to signal it. Sideways only — the world is a wide
+  shallow strip, and the top and bottom of the viewport are where the build bar
+  and work toolbar live, so a cursor there is heading for a button. It stays off
+  while the whole valley is already on screen, since there is nowhere to go.
+- **Zoom is magnitude-aware.** It used to step by `Math.sign(deltaY)`, so a
+  trackpad — which fires dozens of small wheel events per flick — crossed the
+  entire range in one gesture, and the zoom only ever felt like "nearest" or
+  "furthest". Deltas are normalised to pixels (browsers report lines and pages
+  too) and scaled, with a per-event ceiling.
+- `Render3D.cam`, `setZoom(t)` and `focusOn(x, z)` are public, so the game can
+  frame something later (the Monument on a win) without reaching into internals.
+- Text is in world space, so it is scaled per frame to stay roughly screen-sized,
+  and the map labels (region names, Mine / Hunt) fade out once you are down among
+  the buildings.
+- A gradient sky dome + matched fog, because at 17° you are looking at the horizon.
+
+### Villager animation
+
+Villagers are a rigged figure — torso, head, two arms, two legs on joint pivots,
+a hat on about a third of them — posed every frame from state the sim already
+had. Nothing was added to a villager to make this work.
+
+- The walk cycle advances with **distance travelled**, not time, so feet never
+  slide and a villager slowed by hunger or exhaustion plods automatically.
+- Per-activity motions, so you can tell what someone is doing from across the map:
+  overhead **swing** (chop / mine / quarry), **claw**, a crouched **stalk** with
+  spear jabs (hunt), **jog** on the spot (speed), overhead **press** (strength),
+  **star jumps** (cardio), **haggling** (market), and lying flat out **asleep**.
+- Carrying home shows the load as a coloured block in their hands, arms out,
+  leaning back against the weight.
+- Idle villagers breathe, look around, and stretch every few seconds; tired ones
+  slouch with their head down.
+- Turning is eased rather than snapped, so they lean into corners.
+
+### Building models
+
+Every building has its own silhouette rather than a tinted box with a pyramid on
+top, because a village of ten buildings has to be legible at a glance:
+
+- **house** gable roof with an overhang, door, windows · **lumberMill** turning
+  water wheel + log pile · **mine** spoil heap with a timbered headframe, dark
+  adit and a minecart on rails · **huntingLodge** log cabin with antlers over the
+  door · **trainingYard** sanded ring with a pell to hit · **quarry** stepped pit
+  with a hoist arm · **farm** barn, ploughed rows and a scarecrow · **blacksmith**
+  chimney, glowing hearth and an anvil · **market** striped stall awnings and
+  crates · **monument** stepped plinth under a lit shard.
+- Roofs are real gable prisms with a ridge (a 3-sided cylinder), not four-sided
+  pyramids — those read as wizard hats on anything that wasn't square.
+- Materials are shared by colour across the village, and `BUILD` / `SPREAD` in
+  render3d.js are where a new building's shape and plot size go.
+- The forest is three InstancedMeshes with two tree varieties: same picture, ~3
+  draw calls instead of ~70.
+- Villagers show the tool the sim reserved (axe or spear), swinging with the arm.
+- The sun moved to the FRONT-left of the map. It used to sit behind the scene, so
+  every face the default camera could see was in shadow, which is why dark roofs
+  read as black slabs.
+
+Possible later: merging each building's static parts into one mesh (needs
+`BufferGeometryUtils`) would take a full village from ~230 draw calls to well
+under 100. Not currently a bottleneck.
+
+### Villager personality
+
+Each villager has a permanent expression and headgear, both derived from the same
+`phase` they already carried for animation — so it is stable for their whole life,
+survives a save, and the simulation stores nothing new for it.
+
+- Six base expressions (dots, wide eyes with highlights, squint, raised brow with
+  a smirk, a wink, freckles), drawn to a canvas and mapped onto a **curved patch**
+  sitting just proud of the head. A patch rather than a flat decal because a flat
+  face separates visibly the moment the camera swings round.
+- The current **mood overrides** the base expression, read from state that already
+  existed: drooping lids and a flat mouth when exhausted, a frown when starving,
+  and eyes-closed delight on the walk home carrying a full load.
+- Hunting is a **spear thrust** — brace, wind back over the shoulder, drive
+  forward and lean in. It was a crouch-and-twitch with both arms out front, which
+  read as nothing in particular. The spear model was 20 long and 1.1 thick with a
+  stubby head, which are a sword's proportions and exactly what it looked like;
+  it is now long, thin, and carried angled. The shop icon was 🗡️ — a *dagger* —
+  now 🔱, the nearest pole weapon Unicode has.
+- Seven headgear options (bare ×2, straw, cap, headband, top hat, hood), coloured
+  from a palette. Silhouette is what separates villagers at the distance you
+  actually play at, so this is the variety that earns its place.
+- Feature sizes are set for legibility at play distance, not anatomy — a
+  naturalistic eye would be two pixels. Hats are positioned against the **eye
+  line**: the hood and headband originally dipped below it, which made them
+  blindfolds.
+- Faces are skipped entirely past ~460 units of camera distance, where they'd be
+  sub-pixel. Expression textures and the patch geometry are shared across every
+  villager using them, so per-villager teardown must not dispose them.
+
+### Motion everywhere else
+
+The villagers were the only thing moving, which made the map they moved across
+read as a diorama. What moves now:
+
+- **Wind**, from a single `windAt(x, z, now)` shared by everything. The phase
+  depends on world x, so gusts *travel* — you watch one cross the valley instead
+  of everything wobbling on its own little timer, which is the tell that gives
+  away per-object animation. Trees lean (taller ones further), farm crops bend,
+  market canvas ripples, and drifting smoke is pushed along by it.
+- **Felling.** The sim drops a chopped tree's growth to a stump in one step (it
+  has no notion of time passing mid-chop). The renderer notices the drop and
+  plays it out: a topple, and a burst of wood chips where the axe landed. No sim
+  change — the renderer reacts to a world fact it observed.
+- **Emitters.** Smoke off the blacksmith's chimney, sparks off its hearth, dust
+  off the quarry and the mine head. A building declares `userData.emit` in its
+  builder, so a new building smokes by *saying so* rather than being special-cased
+  in the frame loop.
+- **Blinking**, a ~130ms shut every few seconds, offset per villager so a crowd
+  never blinks in unison. Two cached textures, swapped.
+- **Arrival**: a new hire springs out of the ground on the same easeOutBack a new
+  building uses. `bornAt` moved onto the villager (suppressed on load, exactly as
+  `addBuilding` already did) — when someone joined is a fact about the village.
+- **Idle villagers turn to face each other.** Two people standing near each other
+  looking in random directions read as props; turned toward one another they read
+  as a conversation, for the cost of one loop.
+- **Birds**, three of them, on long ellipses over the valley. Nothing in the game
+  knows about them; an empty sky reads as a menu.
+
+Effects are pooled and recycled (cap 90) and skipped entirely when the camera is
+far enough out that they'd be specks.
+
+### Dev fast-forward
+
+The backtick now **cycles 1x / 5x / 25x / 100x** rather than toggling, so the late
+game (1200 wood and four claimed regions) is reachable in a sitting. Making that
+honest meant fixing an inconsistency: task durations, income and walking already
+divided by `timeScale`, but hunger and energy used raw real seconds — so at 100x
+villagers got rich without ever getting hungry, and the late game you were
+validating wasn't the one players meet. Upkeep now uses game time too. At 1x it
+is exactly what it was.
+
+### Mobile
+
+Keyed off viewport **height** and pointer type rather than width: the problem on a
+phone in landscape isn't that it's narrow (844px is plenty), it's that the map is
+only ~215px tall and every panel that stacks vertically eats the thing you came to
+look at. It was 34% of the map before this.
+
+- Short screens: the build bar becomes **one horizontally-scrolling row** (a
+  second row costs ~14% of the map; a scrollbar costs nothing), and the HUD dock
+  spreads **across the width** — gear bottom-left, villager bottom-right — instead
+  of stacking. The dock is fenced below the build bar, or the villager panel rises
+  up behind the chips.
+- Coarse pointers get 42px chips and bigger controls.
+- **Touch camera in 3D**: one finger drags the map, two fingers pinch to zoom and
+  twist to spin, a tap selects, a drag doesn't. Deliberately not a mirror of the
+  mouse scheme — there is no hover to edge-scroll with and no wheel to zoom with,
+  so the gestures have to carry everything the pointer does on a desktop.
+- **Edge panning is disabled on touch.** A tap synthesises a single mousemove and
+  then nothing, so a tap near the edge would latch the pointer there and scroll
+  the map away forever with nothing to stop it.
+- Tooltips respond to press, since touch has no hover and every "what am I still
+  missing?" answer in this game lives in one.
+- 2D needed no camera work: it already fits or follows on its own.
+
+Left for later: the 3D view has no atmosphere layer (`atmosphere.js` is 2D-only —
+clouds/particles/vignette); it has lighting, shadows, a sky and distance fog
+instead. No touch controls for the 3D camera yet. Parity beyond that is
+deliberately not a promise — 2D is the default view.
 
 ## Phase 0 — Ship an honest build (deploy without debug) ✅
 

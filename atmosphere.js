@@ -6,7 +6,8 @@
 // mood — cloud-shadow drift, ground shadows, building glow, per-region
 // particles, and a vignette + color grade. Adapted for a top-down, camera-less
 // canvas (no parallax sky; clouds dapple the ground instead). Rendering only:
-// passes read scene geometry + state.regions for visibility, never mutate state.
+// passes read world geometry + state.regions for visibility, never mutate state.
+// Owned by Render2D (canvas-2D only); the 3D renderer has its own ambience.
 //
 // Adding a mood is data, not code: one row in ATMOSPHERE / GLOW_SOURCES /
 // PARTICLE_KINDS (mirrors the SPRITES manifest philosophy).
@@ -94,13 +95,13 @@ var Atmosphere = {
 		var i, b, w, h, cx, by;
 		for(i = 0; i < scene.buildings.length; i++){
 			b = scene.buildings[i];
-			w = scene.spriteW(b.img); h = scene.spriteH(b.img);
+			w = b.w; h = b.h;
 			cx = b.x + w / 2; by = b.y + h;
 			ctx.beginPath();
 			ctx.ellipse(cx, by, w * 0.42, h * 0.12, 0, 0, 6.2832);
 			ctx.fill();
 		}
-		var vw = scene.spriteW(imgVillager), vh = scene.spriteH(imgVillager);
+		var vw = scene.VW, vh = scene.VH;
 		for(i = 0; i < scene.villagers.length; i++){
 			var v = scene.villagers[i];
 			ctx.beginPath();
@@ -119,7 +120,7 @@ var Atmosphere = {
 			var b = scene.buildings[i];
 			var col = GLOW_SOURCES[b.type];
 			if(!col){ continue; }
-			var w = scene.spriteW(b.img), h = scene.spriteH(b.img);
+			var w = b.w, h = b.h;
 			var cx = b.x + w / 2, cy = b.y + h * 0.5;
 			var breathe = 0.85 + 0.15 * Anim.oscillate(now, 1.2, 1, b.phase); // ~0.7..1.0
 			var r = w * 1.15 * breathe;

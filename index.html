@@ -21,22 +21,27 @@
     <script src="anim.js"></script>
     <script src="atmosphere.js"></script>
     <script src="scene.js"></script>
+    <script src="render2d.js"></script>
     <script src="persistence.js"></script>
     <script src="controls.js"></script>
     <script src="ui.js"></script>
     <script src="script.js"></script>
+    <!-- render3d.js is NOT loaded here: it pulls in three.js, which is bigger
+         than the entire rest of the game. installRenderer() imports it on demand
+         the first time 3D is actually selected (see script.js). -->
 </head>
 <body class="noPadding">
     <div id="gameRoot">
 
-        <!-- Thin top bar: (left) Shop/Goal/Gear + resource chips, (centre) next-goal
-             hint, (right) Jobs/Messages/Settings. Shop + Goal sit left by request. -->
+        <!-- Thin top bar: (left) Build/Goal/Gear + resource chips, (centre) next-goal
+             hint, (right) Jobs/Messages/Settings. 🛒 Build toggles the build bar
+             that sits over the map; it is not a menu. -->
         <div id="topBar">
             <div id="topLeft">
                 <div id="menuBarLeft">
-                    <button type="button" class="menuBtn" id="btnShop">🛒 Shop</button>
+                    <button type="button" class="menuBtn" id="btnShop" title="Show or hide the build bar">🛒 Build</button>
                     <button type="button" class="menuBtn" id="btnGoal">🎯 Goal</button>
-                    <button type="button" class="menuBtn" id="btnEquipment">🎒 Gear</button>
+                    <button type="button" class="menuBtn" id="btnEquipment" title="Expand or collapse the gear panel">🎒 Gear</button>
                 </div>
                 <div id="resBar">
                     <span class="resChip" title="Wood">🪵 <text id="wood">0</text></span>
@@ -46,12 +51,18 @@
                     <span class="resChip hidden" id="resGold" title="Gold">💰 <text id="gold">0</text></span>
                     <span class="resChip hidden" id="resCrystal" title="Crystal">💎 <text id="crystal">0</text></span>
                     <span class="resChip resSep" title="Axes">🪓 <text id="axe">1</text></span>
-                    <span class="resChip" title="Spears">🗡️ <text id="spear">1</text></span>
+                    <span class="resChip" title="Spears">🔱 <text id="spear">1</text></span>
                     <span class="resChip" title="Housing">🏠 <text id="villagers">0</text>/<text id="houses">2</text></span>
                 </div>
             </div>
             <div id="nextGoal" title="Recommended next purchase"></div>
             <div id="menuBar">
+                <!-- Graphics switch: the renderer is a view setting you flip while
+                     playing, not something to go hunting for in a menu. -->
+                <div id="gfxSwitch" title="Switch between the 2D and 3D village (G)">
+                    <button type="button" class="gfxOpt" data-render="2d">2D</button>
+                    <button type="button" class="gfxOpt" data-render="3d">3D</button>
+                </div>
                 <button type="button" class="menuBtn" id="btnJobs">👷 Jobs</button>
                 <button type="button" class="menuBtn" id="btnMessages">💬</button>
                 <button type="button" class="menuBtn" id="btnSettings">⚙</button>
@@ -60,43 +71,11 @@
 
         <!-- Map fills the space; menus open as overlays over it -->
         <div id="mapWrap">
-            <canvas id="canvas1" width="1150" height="460"></canvas>
+            <!-- The map surface is created by the active renderer (see installRenderer). -->
 
-            <div id="shopOverlay" class="overlay hidden">
-                <div class="overlayHead"><h3 id="shopName">Shop</h3><button type="button" class="overlayClose">✕</button></div>
-                <div class="overlayBody">
-                    <div>
-                        <button type="button" class="btn btnCss btn-default" id="shopBackButton"></button>
-                        <button type="button" class="btn btnCss btn-default" id="shopOpenEquipment"></button>
-                        <button type="button" class="btn btnCss btn-default" id="shopOpenHouses"></button>
-                    </div>
-                    <div>
-                        <button type="button" class="btn btnCss btn-default" id="hireVillagerShop"></button>
-                    </div>
-                    <div>
-                        <div>
-                            <button type="button" class="btn btnCss btn-default" id="axeShop"></button>
-                            <button type="button" class="btn btnCss btn-default" id="tradeAxeShop"></button>
-                        </div>
-                        <button type="button" class="btn btnCss btn-default" id="spearShop"></button>
-                    </div>
-                    <div>
-                        <button type="button" class="btn btnCss btn-default" id="tradeFoodShop"></button>
-                    </div>
-                    <div>
-                        <button type="button" class="btn btnCss btn-default" id="buildHousesShop"></button>
-                        <button type="button" class="btn btnCss btn-default" id="buildLumberMillShop"></button>
-                        <button type="button" class="btn btnCss btn-default" id="buildMineShop"></button>
-                        <button type="button" class="btn btnCss btn-default" id="buildHuntingLodgeShop"></button>
-                        <button type="button" class="btn btnCss btn-default" id="buildTrainingYardShop"></button>
-                        <button type="button" class="btn btnCss btn-default hidden" id="quarryShop"></button>
-                        <button type="button" class="btn btnCss btn-default hidden" id="farmShop"></button>
-                        <button type="button" class="btn btnCss btn-default hidden" id="blacksmithShop"></button>
-                        <button type="button" class="btn btnCss btn-default hidden" id="marketShop"></button>
-                        <button type="button" class="btn btnCss btn-default hidden" id="monumentShop"></button>
-                    </div>
-                </div>
-            </div>
+            <!-- Build bar: every purchase, one click, always over the map.
+                 Chips are generated from SHOP_ITEMS (see shops.js). -->
+            <div id="buildBar"></div>
 
             <div id="jobsOverlay" class="overlay hidden">
                 <div class="overlayHead"><h3>Jobs</h3><button type="button" class="overlayClose">✕</button></div>
@@ -166,17 +145,23 @@
                 </div>
             </div>
 
-            <div id="equipmentOverlay" class="overlay hidden">
-                <div class="overlayHead"><h3>Equipment</h3><button type="button" class="overlayClose">✕</button></div>
-                <div class="overlayBody">
-                    <p style="font-size: 11px; color: grey;">Tools are a shared pool — any free villager grabs any free tool for a task, then returns it. Durability wears with use; a tool breaks at 0%.</p>
-                    <div id="equipList"></div>
+            <!-- Bottom-left HUD cluster: your tools, and whoever you have selected.
+                 Both sit on the map rather than over it, so inspecting a villager
+                 no longer hides the village they are standing in. -->
+            <div id="hudDock">
+                <div id="gearPanel">
+                    <div id="gearHead"><span>🎒 Gear</span><span id="gearToggle">▸</span></div>
+                    <div id="gearSummary"></div>
+                    <div id="gearDetail" class="hidden"></div>
                 </div>
-            </div>
 
-            <div id="villagerOverlay" class="overlay hidden">
-                <div class="overlayHead"><h3 id="villagerTitle">Villager</h3><button type="button" class="overlayClose">✕</button></div>
-                <div class="overlayBody" id="villagerBody"></div>
+                <div id="villagerPanel" class="hidden">
+                    <div id="villagerHead">
+                        <span id="villagerTitle">Villager</span>
+                        <button type="button" id="villagerClose" title="Deselect">✕</button>
+                    </div>
+                    <div id="villagerBody"></div>
+                </div>
             </div>
         </div>
 
