@@ -1,0 +1,27 @@
+tooltips.js
+  s_1f848b2853f24f::t_d49400f24e5c08 45-62
+render3d.js
+  s_1f848b2853f24f::t_1bb06886166120 104-106,1739-1743,1855-1923,1934-1937
+style.css
+  s_1f848b2853f24f::t_d49400f24e5c08 795-821,826-830,832-848
+  s_1f848b2853f24f::t_1bb06886166120 615-619
+  s_1f848b2853f24f::t_bb591384aa62aa 822-825,831
+TODO.md
+  s_1f848b2853f24f::t_daa0fefd47763c 382-405
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "942a37581ef5456f810c8f4f3120188c17665668",
+  "prompts": {},
+  "sessions": {
+    "s_1f848b2853f24f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8c10d327-2704-4dfc-b383-0166a703fdaf",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Petter Andersson <12279747+Lolispo@users.noreply.github.com>"
+    }
+  }
+}
